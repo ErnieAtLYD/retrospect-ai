@@ -27,7 +27,9 @@ export class OpenAIService implements AIService {
             })
         });
 
-        if (!response.ok) {
+        if (response.status === 401) {
+            throw new Error('Unauthorized: Please check your API key.');
+        } else if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error?.message || 'Failed to generate analysis');
         }
