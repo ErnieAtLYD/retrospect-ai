@@ -9,11 +9,13 @@ export interface RecapitanSettings {
     privateMarker: string;
 }
 
+import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
+
 export const DEFAULT_SETTINGS: RecapitanSettings = {
     apiKey: '',
     aiProvider: 'openai',
     model: 'gpt-4',
-    reflectionTemplate: 'Review the following journal entry and provide insights on:\n- Key themes\n- Emotional patterns\n- Action items\n- Growth opportunities',
+    reflectionTemplate: DEFAULT_REFLECTION_TEMPLATE,
     analysisSchedule: 'daily',
     communicationStyle: 'direct',
     privateMarker: ':::private'
