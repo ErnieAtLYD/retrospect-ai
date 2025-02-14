@@ -76,14 +76,32 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Reflection Template')
-            .setDesc('Template for AI reflection prompts')
+            .setName('Daily Reflection Template')
+            .setDesc('Template for daily AI reflection prompts')
             .addTextArea(text => {
                 text
                     .setValue(this.plugin.settings.reflectionTemplate)
-                    .setPlaceholder('Enter your reflection template...')
+                    .setPlaceholder('Enter your daily reflection template...')
                     .onChange(async (value) => {
                         this.plugin.settings.reflectionTemplate = value;
+                        await this.plugin.saveSettings();
+                    });
+                    
+                // Customize the text area
+                text.inputEl.rows = 6;
+                text.inputEl.cols = 50;
+                text.inputEl.addClass('reflection-template-input');
+            });
+
+        new Setting(containerEl)
+            .setName('Weekly Reflection Template')
+            .setDesc('Template for weekly reflection prompts')
+            .addTextArea(text => {
+                text
+                    .setValue(this.plugin.settings.weeklyReflectionTemplate)
+                    .setPlaceholder('Enter your weekly reflection template...')
+                    .onChange(async (value) => {
+                        this.plugin.settings.weeklyReflectionTemplate = value;
                         await this.plugin.saveSettings();
                     });
                     
