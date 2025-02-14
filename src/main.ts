@@ -92,7 +92,7 @@ export default class Recapitan extends Plugin {
             files
                 .filter(file => {
                     const match = file.name.match(/^(\d{4}-\d{2}-\d{2})\.md$/);
-                    if (!match) return false;
+                    if (!match) {
                     const fileDate = new Date(match[1]).getTime();
                     return fileDate >= oneWeekAgo && fileDate <= Date.now();
                 })
