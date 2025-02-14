@@ -1,5 +1,5 @@
 // main.ts
-import { Plugin, Notice } from 'obsidian';
+import { Plugin, Notice, TFile } from 'obsidian';
 import { RecapitanSettings, DEFAULT_SETTINGS } from './types';
 import { RecapitanSettingTab } from './settings/settingsTab';
 import { AnalysisManager } from './services/AnalysisManager';
@@ -136,12 +136,12 @@ export default class Recapitan extends Plugin {
         
         // Open the new note
         const file = this.app.vault.getAbstractFileByPath(fileName);
-        if (file) {
+        if (file instanceof TFile) {
             await this.app.workspace.getLeaf().openFile(file);
         }
     }
 
-    private async (content: string): Promise<string> {
+    private async analyzeContent(content: string): Promise<string> {
         // Remove private sections before analysis
         content = this.privacyManager.removePrivateSections(content);
         
