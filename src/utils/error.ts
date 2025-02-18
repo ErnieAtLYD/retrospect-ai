@@ -5,7 +5,7 @@ export class APIError extends Error {
     }
 }
 
-export class AIServiceError<T = Error> extends Error {
+export class AIServiceError<T extends Error = Error> extends Error {
     constructor(
         message: string,
         public readonly cause?: T,
