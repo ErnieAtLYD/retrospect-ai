@@ -29,8 +29,11 @@ export class OllamaService implements AIService {
                 });
 
                 if (!response.ok) {
+                    const errorMessage = response.status === 500 
+                        ? 'Ollama request failed: Internal Server Error'
+                        : `Ollama request failed: ${response.statusText}`;
                     throw new AIServiceError(
-                        `Ollama request failed: ${response.statusText}`,
+                        errorMessage,
                         undefined,
                         true
                     );
