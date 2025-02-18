@@ -4,6 +4,7 @@ import { RecapitanSettings, DEFAULT_SETTINGS } from './types';
 import { RecapitanSettingTab } from './settings/settingsTab';
 import { AnalysisManager } from './services/AnalysisManager';
 import { OpenAIService, DeepSeekService, AIService } from './services/AIService';
+import { OllamaService } from './services/OllamaService';
 import { PrivacyManager } from './services/PrivacyManager';
 
 export default class Recapitan extends Plugin {
@@ -36,6 +37,9 @@ export default class Recapitan extends Plugin {
                 break;
             case 'deepseek':
                 this.aiService = new DeepSeekService();
+                break;
+            case 'ollama':
+                this.aiService = new OllamaService(this.settings.ollamaHost, this.settings.model);
                 break;
             default:
                 throw new Error('Unsupported AI provider');

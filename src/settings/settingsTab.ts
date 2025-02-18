@@ -22,12 +22,25 @@ export class RecapitanSettingTab extends PluginSettingTab {
             .addDropdown(dropdown => dropdown
                 .addOption('openai', 'OpenAI')
                 .addOption('deepseek', 'DeepSeek')
-                .addOption('local', 'Local Model')
+                .addOption('ollama', 'Ollama')
                 .setValue(this.plugin.settings.aiProvider)
                 .onChange(async (value) => {
                     this.plugin.settings.aiProvider = value as RecapitanSettings['aiProvider'];
                     await this.plugin.saveSettings();
+                    this.display();
                 }));
+
+        new Setting(containerEl)
+            .setName('Ollama Host')
+            .setDesc('The URL of your Ollama instance')
+            .addText(text => text
+                .setPlaceholder('http://localhost:11434')
+                .setValue(this.plugin.settings.ollamaHost)
+                .onChange(async (value) => {
+                    this.plugin.settings.ollamaHost = value;
+                    await this.plugin.saveSettings();
+                }))
+            .setDisabled(this.plugin.settings.aiProvider !== 'ollama');
 
         new Setting(containerEl)
             .setName('API Key')
