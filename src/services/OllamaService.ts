@@ -14,25 +14,36 @@ export class OllamaService implements AIService {
 
     async analyze(content: string, template: string, style: string): Promise<string> {
         return retry(async () => {
-            const data = await fetchWithError<any>({
-                url: `${this.host}/api/generate`,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: {
-                    model: this.model,
-                    prompt: `You are an insightful journaling assistant. Provide ${
-                        style === 'direct' ? 'direct and honest' : 'supportive and gentle'
-                    } feedback.\n\n${template}\n\nContent to analyze:\n${content}`,
-                    stream: false
-                }
-            });
+            try {
+                const data = await fetchWithError<any>({
+                    url: `${this.host}/api/generate`,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: {
+                        model: this.model,
+                        prompt: `You are an insightful journaling assistant. Provide ${
+                            style === 'direct' ? 'direct and honest' : 'supportive and gentle'
+                        } feedback.\n\n${template}\n\nContent to analyze:\n${content}`,
+                        stream: false
+                    }
+                });
 
-            if (!data.response) {
-                throw new AIServiceError('No content in response', undefined, false);
+                if (!data.response) {
+                    throw new AIServiceError('No content in response', undefined, false);
+                }
+                return data.response;
+            } catch (error) {
+                if (error instanceof AIServiceError) {
+                    // Customize error messages for Ollama
+                    if (error.message.includes('Internal Server Error')) {
+                        throw new AIServiceError('Ollama request failed: Internal Server Error', error, true);
+                    }
+                    throw new AIServiceError(error.message.replace('Request failed', 'Ollama request failed'), error, error.retryable);
+                }
+                throw new AIServiceError('Failed to communicate with Ollama', error as Error, true);
             }
-            return data.response;
         }, this.retryOptions);
     }
 }
