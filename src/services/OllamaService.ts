@@ -1,6 +1,6 @@
 import { AIService } from './AIService';
-import { AIServiceError } from '../../utils/error';
-import { retry, RetryOptions } from '../../utils/retry';
+import { AIServiceError } from '../utils/error';
+import { retry, RetryOptions } from '../utils/retry';
 
 export class OllamaService implements AIService {
     private readonly retryOptions: RetryOptions = {
@@ -29,8 +29,11 @@ export class OllamaService implements AIService {
                 });
 
                 if (!response.ok) {
+                    const errorMessage = response.status === 500 
+                        ? 'Ollama request failed: Internal Server Error'
+                        : `Ollama request failed: ${response.statusText}`;
                     throw new AIServiceError(
-                        `Ollama request failed: ${response.statusText}`,
+                        errorMessage,
                         undefined,
                         response.status >= 500
                     );
@@ -45,7 +48,7 @@ export class OllamaService implements AIService {
                 if (error instanceof AIServiceError) {
                     throw error;
                 }
-                throw new AIServiceError('Failed to communicate with Ollama', error as Error);
+                throw new AIServiceError('Failed to communicate with Ollama', error as Error, true);
             }
         }, this.retryOptions);
     }
