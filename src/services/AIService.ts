@@ -67,9 +67,3 @@ export class OpenAIService implements AIService {
     }
 }
 
-export class DeepSeekService implements AIService {
-    async analyze(content: string, template: string, style: string): Promise<string> {
-        // DeepSeek implementation...
-        throw new AIServiceError('DeepSeek service not implemented', undefined, false);
-    }
-}

@@ -21,7 +21,6 @@ export class RecapitanSettingTab extends PluginSettingTab {
             .setDesc('Choose your AI provider')
             .addDropdown(dropdown => dropdown
                 .addOption('openai', 'OpenAI')
-                .addOption('deepseek', 'DeepSeek')
                 .addOption('ollama', 'Ollama')
                 .setValue(this.plugin.settings.aiProvider)
                 .onChange(async (value) => {

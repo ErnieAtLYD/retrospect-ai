@@ -1,7 +1,7 @@
 // src/types.ts
 export interface RecapitanSettings {
     apiKey: string;
-    aiProvider: 'openai' | 'deepseek' | 'ollama';
+    aiProvider: 'openai' | 'ollama';
     model: string;
     reflectionTemplate: string;
     weeklyReflectionTemplate: string;
