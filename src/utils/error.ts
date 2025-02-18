@@ -5,10 +5,10 @@ export class APIError extends Error {
     }
 }
 
-export class AIServiceError extends Error {
+export class AIServiceError<T = Error> extends Error {
     constructor(
         message: string,
-        public readonly cause?: Error,
+        public readonly cause?: T,
         public readonly retryable: boolean = true
     ) {
         super(message);

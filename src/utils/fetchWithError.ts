@@ -17,11 +17,11 @@ export async function fetchWithError<T>(options: FetchOptions): Promise<T> {
 
         if (!response.ok) {
             if (response.status === 401) {
-                throw new AIServiceError('Unauthorized: Please check your API key.', undefined, false);
+                throw new AIServiceError<Response>('Unauthorized: Please check your API key.', response, false);
             } else if (response.status === 429) {
-                throw new AIServiceError('Rate limit exceeded', undefined, true);
+                throw new AIServiceError<Response>('Rate limit exceeded', response, true);
             } else if (response.status === 500) {
-                throw new AIServiceError('Internal Server Error', undefined, true);
+                throw new AIServiceError<Response>('Internal Server Error', response, true);
             }
 
             const errorMessage = `Request failed: ${response.statusText}`;
