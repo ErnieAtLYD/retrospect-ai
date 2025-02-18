@@ -14,7 +14,7 @@ describe('OllamaService', () => {
     beforeEach(() => {
         ollamaService = new OllamaService(mockHost, mockModel);
         // Setup retry mock to pass through to the function by default
-        mockRetry.mockImplementation((fn) => fn());
+        mockRetry.mockImplementation((fn: () => Promise<any>) => fn());
     });
 
     afterEach(() => {
