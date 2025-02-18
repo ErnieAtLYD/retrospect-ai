@@ -1,3 +1,5 @@
+import { AIServiceError } from './error'; // Adjust the path as necessary
+
 export interface RetryOptions {
     maxAttempts: number;
     delayMs: number;
@@ -32,12 +34,15 @@ export async function retry<T>(
         } catch (error) {
             lastError = error as Error;
 
-            // Use a type guard to check for nonRetryable property
+            // Check for AIServiceError and respect its retryable flag
+            if (error instanceof AIServiceError && !error.retryable) {
+                throw error;
+            }
+
             if ((error as { nonRetryable?: boolean }).nonRetryable) {
                 throw lastError;
             }
 
-            // Check if the error is transient
             if (!isTransientError(lastError) || attempt === finalOptions.maxAttempts) {
                 break;
             }
