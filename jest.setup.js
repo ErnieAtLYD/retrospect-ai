@@ -1,4 +1,5 @@
 // Mock Obsidian API
+/* eslint-env jest */
 global.window = {};
 jest.mock('obsidian', () => ({
     Plugin: class {},
