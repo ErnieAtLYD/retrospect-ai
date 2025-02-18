@@ -34,6 +34,6 @@ export async function fetchWithError<T>(options: FetchOptions): Promise<T> {
         if (error instanceof AIServiceError) {
             throw error;
         }
-        throw new AIServiceError('Failed to make network request', error as Error, true);
+        throw error;
     }
 }

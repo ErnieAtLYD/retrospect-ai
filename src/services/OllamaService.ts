@@ -40,7 +40,7 @@ export class OllamaService implements AIService {
                     if (error.message.includes('Internal Server Error')) {
                         throw new AIServiceError('Ollama request failed: Internal Server Error', error, true);
                     }
-                    throw new AIServiceError(error.message.replace('Request failed', 'Ollama request failed'), error, error.retryable);
+                    throw error;
                 }
                 throw new AIServiceError('Failed to communicate with Ollama', error as Error, true);
             }
