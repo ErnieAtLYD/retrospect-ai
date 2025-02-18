@@ -1,13 +1,14 @@
 // src/types.ts
 export interface RecapitanSettings {
     apiKey: string;
-    aiProvider: 'openai' | 'deepseek' | 'local';
+    aiProvider: 'openai' | 'deepseek' | 'ollama';
     model: string;
     reflectionTemplate: string;
     weeklyReflectionTemplate: string;
     analysisSchedule: 'daily' | 'manual';
     communicationStyle: 'direct' | 'gentle';
     privateMarker: string;
+    ollamaHost: string;
 }
 
 import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
@@ -21,5 +22,6 @@ export const DEFAULT_SETTINGS: RecapitanSettings = {
     weeklyReflectionTemplate: DEFAULT_WEEKLY_REFLECTION_TEMPLATE,
     analysisSchedule: 'daily',
     communicationStyle: 'direct',
-    privateMarker: ':::private'
+    privateMarker: ':::private',
+    ollamaHost: 'http://localhost:11434'
 }
