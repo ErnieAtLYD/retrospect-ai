@@ -1,6 +1,6 @@
 // src/services/AIService.ts
-import { retry, RetryOptions } from '../utils/retry';
-import { AIServiceError } from '../utils/error';
+import { retry, RetryOptions } from '../../utils/retry';
+import { AIServiceError } from '../../utils/error';
 
 export interface AIService {
     analyze(content: string, template: string, style: string): Promise<string>;
