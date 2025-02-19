@@ -6,13 +6,15 @@ export class APIError extends Error {
 }
 
 export class AIServiceError extends Error {
-    constructor(
-        message: string,
-        public readonly cause?: Error,
-        public readonly retryable: boolean = true
-    ) {
+    public readonly isRetryable: boolean;
+    public override readonly cause?: Error;
+
+    constructor(message: string, cause?: Error, retryable = true) {
         super(message);
         this.name = 'AIServiceError';
+        this.isRetryable = retryable;
+        this.cause = cause;
+        Error.captureStackTrace(this, AIServiceError);
     }
 }
 

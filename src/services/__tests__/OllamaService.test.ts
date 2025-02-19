@@ -78,11 +78,11 @@ describe("OllamaService", () => {
 
 			await expect(
 				ollamaService.analyze("Test content", "Test template", "direct")
-			).rejects.toMatchObject({
-				name: "AIServiceError",
-				message: "Failed to communicate with Ollama",
-				retryable: true,
-			});
+).rejects.toMatchObject({
+        name: "AIServiceError",
+        message: "Failed to communicate with Ollama",
+        isRetryable: true,
+});
 		});
 
 		it("should throw AIServiceError with retryable=true on server error", async () => {
@@ -94,11 +94,11 @@ describe("OllamaService", () => {
 
 			await expect(
 				ollamaService.analyze("Test content", "Test template", "direct")
-			).rejects.toMatchObject({
-				name: "AIServiceError",
-				message: "Ollama request failed: Internal Server Error",
-				retryable: true,
-			});
+).rejects.toMatchObject({
+        name: "AIServiceError",
+        message: "Ollama request failed: Internal Server Error",
+        isRetryable: true,
+});
 		});
 
 		it("should throw AIServiceError with retryable=false on empty response", async () => {
@@ -109,11 +109,11 @@ describe("OllamaService", () => {
 
 			await expect(
 				ollamaService.analyze("Test content", "Test template", "direct")
-			).rejects.toMatchObject({
-				name: "AIServiceError",
-				message: "No content in response",
-				retryable: false,
-			});
+).rejects.toMatchObject({
+        name: "AIServiceError",
+        message: "No content in response",
+        isRetryable: false,
+});
 		});
 
 		it("should use retry utility with correct options", async () => {
