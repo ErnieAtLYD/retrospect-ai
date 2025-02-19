@@ -5,14 +5,16 @@ export class APIError extends Error {
     }
 }
 
-export class AIServiceError<T extends Error = Error> extends Error {
-    constructor(
-        message: string,
-        public readonly cause?: T,
-        public readonly retryable: boolean = true
-    ) {
+export class AIServiceError extends Error {
+    public readonly isRetryable: boolean;
+    public override readonly cause?: Error;
+
+    constructor(message: string, cause?: Error, retryable = true) {
         super(message);
         this.name = 'AIServiceError';
+        this.isRetryable = retryable;
+        this.cause = cause;
+        Error.captureStackTrace(this, AIServiceError);
     }
 }
 
