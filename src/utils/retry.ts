@@ -35,7 +35,7 @@ export async function retry<T>(
             lastError = error as Error;
 
             // Check for AIServiceError and respect its retryable flag
-            if (error instanceof AIServiceError && !error.retryable) {
+            if (error instanceof AIServiceError && !error.isRetryable) {
                 throw error;
             }
 
