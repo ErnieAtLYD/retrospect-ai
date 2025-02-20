@@ -14,6 +14,23 @@ export interface RecapitanSettings {
 import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
 import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from './prompts/weeklyReflectionPrompt';
 
+const Settings = {
+    apiKey: '',
+    aiProvider: 'openai' | 'ollama',
+    model: 'gpt-4',
+    analysisSchedule: 'daily' | 'manual',
+    communicationStyle: 'direct' | 'gentle',
+    privateMarker: ':::private'
+}
+
+
+
+export interface RecapitanSettings extends Settings {
+    reflectionTemplate: string;
+    weeklyReflectionTemplate: string;
+    ollamaHost: string;
+}
+
 export const DEFAULT_SETTINGS: RecapitanSettings = {
     apiKey: '',
     aiProvider: 'openai',
