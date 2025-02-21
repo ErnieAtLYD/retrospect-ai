@@ -1,8 +1,8 @@
 // src/services/WeeklyAnalysisService.ts
-import { RecapitanSettings } from "@/types";
+import { RecapitanSettings } from "../types";
 import { App } from "obsidian";
-import { PrivacyManager } from "@/services/PrivacyManager";
-import { AIService } from "@/services/AIService";
+import { PrivacyManager } from "./PrivacyManager";
+import { AIService } from "./AIService";
 import { TFile } from "obsidian";
 
 export class WeeklyAnalysisService {
@@ -16,7 +16,7 @@ export class WeeklyAnalysisService {
 	async runWeeklyAnalysis(): Promise<void> {
 		const entries = await this.getPastWeekEntries();
 		if (entries.length === 0) {
-			throw new Error('No journal entries found for the past week');
+			throw new Error("No journal entries found for the past week");
 		}
 		const analysis = await this.analyzeWeeklyContent(entries);
 		await this.createWeeklyReflectionNote(analysis);
@@ -46,15 +46,17 @@ export class WeeklyAnalysisService {
 		);
 	}
 
-	async analyzeWeeklyContent(entries: { date: string; content: string }[]): Promise<string> {
-		const sanitizedEntries = entries.map(entry => ({
+	async analyzeWeeklyContent(
+		entries: { date: string; content: string }[]
+	): Promise<string> {
+		const sanitizedEntries = entries.map((entry) => ({
 			date: entry.date,
-			content: this.privacyManager.removePrivateSections(entry.content)
+			content: this.privacyManager.removePrivateSections(entry.content),
 		}));
 
 		const formattedContent = sanitizedEntries
-			.map(entry => `## ${entry.date}\n\n${entry.content}`)
-			.join('\n\n');
+			.map((entry) => `## ${entry.date}\n\n${entry.content}`)
+			.join("\n\n");
 
 		return await this.aiService.analyze(
 			formattedContent,
