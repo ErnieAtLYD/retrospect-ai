@@ -1,5 +1,5 @@
 // src/settings/SettingsTab.ts
-import { App, PluginSettingTab, Setting  } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import Recapitan from '../main';
 import { RecapitanSettings } from '../types';
 
@@ -53,8 +53,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 .setPlaceholder('http://localhost:11434')
                 .setValue(this.plugin.settings.ollamaHost)
                 .onChange(async (value) => {
-                    this.plugin.settings.ollamaHost = value;
-                    await this.plugin.saveSettings();
+                    await this.saveSettingsWithFeedback(async () => {
+                        this.plugin.settings.ollamaHost = value;
+                        await this.plugin.saveSettings();
+                    });
                 }))
             .setDisabled(this.plugin.settings.aiProvider !== 'ollama');
 
@@ -79,8 +81,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 .addOption('manual', 'Manual Only')
                 .setValue(this.plugin.settings.analysisSchedule)
                 .onChange(async (value) => {
-                    this.plugin.settings.analysisSchedule = value as RecapitanSettings['analysisSchedule'];
-                    await this.plugin.saveSettings();
+                    await this.saveSettingsWithFeedback(async () => {
+                        this.plugin.settings.analysisSchedule = value as RecapitanSettings['analysisSchedule'];
+                        await this.plugin.saveSettings();
+                    });
                 }));
 
         new Setting(containerEl)
@@ -91,8 +95,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 .addOption('gentle', 'Gentle and Supportive')
                 .setValue(this.plugin.settings.communicationStyle)
                 .onChange(async (value) => {
-                    this.plugin.settings.communicationStyle = value as RecapitanSettings['communicationStyle'];
-                    await this.plugin.saveSettings();
+                    await this.saveSettingsWithFeedback(async () => {
+                        this.plugin.settings.communicationStyle = value as RecapitanSettings['communicationStyle'];
+                        await this.plugin.saveSettings();
+                    });
                 }));
 
         new Setting(containerEl)
@@ -102,8 +108,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 .setPlaceholder(':::private')
                 .setValue(this.plugin.settings.privateMarker)
                 .onChange(async (value) => {
-                    this.plugin.settings.privateMarker = value;
-                    await this.plugin.saveSettings();
+                    await this.saveSettingsWithFeedback(async () => {
+                        this.plugin.settings.privateMarker = value;
+                        await this.plugin.saveSettings();
+                    });
                 }));
 
         new Setting(containerEl)
@@ -114,8 +122,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.reflectionTemplate)
                     .setPlaceholder('Enter your daily reflection template...')
                     .onChange(async (value) => {
-                        this.plugin.settings.reflectionTemplate = value;
-                        await this.plugin.saveSettings();
+                        await this.saveSettingsWithFeedback(async () => {
+                            this.plugin.settings.reflectionTemplate = value;
+                            await this.plugin.saveSettings();
+                        });
                     });
                     
                 // Customize the text area
@@ -132,8 +142,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.weeklyReflectionTemplate)
                     .setPlaceholder('Enter your weekly reflection template...')
                     .onChange(async (value) => {
-                        this.plugin.settings.weeklyReflectionTemplate = value;
-                        await this.plugin.saveSettings();
+                        await this.saveSettingsWithFeedback(async () => {
+                            this.plugin.settings.weeklyReflectionTemplate = value;
+                            await this.plugin.saveSettings();
+                        });
                     });
                     
                 // Customize the text area
