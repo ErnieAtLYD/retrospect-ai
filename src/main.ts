@@ -155,12 +155,12 @@ export default class Recapitan extends Plugin {
         
         try {
             content = this.privacyManager.removePrivateSections(content);
-            const analysis = await this.aiService.analyze(
-                content,
-                this.settings.reflectionTemplate,
-                this.settings.communicationStyle
-            );
-            return analysis;
+            return await this.aiService.analyze(
+                            content,
+                            this.settings.reflectionTemplate,
+                            this.settings.communicationStyle
+                        );
+
         } finally {
             statusBar.remove();
         }
