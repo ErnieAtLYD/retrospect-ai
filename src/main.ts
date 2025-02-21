@@ -114,20 +114,31 @@ export default class Recapitan extends Plugin {
     }
 
     private async analyzeWeeklyContent(entries: { date: string; content: string }[]): Promise<string> {
-        const sanitizedEntries = entries.map(entry => ({
-            date: entry.date,
-            content: this.privacyManager.removePrivateSections(entry.content)
-        }));
+        const loadingEl = document.createElement('div');
+        loadingEl.addClass('recapitan-loading');
+        const editor = this.app.workspace.getActiveViewOfType('markdown')?.editor;
+        if (editor) {
+            editor.containerEl.appendChild(loadingEl);
+        }
 
-        const formattedContent = sanitizedEntries
-            .map(entry => `## ${entry.date}\n\n${entry.content}`)
-            .join('\n\n');
+        try {
+            const sanitizedEntries = entries.map(entry => ({
+                date: entry.date,
+                content: this.privacyManager.removePrivateSections(entry.content)
+            }));
 
-        return await this.aiService.analyze(
-            formattedContent,
-            this.settings.weeklyReflectionTemplate,
-            this.settings.communicationStyle
-        );
+            const formattedContent = sanitizedEntries
+                .map(entry => `## ${entry.date}\n\n${entry.content}`)
+                .join('\n\n');
+
+            return await this.aiService.analyze(
+                formattedContent,
+                this.settings.weeklyReflectionTemplate,
+                this.settings.communicationStyle
+            );
+        } finally {
+            loadingEl.remove();
+        }
     }
 
     private async createWeeklyReflectionNote(analysis: string): Promise<void> {
@@ -153,16 +164,23 @@ export default class Recapitan extends Plugin {
         const statusBar = this.addStatusBarItem();
         statusBar.setText('Analyzing content...');
         
+        const loadingEl = document.createElement('div');
+        loadingEl.addClass('recapitan-loading');
+        const editor = this.app.workspace.getActiveViewOfType('markdown')?.editor;
+        if (editor) {
+            editor.containerEl.appendChild(loadingEl);
+        }
+        
         try {
             content = this.privacyManager.removePrivateSections(content);
             return await this.aiService.analyze(
-                            content,
-                            this.settings.reflectionTemplate,
-                            this.settings.communicationStyle
-                        );
-
+                content,
+                this.settings.reflectionTemplate,
+                this.settings.communicationStyle
+            );
         } finally {
             statusBar.remove();
+            loadingEl.remove();
         }
     }
 }

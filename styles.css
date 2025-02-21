@@ -1,8 +1,18 @@
-/*
+.recapitan-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--background-modifier-border);
+    border-radius: 50%;
+    border-top-color: var(--text-accent);
+    animation: recapitan-spin 1s linear infinite;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+@keyframes recapitan-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
