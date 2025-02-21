@@ -11,6 +11,21 @@ export class RecapitanSettingTab extends PluginSettingTab {
         this.plugin = plugin;
     }
 
+    private async saveSettingsWithFeedback(callback: () => Promise<void>) {
+        const statusBar = this.app.statusBar.addStatusBarItem();
+        statusBar.setText('Saving settings...');
+        
+        try {
+            await callback();
+            new Notice('Settings saved');
+        } catch (error) {
+            new Notice('Failed to save settings');
+            throw error;
+        } finally {
+            statusBar.remove();
+        }
+    }
+
     display(): void {
         // Move settings UI code here...
         const { containerEl } = this;
@@ -24,9 +39,11 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 .addOption('ollama', 'Ollama')
                 .setValue(this.plugin.settings.aiProvider)
                 .onChange(async (value) => {
-                    this.plugin.settings.aiProvider = value as RecapitanSettings['aiProvider'];
-                    await this.plugin.saveSettings();
-                    this.display();
+                    await this.saveSettingsWithFeedback(async () => {
+                        this.plugin.settings.aiProvider = value as RecapitanSettings['aiProvider'];
+                        await this.plugin.saveSettings();
+                        this.display();
+                    });
                 }));
 
         new Setting(containerEl)
@@ -48,8 +65,10 @@ export class RecapitanSettingTab extends PluginSettingTab {
                 .setPlaceholder('Enter API key...')
                 .setValue(this.plugin.settings.apiKey)
                 .onChange(async (value) => {
-                    this.plugin.settings.apiKey = value;
-                    await this.plugin.saveSettings();
+                    await this.saveSettingsWithFeedback(async () => {
+                        this.plugin.settings.apiKey = value;
+                        await this.plugin.saveSettings();
+                    });
                 }));
 
         new Setting(containerEl)

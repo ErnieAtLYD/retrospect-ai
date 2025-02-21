@@ -52,10 +52,11 @@ export default class Recapitan extends Plugin {
             name: 'Analyze Current Note',
             editorCallback: async (editor) => {
                 const content = editor.getValue();
+                new Notice('Starting analysis...');
                 try {
                     const analysis = await this.analyzeContent(content);
-                    // Append analysis to the note
                     editor.setValue(content + '\n\n## AI Reflection\n' + analysis);
+                    new Notice('Analysis complete!');
                 } catch (error) {
                     const message = error instanceof Error ? error.message : 'Unknown error';
                     new Notice(`Analysis failed: ${message}`);
@@ -68,6 +69,9 @@ export default class Recapitan extends Plugin {
             id: 'analyze-past-week',
             name: 'Analyze Past Week',
             callback: async () => {
+                const statusBar = this.addStatusBarItem();
+                statusBar.setText('Analyzing past week...');
+                
                 try {
                     const entries = await this.getPastWeekEntries();
                     if (entries.length === 0) {
@@ -77,9 +81,12 @@ export default class Recapitan extends Plugin {
 
                     const analysis = await this.analyzeWeeklyContent(entries);
                     await this.createWeeklyReflectionNote(analysis);
+                    new Notice('Weekly analysis complete!');
                 } catch (error) {
                     const message = error instanceof Error ? error.message : 'Unknown error';
                     new Notice(`Weekly analysis failed: ${message}`);
+                } finally {
+                    statusBar.remove();
                 }
             }
         });
@@ -143,14 +150,20 @@ export default class Recapitan extends Plugin {
     }
 
     private async analyzeContent(content: string): Promise<string> {
-        // Remove private sections before analysis
-        content = this.privacyManager.removePrivateSections(content);
+        const statusBar = this.addStatusBarItem();
+        statusBar.setText('Analyzing content...');
         
-        return await this.aiService.analyze(
-            content,
-            this.settings.reflectionTemplate,
-            this.settings.communicationStyle
-        );
+        try {
+            content = this.privacyManager.removePrivateSections(content);
+            const analysis = await this.aiService.analyze(
+                content,
+                this.settings.reflectionTemplate,
+                this.settings.communicationStyle
+            );
+            return analysis;
+        } finally {
+            statusBar.remove();
+        }
     }
 }
 
