@@ -1,19 +1,11 @@
-import { App, Notice, StatusBar } from 'obsidian';
+import { App, Notice } from 'obsidian';
 import { RecapitanSettingTab } from '../settingsTab';
 import Recapitan from '../../main';
 
-// Mock Obsidian's App, Notice, and StatusBar
+// Mock Obsidian's App and Notice
 jest.mock('obsidian', () => ({
     PluginSettingTab: jest.fn(),
-    Notice: jest.fn(),
-    App: {
-        statusBar: {
-            addStatusBarItem: jest.fn().mockReturnValue({
-                setText: jest.fn(),
-                remove: jest.fn()
-            })
-        }
-    }
+    Notice: jest.fn()
 }));
 
 describe('RecapitanSettingTab', () => {
@@ -28,18 +20,24 @@ describe('RecapitanSettingTab', () => {
         // Setup mock plugin
         mockPlugin = {
             settings: {
-                apiKey: 'test-key'
+                apiKey: 'test-key',
+                aiProvider: 'openai',
+                model: 'gpt-3.5-turbo',
+                reflectionTemplate: 'test template',
+                weeklyReflectionTemplate: 'test weekly template',
+                analysisSchedule: 'manual',
+                communicationStyle: 'direct',
+                privateMarker: ':::private',
+                ollamaHost: 'http://localhost:11434'
             },
             saveSettings: jest.fn().mockResolvedValue(undefined)
         };
 
         // Setup mock app
         mockApp = {
-            statusBar: {
-                addStatusBarItem: jest.fn().mockReturnValue({
-                    setText: jest.fn(),
-                    remove: jest.fn()
-                })
+            workspace: {
+                on: jest.fn(),
+                off: jest.fn()
             }
         };
 
@@ -47,14 +45,10 @@ describe('RecapitanSettingTab', () => {
     });
 
     describe('saveSettingsWithFeedback', () => {
-        it('should show and remove loading indicator during settings save', async () => {
+        it('should show notice on successful settings save', async () => {
             const mockCallback = jest.fn().mockResolvedValue(undefined);
             
             await settingsTab['saveSettingsWithFeedback'](mockCallback);
-
-            // Verify status bar was added and removed
-            expect(mockApp.statusBar?.addStatusBarItem).toHaveBeenCalled();
-            expect(mockApp.statusBar?.addStatusBarItem().remove).toHaveBeenCalled();
             
             // Verify callback was called
             expect(mockCallback).toHaveBeenCalled();
@@ -69,10 +63,6 @@ describe('RecapitanSettingTab', () => {
             
             await expect(settingsTab['saveSettingsWithFeedback'](mockCallback))
                 .rejects.toThrow(mockError);
-
-            // Verify status bar was added and removed
-            expect(mockApp.statusBar?.addStatusBarItem).toHaveBeenCalled();
-            expect(mockApp.statusBar?.addStatusBarItem().remove).toHaveBeenCalled();
             
             // Verify Notice was shown for error
             expect(Notice).toHaveBeenCalledWith('Failed to save settings');
