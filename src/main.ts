@@ -13,6 +13,7 @@ import { AnalysisManager } from "./services/AnalysisManager";
 import { OpenAIService, AIService } from "./services/AIService";
 import { OllamaService } from "./services/OllamaService";
 import { PrivacyManager } from "./services/PrivacyManager";
+import { StreamingEditorManager } from "services/StreamingManager";
 
 export default class Recapitan extends Plugin {
 	settings!: RecapitanSettings;
@@ -35,7 +36,9 @@ export default class Recapitan extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.initializeServices();
-		this.addSettingTab(new RecapitanSettingTab(this.app as ExtendedApp, this));
+		this.addSettingTab(
+			new RecapitanSettingTab(this.app as ExtendedApp, this)
+		);
 		this.addCommands();
 	}
 
@@ -80,38 +83,49 @@ export default class Recapitan extends Plugin {
 				editor: Editor,
 				ctx: MarkdownView | MarkdownFileInfo
 			) => {
-				if (ctx instanceof MarkdownView) {
-					const content = editor.getValue();
-					new Notice("Starting analysis...", 100000);
-
-					try {
-						const analysis = await this.analyzeContent(content);
-						editor.setValue(
-							content + "\n\n## AI Reflection\n" + analysis
-						);
-						new Notice("Analysis complete!");
-					} catch (error) {
-						const message =
-							error instanceof Error
-								? error.message
-								: "Unknown error";
-						new Notice(`Analysis failed: ${message}`, 100000);
-					}
-				} else {
+				if (!(ctx instanceof MarkdownView)) {
 					new Notice(
 						"This command can only be used in a Markdown view.",
 						5000
 					);
+					return;
+				}
+
+				const content = editor.getValue();
+				const streamingManager = new StreamingEditorManager(
+					editor,
+					this.app
+				);
+
+				try {
+					// Create a promise for the analysis
+					const analysisPromise = this.analyzeContent(content);
+
+					// Use streaming manager to handle the updates
+					await streamingManager.streamAnalysis(analysisPromise, {
+						streamingUpdateInterval: 150,
+						loadingIndicatorPosition: "cursor",
+						chunkSize: 75,
+					});
+				} catch (error) {
+					const message =
+						error instanceof Error
+							? error.message
+							: "Unknown error";
+					new Notice(`Analysis failed: ${message}`, 5000);
 				}
 			},
 		});
 
 		// Add command for weekly analysis
+		// Weekly analysis command remains mostly the same
 		this.addCommand({
 			id: "analyze-past-week",
 			name: "Analyze Past Week",
 			callback: async () => {
-				const statusBar = (this.app as ExtendedApp).statusBar.addStatusBarItem();
+				const statusBar = (
+					this.app as ExtendedApp
+				).statusBar.addStatusBarItem();
 				statusBar.setText("Analyzing past week...");
 
 				try {
@@ -119,20 +133,20 @@ export default class Recapitan extends Plugin {
 					if (entries.length === 0) {
 						new Notice(
 							"No journal entries found for the past week",
-							100000
+							5000
 						);
 						return;
 					}
 
 					const analysis = await this.analyzeWeeklyContent(entries);
 					await this.createWeeklyReflectionNote(analysis);
-					new Notice("Weekly analysis complete!", 100000);
+					new Notice("Weekly analysis complete!", 3000);
 				} catch (error) {
 					const message =
 						error instanceof Error
 							? error.message
 							: "Unknown error";
-					new Notice(`Weekly analysis failed: ${message}`, 100000);
+					new Notice(`Weekly analysis failed: ${message}`, 5000);
 				} finally {
 					statusBar.remove();
 				}
@@ -213,24 +227,21 @@ export default class Recapitan extends Plugin {
 		}
 	}
 
-    /**
-	 * Analyzes the content.
-	 * @param content
-	 * @returns
-	 */
 	private async analyzeContent(content: string): Promise<string> {
-		const statusBar = this.addStatusBarItem();
-		statusBar.setText("Analyzing content...");
-
 		try {
-			content = this.privacyManager.removePrivateSections(content);
+			// Remove private sections as before
+			const sanitizedContent =
+				this.privacyManager.removePrivateSections(content);
+
+			// Use your existing AIService
 			return await this.aiService.analyze(
-				content,
+				sanitizedContent,
 				this.settings.reflectionTemplate,
 				this.settings.communicationStyle
 			);
-		} finally {
-			statusBar.remove();
+		} catch (error) {
+			console.error("Error during content analysis:", error);
+			throw error; // Let the streaming manager handle the error
 		}
 	}
 }

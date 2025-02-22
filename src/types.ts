@@ -13,6 +13,12 @@ export interface AIReflectionSettings {
     outputFormat: string;
 }
 
+export interface StreamingOptions {
+    streamingUpdateInterval?: number;
+    loadingIndicatorPosition?: 'top' | 'bottom' | 'cursor';
+    chunkSize?: number;
+}
+
 // Define union types
 type AIProvider = 'openai' | 'ollama';
 type AnalysisSchedule = 'daily' | 'manual';
