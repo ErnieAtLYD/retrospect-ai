@@ -1,5 +1,5 @@
 .recapitan-loading {
-    display: inline-block;
+    /* display: inline-block;
     width: 20px;
     height: 20px;
     border: 2px solid var(--background-modifier-border);
@@ -8,11 +8,21 @@
     animation: recapitan-spin 1s linear infinite;
     position: absolute;
     right: 20px;
-    top: 20px;
+    top: 20px; */
+
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--background-modifier-border);
+    border-top: 2px solid var(--text-accent);
+    border-radius: 50%;
+    animation: recapitan-spin 1s linear infinite;
+    z-index: 1000;
 }
 
 @keyframes recapitan-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
