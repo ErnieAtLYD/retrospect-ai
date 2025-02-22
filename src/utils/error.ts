@@ -1,20 +1,26 @@
+/**
+ * API error.
+ */
 export class APIError extends Error {
-    constructor(message: string, public statusCode: number) {
-        super(message);
-        this.name = 'APIError';
-    }
+	constructor(message: string, public statusCode: number) {
+		super(message);
+		this.name = "APIError";
+	}
 }
 
+/**
+ * AI service error.
+ */
 export class AIServiceError extends Error {
-    public readonly isRetryable: boolean;
-    public override readonly cause?: Error;
+	public readonly isRetryable: boolean;
+	public override readonly cause?: Error;
 
-    constructor(message: string, cause?: Error, retryable = true) {
-        super(message);
-        this.name = 'AIServiceError';
-        this.isRetryable = retryable;
-        this.cause = cause;
-        Error.captureStackTrace(this, AIServiceError);
+	constructor(message: string, cause?: Error, retryable = true) {
+		super(message);
+		this.name = "AIServiceError";
+		this.isRetryable = retryable;
+		this.cause = cause;
+		Error.captureStackTrace(this, AIServiceError);
     }
 }
 

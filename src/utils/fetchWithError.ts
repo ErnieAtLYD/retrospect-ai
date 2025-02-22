@@ -1,5 +1,8 @@
-// fetchWithError.ts
-
+/**
+ * Fetch with error.
+ * @param options
+ * @returns
+ */
 export async function fetchWithError<T>(options: {
 	url: string;
 	method: string;
