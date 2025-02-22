@@ -1,34 +1,45 @@
 // src/types.ts
+
+import { App } from 'obsidian';
+import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
+import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from './prompts/weeklyReflectionPrompt';
+
+export interface AIReflectionSettings {
+    aiProvider: string;
+    apiKey: string;
+    analysisSchedule: string;
+    communicationStyle: string;
+    privacyLevel: string;
+    outputFormat: string;
+}
+
+// Define union types
+type AIProvider = 'openai' | 'ollama';
+type AnalysisSchedule = 'daily' | 'manual';
+type CommunicationStyle = 'direct' | 'gentle';
+
+// Update the RecapitanSettings interface
 export interface RecapitanSettings {
     apiKey: string;
-    aiProvider: 'openai' | 'ollama';
+    aiProvider: AIProvider;
     model: string;
     reflectionTemplate: string;
     weeklyReflectionTemplate: string;
-    analysisSchedule: 'daily' | 'manual';
-    communicationStyle: 'direct' | 'gentle';
+    analysisSchedule: AnalysisSchedule;
+    communicationStyle: CommunicationStyle;
     privateMarker: string;
     ollamaHost: string;
 }
 
-import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
-import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from './prompts/weeklyReflectionPrompt';
 
-const Settings = {
-    apiKey: '',
-    aiProvider: 'openai' | 'ollama',
-    model: 'gpt-4',
-    analysisSchedule: 'daily' | 'manual',
-    communicationStyle: 'direct' | 'gentle',
-    privateMarker: ':::private'
-}
-
-
-
-export interface RecapitanSettings extends Settings {
-    reflectionTemplate: string;
-    weeklyReflectionTemplate: string;
-    ollamaHost: string;
+// Extend the App interface to include statusBar
+export interface ExtendedApp extends App {
+	statusBar: {
+		addStatusBarItem: () => {
+			setText: (text: string) => void;
+			remove: () => void;
+		};
+	};
 }
 
 export const DEFAULT_SETTINGS: RecapitanSettings = {
