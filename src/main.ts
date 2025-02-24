@@ -227,6 +227,11 @@ export default class Recapitan extends Plugin {
 		}
 	}
 
+	/**
+	 * Analyzes the content.
+	 * @param content
+	 * @returns
+	 */
 	private async analyzeContent(content: string): Promise<string> {
 		try {
 			// Remove private sections as before

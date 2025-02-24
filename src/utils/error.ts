@@ -2,7 +2,7 @@
  * API error.
  */
 export class APIError extends Error {
-	constructor(message: string, public statusCode: number) {
+	constructor(message: string, public status: number) {
 		super(message);
 		this.name = "APIError";
 	}
@@ -11,19 +11,23 @@ export class APIError extends Error {
 /**
  * AI service error.
  */
-export class AIServiceError extends Error {
-	public readonly isRetryable: boolean;
-	public override readonly cause?: Error;
+export class AIServiceError<T extends Error> extends Error {
+    public readonly isRetryable: boolean;
+    public readonly cause?: T;
 
-	constructor(message: string, cause?: Error, retryable = true) {
-		super(message);
-		this.name = "AIServiceError";
-		this.isRetryable = retryable;
-		this.cause = cause;
-		Error.captureStackTrace(this, AIServiceError);
-	}
+    constructor(message: string, cause?: T, retryable = true) {
+        super(message);
+        this.name = 'AIServiceError';
+        this.isRetryable = retryable;
+        this.cause = cause;
+        Error.captureStackTrace(this, AIServiceError);
+    }
 }
 
+/**
+ * Logs an error to the console.
+ * @param error - The error to log.
+ */
 export function logError(error: Error): void {
 	console.error(
 		`[${new Date().toISOString()}] ${error.name}: ${error.message}`

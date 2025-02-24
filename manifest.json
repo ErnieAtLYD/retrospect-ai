@@ -3,7 +3,11 @@
 	"name": "Recapitan",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Recapitan provides AI-powered analysis of daily and weekly notes, helping users reflect on their accomplishments, challenges, and growth.",
+	"description": "AI-powered reflection and analysis plugin that helps you gain deeper insights from your notes and journal entries.",
 	"author": "Ernie Hsiung",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"fundingUrl": {
+		"GitHub Sponsor": "https://github.com/sponsors/erniehsiung",
+		"Buy Me a Coffee": "https://www.buymeacoffee.com/erniehsiung"
+	}
 }

@@ -1,11 +1,13 @@
 import { AIServiceError } from './error'; // Adjust the path as necessary
 
+// Define retry options
 export interface RetryOptions {
     maxAttempts: number;
     delayMs: number;
     backoffFactor: number;
 }
 
+// Define default retry options
 export const defaultRetryOptions: RetryOptions = {
     maxAttempts: 3,
     delayMs: 1000,
@@ -20,6 +22,12 @@ function isTransientError(error: Error): boolean {
     return transientErrorMessages.some(msg => error.message.includes(msg));
 }
 
+/**
+ * Retry an async operation with exponential backoff.
+ * @param operation - The async operation to retry.
+ * @param options - The retry options.
+ * @returns The result of the operation.
+ */
 export async function retry<T>(
     operation: () => Promise<T>,
     options: Partial<RetryOptions> = {}
