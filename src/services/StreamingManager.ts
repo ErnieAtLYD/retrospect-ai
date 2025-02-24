@@ -121,9 +121,9 @@ export class StreamingEditorManager {
     }
 
 	/**
-	 * 
-	 * @param line 
-	 * @param ch 
+	 * Set the cursor safely.
+	 * @param line - The line to set the cursor to.
+	 * @param ch - The character to set the cursor to.
 	 */
 	private async setCursorSafely (line: number, ch: number): Promise<void> {
 		try {
