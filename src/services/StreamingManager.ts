@@ -112,25 +112,33 @@ export class StreamingEditorManager {
             const newContent = currentLines.join('\n').trimEnd();
             this.editor.setValue(newContent);
             
-            // Try to set cursor position safely
-            try {
-                const lineCount = this.editor.lineCount();
-                if (currentLine < lineCount) {
-                    const currentLineContent = this.editor.getLine(currentLine) || '';
-                    this.editor.setCursor({
-                        line: currentLine,
-                        ch: Math.min(line.length, currentLineContent.length)
-                    });
-                }
-            } catch (e) {
-                // If cursor setting fails, don't throw
-                console.debug('Could not set cursor position', e);
-            }
+            // Set the cursor safely using the helper method
+			this.setCursorSafely(currentLine, line.length)
             
             await new Promise(resolve => setTimeout(resolve, updateInterval));
             currentLine++;
         }
     }
+
+	/**
+	 * 
+	 * @param line 
+	 * @param ch 
+	 */
+	private async setCursorSafely (line: number, ch: number): Promise<void> {
+		try {
+			const lineCount = this.editor.lineCount();
+			if (line < lineCount) {
+				const currentLineContent = this.editor.getLine(line) || '';
+				this.editor.setCursor({
+					line,
+					ch: Math.min(ch, currentLineContent.length)
+				});
+			}
+		} catch (e) {
+			console.debug('Could not set cursor position', e);
+		}
+	}
 
 	/**
 	 * Replace the content of the editor with the given content.
