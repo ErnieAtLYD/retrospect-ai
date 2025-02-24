@@ -1,4 +1,5 @@
 import { Editor, EditorPosition } from "obsidian";
+import { StreamingAnalysisOptions, LoadingIndicatorPosition } from "types";
 
 /**
  * Manages the streaming of content to the editor.
@@ -33,11 +34,7 @@ export class StreamingEditorManager {
 	 */
 	async streamAnalysis(
 		analysisPromise: Promise<string>,
-		options: {
-			streamingUpdateInterval?: number;
-			loadingIndicatorPosition?: "top" | "bottom" | "cursor";
-			chunkSize?: number;
-		} = {}
+		options: StreamingAnalysisOptions = {}
 	): Promise<void> {
 		const {
 			streamingUpdateInterval = 100,
@@ -169,7 +166,7 @@ export class StreamingEditorManager {
 	 * @param position - The position to start the loading indicator.
 	 */
 	private async startLoadingIndicator(
-		position: "top" | "bottom" | "cursor"
+		position: LoadingIndicatorPosition
 	): Promise<void> {
 		let insertLine: number;
 
