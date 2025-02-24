@@ -92,14 +92,14 @@ export class StreamingEditorManager {
         const currentLines = currentContent.split('\n');
         
         // Ensure we have enough lines
-        while (currentLines.length <= currentLine + lines.length) {
+        while (currentLines.length <= currentLine + lines.length - 1) {
             currentLines.push('');
         }
         
         // Stream each line
         for (const line of lines) {
             currentLines[currentLine] = line;
-            this.editor.setValue(currentLines.join('\n'));
+            this.editor.setValue(currentLines.join('\n').trimEnd());
             
             // Update cursor position
             this.editor.setCursor({
