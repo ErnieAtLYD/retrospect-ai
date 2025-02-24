@@ -1,4 +1,4 @@
-import { Editor, EditorPosition, App } from "obsidian";
+import { Editor, EditorPosition } from "obsidian";
 
 /**
  * Manages the streaming of content to the editor.
