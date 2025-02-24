@@ -87,32 +87,27 @@ export class StreamingEditorManager {
         const lines = content.split('\n');
         let currentLine = startLine;
         
+        // Get current content
+        const currentContent = this.editor.getValue();
+        const currentLines = currentContent.split('\n');
+        
+        // Ensure we have enough lines
+        while (currentLines.length <= currentLine + lines.length) {
+            currentLines.push('');
+        }
+        
+        // Stream each line
         for (const line of lines) {
-            // Get current content
-            const currentContent = this.editor.getValue();
-            const currentLines = currentContent.split('\n');
+            currentLines[currentLine] = line;
+            this.editor.setValue(currentLines.join('\n'));
             
-            // Ensure we have enough lines
-            while (currentLines.length <= currentLine) {
-                currentLines.push('');
-            }
-
-            // Stream each character
-            let currentLineContent = currentLines[currentLine];
-            for (const char of line) {
-                currentLineContent += char;
-                currentLines[currentLine] = currentLineContent;
-                this.editor.setValue(currentLines.join('\n'));
-                
-                // Update cursor position
-                this.editor.setCursor({
-                    line: currentLine,
-                    ch: currentLineContent.length
-                });
-                
-                await new Promise(resolve => setTimeout(resolve, updateInterval));
-            }
+            // Update cursor position
+            this.editor.setCursor({
+                line: currentLine,
+                ch: line.length
+            });
             
+            await new Promise(resolve => setTimeout(resolve, updateInterval));
             currentLine++;
         }
     }
