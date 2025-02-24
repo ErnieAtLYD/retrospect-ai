@@ -8,9 +8,6 @@ export class APIError extends Error {
 	}
 }
 
-/**
- * AI service error.
- */
 export class AIServiceError<T extends Error> extends Error {
     public readonly isRetryable: boolean;
     public readonly cause?: T;
