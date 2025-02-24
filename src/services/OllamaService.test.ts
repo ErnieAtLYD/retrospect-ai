@@ -1,8 +1,8 @@
-import { OllamaService } from "../OllamaService";
-import { retry } from "../../utils/retry";
+import { OllamaService } from "../services/OllamaService";
+import { retry } from "../utils/retry";
 
 // Mock the retry utility
-jest.mock("../../utils/retry");
+jest.mock("../utils/retry");
 const mockRetry = retry as jest.MockedFunction<typeof retry>;
 
 describe("OllamaService", () => {
@@ -36,7 +36,7 @@ describe("OllamaService", () => {
 			const expectedBody = {
 				model: mockModel,
 				prompt: "You are an insightful journaling assistant. Provide direct and honest feedback.\n\nTest template\n\nContent to analyze:\nTest content",
-				stream: false
+				stream: false,
 			};
 
 			expect(result).toBe("Analysis result");
@@ -47,7 +47,7 @@ describe("OllamaService", () => {
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify(expectedBody)
+					body: JSON.stringify(expectedBody),
 				}
 			);
 		});
@@ -78,11 +78,11 @@ describe("OllamaService", () => {
 
 			await expect(
 				ollamaService.analyze("Test content", "Test template", "direct")
-).rejects.toMatchObject({
-        name: "AIServiceError",
-        message: "Failed to communicate with Ollama",
-        isRetryable: true,
-});
+			).rejects.toMatchObject({
+				name: "AIServiceError",
+				message: "Failed to communicate with Ollama",
+				isRetryable: true,
+			});
 		});
 
 		it("should throw AIServiceError with retryable=true on server error", async () => {
@@ -94,11 +94,11 @@ describe("OllamaService", () => {
 
 			await expect(
 				ollamaService.analyze("Test content", "Test template", "direct")
-).rejects.toMatchObject({
-        name: "AIServiceError",
-        message: "Ollama request failed: Internal Server Error",
-        isRetryable: true,
-});
+			).rejects.toMatchObject({
+				name: "AIServiceError",
+				message: "Ollama request failed: Internal Server Error",
+				isRetryable: true,
+			});
 		});
 
 		it("should throw AIServiceError with retryable=false on empty response", async () => {
@@ -109,11 +109,11 @@ describe("OllamaService", () => {
 
 			await expect(
 				ollamaService.analyze("Test content", "Test template", "direct")
-).rejects.toMatchObject({
-        name: "AIServiceError",
-        message: "No content in response",
-        isRetryable: false,
-});
+			).rejects.toMatchObject({
+				name: "AIServiceError",
+				message: "No content in response",
+				isRetryable: false,
+			});
 		});
 
 		it("should use retry utility with correct options", async () => {

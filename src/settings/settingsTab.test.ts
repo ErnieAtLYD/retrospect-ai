@@ -11,30 +11,20 @@ import {
 } from "obsidian";
 import { jest } from "@jest/globals";
 
-import { AIReflectionSettings } from "../../types";
+import { MockPlugin } from '../__mocks__/MockPlugin'
+import { AIReflectionSettings } from "../types";
 
-// Mock Plugin class
-class MockPlugin extends Plugin {
-	saveData: (data: any) => Promise<void>;
-	loadData: () => Promise<any>;
 
-	constructor(app: App, manifest: any) {
-		super(app, manifest);
-		// Initialize with basic mock functions
-		this.saveData = async () => {};
-		this.loadData = async () => ({});
-	}
-}
 
 // Mock SettingsTab class that avoids DOM operations
 class SettingsTab extends PluginSettingTab {
 	settings: AIReflectionSettings;
 	plugin: MockPlugin;
 
-	constructor(app: App, plugin: MockPlugin, settings: AIReflectionSettings) {
+	constructor(app: App, plugin: Plugin, settings: AIReflectionSettings) {
 		super(app, plugin);
 		this.settings = settings;
-		this.plugin = plugin;
+		this.plugin = plugin as MockPlugin;
 	}
 
 	display(): void {
@@ -102,11 +92,7 @@ describe("SettingsTab", () => {
 		};
 
 		// Create mock plugin
-		mockPlugin = new MockPlugin(mockApp as App, {
-			id: "test-plugin",
-			name: "Test Plugin",
-			version: "1.0.0",
-		});
+		mockPlugin = new MockPlugin(mockApp as App);
 
 		// Setup spy on plugin methods
 		jest.spyOn(mockPlugin, "saveData").mockImplementation(async () => {});
@@ -125,7 +111,7 @@ describe("SettingsTab", () => {
 		// Create settings tab instance
 		settingsTab = new SettingsTab(
 			mockApp as App,
-			mockPlugin,
+			mockPlugin as Plugin,
 			initialSettings
 		);
 	});
