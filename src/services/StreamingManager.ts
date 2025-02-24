@@ -92,17 +92,34 @@ export class StreamingEditorManager {
         if (!content) return;
 
         const lines = content.split('\n');
-        let currentContent = this.editor.getValue();
+        const currentContent = this.editor.getValue();
+        let newContent = currentContent;
         
         // Stream each line
-        for (const line of lines) {
-			currentContent += line + '\n';
-			await this.replaceContent(currentContent)
-			await new Promise(resolve => setTimeout(resolve, updateInterval));
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (i === 0 && startLine > 0) {
+                // For first line when inserting after existing content
+                newContent = currentContent + line;
+            } else if (i === 0) {
+                // For first line when starting fresh
+                newContent = line;
+            } else {
+                // For subsequent lines
+                newContent += '\n' + line;
+            }
+            
+            this.editor.setValue(newContent);
+            
+            // Update cursor position
+            const cursorLine = startLine + i;
+            const cursorCh = line.length;
+            this.editor.setCursor({ line: cursorLine, ch: cursorCh });
+            
+            if (i < lines.length - 1) { // Don't wait after the last line
+                await new Promise(resolve => setTimeout(resolve, updateInterval));
+            }
         }
-
-		// Set cursor to the end of content
-		this.setCursorSafely(startLine + lines.length - 1, lines[lines.length - 1].length);
     }
 
 	/**
@@ -131,22 +148,7 @@ export class StreamingEditorManager {
 	 */
 	private async replaceContent(content: string): Promise<void> {
 		if (!this.initialCursorPos || this.analysisStartLine === null) return;
-
-		const startPosition = {
-			line: this.analysisStartLine,
-			ch: 0,
-		};
-
-		// Find the end of the current content
-		const currentText = this.editor.getValue();
-		const lines = currentText.split("\n");
-		const endPosition = {
-			line: lines.length,
-			ch: lines[lines.length - 1].length,
-		};
-
-		// Replace the entire analysis section
-		this.editor.replaceRange(content, startPosition, endPosition);
+		this.editor.setValue(content);
 	}
 
 	/**
