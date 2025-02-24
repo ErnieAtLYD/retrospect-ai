@@ -81,7 +81,7 @@ export class StreamingEditorManager {
 	 * @param updateInterval - The interval to update the content.
 	 * @param startLine - The line to start the content.
 	 */
-    async streamContent(content: string, updateInterval: number = 50, startLine: number = 0): Promise<void> {
+    async streamContent(content: string, updateInterval = 50, startLine = 0): Promise<void> {
         if (!content) return;
 
         const lines = content.split('\n');
@@ -116,38 +116,6 @@ export class StreamingEditorManager {
             currentLine++;
         }
     }
-
-
-
-	/**
-	 * Chunk the response into smaller chunks of the specified size.
-	 * @param response - The response to chunk.
-	 * @param chunkSize - The size of the chunks to create.
-	 * @returns An array of chunks.
-	 */
-	private chunkResponse(response: string, chunkSize: number): string[] {
-		const words = response.split(" ");
-		const chunks: string[] = [];
-		let currentChunk: string[] = [];
-		let currentSize = 0;
-
-		for (const word of words) {
-			if (currentSize + word.length > chunkSize) {
-				chunks.push(currentChunk.join(" ") + " ");
-				currentChunk = [word];
-				currentSize = word.length;
-			} else {
-				currentChunk.push(word);
-				currentSize += word.length + 1; // +1 for space
-			}
-		}
-
-		if (currentChunk.length > 0) {
-			chunks.push(currentChunk.join(" "));
-		}
-
-		return chunks;
-	}
 
 	/**
 	 * Replace the content of the editor with the given content.
