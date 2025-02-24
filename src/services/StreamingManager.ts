@@ -91,21 +91,24 @@ export class StreamingEditorManager {
         const currentContent = this.editor.getValue();
         const currentLines = currentContent.split('\n');
         
-        // Ensure we have enough lines
-        while (currentLines.length <= currentLine + lines.length - 1) {
-            currentLines.push('');
-        }
-        
         // Stream each line
         for (const line of lines) {
-            currentLines[currentLine] = line;
-            this.editor.setValue(currentLines.join('\n').trimEnd());
+            // Ensure we have enough lines by adding empty lines if needed
+            while (currentLines.length <= currentLine) {
+                currentLines.push('');
+            }
             
-            // Update cursor position
-            this.editor.setCursor({
-                line: currentLine,
-                ch: line.length
-            });
+            currentLines[currentLine] = line;
+            const newContent = currentLines.join('\n').trimEnd();
+            this.editor.setValue(newContent);
+            
+            // Only set cursor if the line exists
+            if (currentLine < this.editor.lineCount()) {
+                this.editor.setCursor({
+                    line: currentLine,
+                    ch: line.length
+                });
+            }
             
             await new Promise(resolve => setTimeout(resolve, updateInterval));
             currentLine++;
