@@ -54,24 +54,31 @@ export class StreamingEditorManager {
 			// Get the analysis result
 			const fullResponse = await analysisPromise;
 
-			// Initial header setup
-			await this.replaceContent("\n\n## AI Reflection\n");
+			// Stop the loading indicator before adding new content
+			await this.stopLoadingIndicator();
 
+			// Add header and stream content from the same starting position
+			const startLine = this.analysisStartLine || 0;
+			const headerAndContent = `## AI Reflection\n${fullResponse}`;
+			
 			// Stream the content
 			await this.streamContent(
-				fullResponse,
+				headerAndContent,
 				streamingUpdateInterval,
-				chunkSize
+				startLine
 			);
 		} catch (error) {
 			console.error("Error during streaming analysis:", error);
 			await this.replaceContent(
-				`\n\nError during analysis: ${
+				`\nError during analysis: ${
 					error instanceof Error ? error.message : "Unknown error"
 				}`
 			);
 		} finally {
-			await this.stopLoadingIndicator();
+			// Ensure loading indicator is cleaned up in case of errors
+			if (this.loadingInterval) {
+				await this.stopLoadingIndicator();
+			}
 		}
 	}
 
