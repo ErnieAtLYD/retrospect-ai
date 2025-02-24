@@ -1,4 +1,4 @@
-import { Editor, EditorPosition, App } from "obsidian";
+import { Editor, EditorPosition } from "obsidian";
 
 /**
  * Manages the streaming of content to the editor.
@@ -54,24 +54,31 @@ export class StreamingEditorManager {
 			// Get the analysis result
 			const fullResponse = await analysisPromise;
 
-			// Initial header setup
-			await this.replaceContent("\n\n## AI Reflection\n");
+			// Stop the loading indicator before adding new content
+			await this.stopLoadingIndicator();
 
+			// Add header and stream content from the same starting position
+			const startLine = this.analysisStartLine || 0;
+			const headerAndContent = `## AI Reflection\n${fullResponse}`;
+			
 			// Stream the content
 			await this.streamContent(
-				fullResponse,
+				headerAndContent,
 				streamingUpdateInterval,
-				chunkSize
+				startLine
 			);
 		} catch (error) {
 			console.error("Error during streaming analysis:", error);
 			await this.replaceContent(
-				`\n\nError during analysis: ${
+				`\nError during analysis: ${
 					error instanceof Error ? error.message : "Unknown error"
 				}`
 			);
 		} finally {
-			await this.stopLoadingIndicator();
+			// Ensure loading indicator is cleaned up in case of errors
+			if (this.loadingInterval) {
+				await this.stopLoadingIndicator();
+			}
 		}
 	}
 
@@ -87,35 +94,51 @@ export class StreamingEditorManager {
         const lines = content.split('\n');
         let currentLine = startLine;
         
+        // Get current content
+        const currentContent = this.editor.getValue();
+        const currentLines = currentContent.split('\n');
+        
+        // Stream each line
         for (const line of lines) {
-            // Get current content
-            const currentContent = this.editor.getValue();
-            const currentLines = currentContent.split('\n');
-            
-            // Ensure we have enough lines
+            // Ensure we have enough lines by adding empty lines if needed
             while (currentLines.length <= currentLine) {
                 currentLines.push('');
             }
-
-            // Stream each character
-            let currentLineContent = currentLines[currentLine];
-            for (const char of line) {
-                currentLineContent += char;
-                currentLines[currentLine] = currentLineContent;
-                this.editor.setValue(currentLines.join('\n'));
-                
-                // Update cursor position
-                this.editor.setCursor({
-                    line: currentLine,
-                    ch: currentLineContent.length
-                });
-                
-                await new Promise(resolve => setTimeout(resolve, updateInterval));
-            }
             
+            // Update the line
+            currentLines[currentLine] = line;
+            
+            // Set the content
+            const newContent = currentLines.join('\n').trimEnd();
+            this.editor.setValue(newContent);
+            
+            // Set the cursor safely using the helper method
+			this.setCursorSafely(currentLine, line.length)
+            
+            await new Promise(resolve => setTimeout(resolve, updateInterval));
             currentLine++;
         }
     }
+
+	/**
+	 * 
+	 * @param line 
+	 * @param ch 
+	 */
+	private async setCursorSafely (line: number, ch: number): Promise<void> {
+		try {
+			const lineCount = this.editor.lineCount();
+			if (line < lineCount) {
+				const currentLineContent = this.editor.getLine(line) || '';
+				this.editor.setCursor({
+					line,
+					ch: Math.min(ch, currentLineContent.length)
+				});
+			}
+		} catch (e) {
+			console.debug('Could not set cursor position', e);
+		}
+	}
 
 	/**
 	 * Replace the content of the editor with the given content.
