@@ -31,4 +31,8 @@ export class AnalysisManager {
         this.cacheManager.set(cacheKey, result);
         return result;
     }
+
+    clearCache(): void {
+        this.cacheManager.clear();
+    }
 }
