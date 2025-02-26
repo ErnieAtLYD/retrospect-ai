@@ -21,8 +21,20 @@ export class OllamaService implements AIService {
 		backoffFactor: 2,
 	};
 
+	/**
+	 * Constructs a new OllamaService instance.
+	 * @param host - The host URL of the Ollama server.
+	 * @param model - The model to use for the analysis.
+	 */
 	constructor(private host: string, private model: string) {}
 
+	/**
+	 * Analyzes the content of a journal entry using Ollama.
+	 * @param content - The content of the journal entry to analyze.
+	 * @param template - The template to use for the analysis.
+	 * @param style - The style of the analysis.
+	 * @returns A promise that resolves to the analysis result.
+	 */
 	async analyze(
 		content: string,
 		template: string,
