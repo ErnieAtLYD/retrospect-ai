@@ -6,9 +6,11 @@ interface CacheEntry {
 export class CacheManager {
 	private cache: Map<string, CacheEntry> = new Map();
 	private ttlMillis: number;
+	private maxSize: number;
 
-	constructor(ttlMinutes: number) {
+	constructor(ttlMinutes: number, maxSize: number = 100) {
 		this.ttlMillis = ttlMinutes * 60 * 1000;
+		this.maxSize = maxSize;
 	}
 
 	/**
@@ -47,7 +49,29 @@ export class CacheManager {
 	 * @param key - The key to set the cached value for
 	 * @param value - The value to set in the cache
 	 */	
+	private evictLRU(): void {
+		if (this.cache.size <= this.maxSize) return;
+		
+		let oldestKey: string | null = null;
+		let oldestTime = Infinity;
+		
+		for (const [key, entry] of this.cache.entries()) {
+			if (entry.timestamp < oldestTime) {
+				oldestTime = entry.timestamp;
+				oldestKey = key;
+			}
+		}
+		
+		if (oldestKey) {
+			this.cache.delete(oldestKey);
+		}
+	}
+
 	set(key: string, value: string): void {
+		if (this.cache.size >= this.maxSize) {
+			this.evictLRU();
+		}
+		
 		this.cache.set(key, {
 			value,
 			timestamp: Date.now(),

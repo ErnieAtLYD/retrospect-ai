@@ -9,9 +9,10 @@ export class AnalysisManager {
     constructor(
         private aiService: AIService,
         private privacyManager: PrivacyManager,
-        cacheTTLMinutes: number = 60
+        cacheTTLMinutes: number = 60,
+        cacheMaxSize: number = 100
     ) {
-        this.cacheManager = new CacheManager(cacheTTLMinutes);
+        this.cacheManager = new CacheManager(cacheTTLMinutes, cacheMaxSize);
     }
 
     async analyzeContent(
