@@ -152,6 +152,22 @@ export class RecapitanSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName('Maximum Cache Size')
+			.setDesc('Maximum number of entries to keep in cache')
+			.addText((text) =>
+				text
+					.setPlaceholder('100')
+					.setValue(String(this.plugin.settings.cacheMaxSize))
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							const numValue = parseInt(value) || 100;
+							this.plugin.settings.cacheMaxSize = numValue;
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Daily Reflection Template")
 			.setDesc("Template for daily AI reflection prompts")
 			.addTextArea((text) => {
