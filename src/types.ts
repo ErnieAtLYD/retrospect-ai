@@ -46,6 +46,7 @@ export interface RecapitanSettings {
     privateMarker: string;
     ollamaHost: string;
     cacheTTLMinutes: number;
+    cacheMaxSize: number;
 }
 
 
@@ -69,5 +70,6 @@ export const DEFAULT_SETTINGS: RecapitanSettings = {
     communicationStyle: 'direct',
     privateMarker: ':::private',
     ollamaHost: 'http://localhost:11434',
-    cacheTTLMinutes: 60
+    cacheTTLMinutes: 60,
+    cacheMaxSize: 100
 }
