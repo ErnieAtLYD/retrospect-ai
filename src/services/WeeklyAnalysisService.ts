@@ -13,6 +13,10 @@ export class WeeklyAnalysisService {
 		private aiService: AIService
 	) {}
 
+	/**
+	 * Run the weekly analysis process
+	 * @returns Promise<void>
+	 */
 	async runWeeklyAnalysis(): Promise<void> {
 		const entries = await this.getPastWeekEntries();
 		if (entries.length === 0) {
@@ -22,6 +26,10 @@ export class WeeklyAnalysisService {
 		await this.createWeeklyReflectionNote(analysis);
 	}
 
+	/**
+	 * Get all journal entries from the past week
+	 * @returns Array of objects with date and content
+	 */
 	async getPastWeekEntries(): Promise<{ date: string; content: string }[]> {
 		const files = this.app.vault.getMarkdownFiles() as TFile[];
 		const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -46,6 +54,11 @@ export class WeeklyAnalysisService {
 		);
 	}
 
+	/**
+	 * Analyze the weekly content of journal entries
+	 * @param entries Array of objects with date and content
+	 * @returns Analyzed content
+	 */
 	async analyzeWeeklyContent(
 		entries: { date: string; content: string }[]
 	): Promise<string> {

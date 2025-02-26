@@ -93,10 +93,7 @@ export default class Recapitan extends Plugin {
 				}
 
 				const content = editor.getValue();
-				const streamingManager = new StreamingEditorManager(
-					editor,
-					this.app
-				);
+				const streamingManager = new StreamingEditorManager(editor);
 
 				try {
 					// Create a promise for the analysis

@@ -14,7 +14,11 @@ export const defaultRetryOptions: RetryOptions = {
     backoffFactor: 2
 };
 
-// Define a function to identify transient errors
+/**
+ * Checks if an error is transient.
+ * @param error - The error to check.
+ * @returns True if the error is transient, false otherwise.
+ */
 function isTransientError(error: Error): boolean {
     // Example logic: check error message or code
     // This should be customized based on your application's error handling
@@ -36,6 +40,7 @@ export async function retry<T>(
     let lastError: Error | null = null;
     let delay = finalOptions.delayMs;
 
+    // Retry the operation up to maxAttempts times
     for (let attempt = 1; attempt <= finalOptions.maxAttempts; attempt++) {
         try {
             return await operation();
@@ -55,7 +60,10 @@ export async function retry<T>(
                 break;
             }
 
+            // Wait for the delay before the next attempt
             await new Promise(resolve => setTimeout(resolve, delay));
+
+            // Increase the delay for the next attempt
             delay *= finalOptions.backoffFactor;
         }
     }

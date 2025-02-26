@@ -1,7 +1,11 @@
 /**
- * Fetch with error.
- * @param options
- * @returns
+ * Fetches data from a URL with error handling.
+ * @param options - The fetch options.
+ * @param options.url - The URL to fetch from.
+ * @param options.method - The HTTP method to use.
+ * @param options.headers - The headers to send with the request.
+ * @param options.body - The body to send with the request.
+ * @returns The parsed JSON response.
  */
 export async function fetchWithError<T>(options: {
 	url: string;
