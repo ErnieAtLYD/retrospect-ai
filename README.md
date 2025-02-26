@@ -1,94 +1,144 @@
-# Obsidian Sample Plugin
+# Retrospect AI Plugin for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+> AI-powered insights for your daily journals and weekly reviews in Obsidian.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/username/obsidian-ai-reflection?style=flat-square)](https://github.com/username/obsidian-ai-reflection/releases/latest)
+[![GitHub all releases](https://img.shields.io/github/downloads/username/obsidian-ai-reflection/total?style=flat-square)](https://github.com/username/obsidian-ai-reflection/releases)
+[![License](https://img.shields.io/github/license/username/obsidian-ai-reflection?style=flat-square)](LICENSE)
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Overview
 
-## First time developing plugins?
+The AI Reflection Plugin provides thoughtful, AI-powered analysis of your daily journal entries and weekly reviews within Obsidian. It helps identify patterns, track tasks, and offer personalized insights to support your personal growth journey.
 
-Quick starting guide for new plugin devs:
+![Plugin Screenshot](assets/screenshot.png)
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Features
 
-## Releasing new releases
+- **Daily Journal Analysis**: Get insights on individual journal entries, including completed tasks and key takeaways
+- **Weekly Synthesis**: Discover patterns and trends across your week with intelligent cross-referencing
+- **Privacy-Focused**: Choose between cloud-based or local AI models, with support for private content sections
+- **Customizable Output**: Configure the analysis style, detail level, and formatting to suit your preferences
+- **Seamless Integration**: Works directly within your existing Obsidian workflow
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## Installation
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+### From Obsidian Community Plugins
 
-## Adding your plugin to the community plugin list
+1. Open Obsidian
+2. Go to Settings → Community plugins
+3. Turn off Safe mode
+4. Click "Browse" and search for "AI Reflection"
+5. Install the plugin and enable it
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Manual Installation
 
-## How to use
+1. Download the latest release from the [releases page](https://github.com/username/obsidian-ai-reflection/releases)
+2. Extract the ZIP file into your Obsidian vault's `.obsidian/plugins/` directory
+3. Enable the plugin in Obsidian's settings
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+## Configuration
 
-## Manually installing the plugin
+After installation, you'll need to:
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+1. Open the plugin settings
+2. Add your AI provider API key (if using cloud-based models)
+3. Configure your preferred analysis settings
+4. Optionally customize the output format
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+![Settings Screenshot](assets/settings.png)
 
-## Funding URL
+## Usage
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Analyzing Daily Notes
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+1. Write your daily journal entry as usual
+2. Click the AI Reflection button in the ribbon or use the command palette
+3. Review the generated insights at the bottom of your note
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+### Weekly Analysis
+
+1. Create a weekly note (manually or using Obsidian's templates)
+2. Use the "Generate Weekly Analysis" command
+3. The plugin will analyze all entries from the current week and provide a synthesis
+
+### Privacy Controls
+
+To mark sections as private (excluded from analysis):
+
+```markdown
+:::private
+This content won't be analyzed by the AI.
+:::
 ```
 
-If you have multiple URLs, you can also do:
+## Output Format
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+The plugin generates structured insights in the following format:
+
+```markdown
+## AI Reflection
+
+### 🔍 Insights
+- Key takeaways from your entry
+
+### 🚀 Suggestions
+- Personalized advice for improvement
+
+### 📌 Unfinished Tasks
+- Highlighted incomplete tasks
+
+### 💡 Words of Wisdom
+- Productivity tips and motivational notes
 ```
 
-## API Documentation
+## API Providers
 
-See https://github.com/obsidianmd/obsidian-api
+The plugin currently supports:
+
+- OpenAI (default)
+- Self-hosted models (e.g., Ollama)
+- *More providers coming soon*
+
+## Development
+
+### Prerequisites
+
+- Node.js and npm
+- Obsidian development environment
+
+### Setup
+
+1. Clone this repository
+2. Run `npm install`
+3. Run `npm run dev` for development build
+
+## Roadmap
+
+- [x] Basic plugin setup and OpenAI integration
+- [x] Daily note analysis
+- [ ] Weekly synthesis
+- [ ] Local AI model support
+- [ ] Additional AI provider integrations
+- [ ] Enhanced visualization features
+
+See the [project board](https://github.com/username/obsidian-ai-reflection/projects) for more details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- [Obsidian](https://obsidian.md/) for the amazing knowledge management system
+- The Obsidian community for inspiration and support
+- [OpenAI](https://openai.com/) for their API
