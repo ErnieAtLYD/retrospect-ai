@@ -13,10 +13,20 @@ export interface AIReflectionSettings {
     outputFormat: string;
 }
 
+export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
+
 export interface StreamingOptions {
     streamingUpdateInterval?: number;
-    loadingIndicatorPosition?: 'top' | 'bottom' | 'cursor';
+    loadingIndicatorPosition?: LoadingIndicatorPosition;
     chunkSize?: number;
+}
+
+export interface StreamingAnalysisOptions {
+    streamingUpdateInterval?: number;
+    loadingIndicatorPosition?: LoadingIndicatorPosition;
+    chunkSize?: number;
+    analysisSchedule?: AnalysisSchedule;
+    communicationStyle?: CommunicationStyle;
 }
 
 // Define union types
