@@ -33,7 +33,7 @@ The AI Reflection Plugin provides thoughtful, AI-powered analysis of your daily 
 ### Manual Installation
 
 1. Download the latest release from the [releases page](https://github.com/username/obsidian-ai-reflection/releases)
-2. Extract the ZIP file into your Obsidian vault's `.obsidian/plugins/` directory
+2. Extract the ZIP file into your Obsidian vault's `.obsidian/plugins` directory
 3. Enable the plugin in Obsidian's settings
 
 ## Configuration
