@@ -45,6 +45,7 @@ export interface RecapitanSettings {
     communicationStyle: CommunicationStyle;
     privateMarker: string;
     ollamaHost: string;
+    cacheTTLMinutes: number;
 }
 
 
@@ -67,5 +68,6 @@ export const DEFAULT_SETTINGS: RecapitanSettings = {
     analysisSchedule: 'daily',
     communicationStyle: 'direct',
     privateMarker: ':::private',
-    ollamaHost: 'http://localhost:11434'
+    ollamaHost: 'http://localhost:11434',
+    cacheTTLMinutes: 60
 }

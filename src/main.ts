@@ -67,7 +67,8 @@ export default class Recapitan extends Plugin {
 
 		this.analysisManager = new AnalysisManager(
 			this.aiService,
-			this.privacyManager
+			this.privacyManager,
+			this.settings.cacheTTLMinutes
 		);
 	}
 

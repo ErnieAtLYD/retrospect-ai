@@ -136,6 +136,22 @@ export class RecapitanSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName('Cache Duration')
+			.setDesc('How long to cache analysis results (in minutes)')
+			.addText((text) =>
+				text
+					.setPlaceholder('60')
+					.setValue(String(this.plugin.settings.cacheTTLMinutes))
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							const numValue = parseInt(value) || 60;
+							this.plugin.settings.cacheTTLMinutes = numValue;
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Daily Reflection Template")
 			.setDesc("Template for daily AI reflection prompts")
 			.addTextArea((text) => {
