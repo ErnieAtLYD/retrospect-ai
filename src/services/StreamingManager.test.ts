@@ -9,7 +9,18 @@ describe('StreamingEditorManager', () => {
     let streamingManager: StreamingEditorManager;
     const updateInterval = 0; // Fast updates for testing
 
+
+    // Mock console.log to avoid cluttering test output
+    beforeAll(() => {
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
+    afterAll(() => {
+        jest.restoreAllMocks();
+    });
+
     beforeEach(() => {
+
         mockEditor = {
             getCursor: jest.fn(),
             getValue: jest.fn(),

@@ -22,7 +22,7 @@ export const defaultRetryOptions: RetryOptions = {
 function isTransientError(error: Error): boolean {
     // Example logic: check error message or code
     // This should be customized based on your application's error handling
-    const transientErrorMessages = ['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN'];
+    const transientErrorMessages = ['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ENETUNREACH'];
     return transientErrorMessages.some(msg => error.message.includes(msg));
 }
 
@@ -47,12 +47,17 @@ export async function retry<T>(
         } catch (error) {
             lastError = error as Error;
 
+            // Log the error to inspect its properties
+            // console.log('Caught error:', error);
+            // console.log('Error is transient:', isTransientError(error as Error));
+            // console.log('Error is retryable:', (error as { isRetryable?: boolean }).isRetryable);
+
             // Check for AIServiceError and respect its retryable flag
             if (error instanceof AIServiceError && !error.isRetryable) {
                 throw error;
             }
 
-            if ((error as { nonRetryable?: boolean }).nonRetryable) {
+            if ((error as { isRetryable?: boolean }).isRetryable === false) {
                 throw lastError;
             }
 
