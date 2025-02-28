@@ -1,9 +1,9 @@
 import { OpenAIService } from './OpenAIService'; // Adjust the import path as necessary
 
-// Mock any dependencies here
-jest.mock('some-dependency', () => ({
-  // Mock implementation
-}));
+// Mock any actual dependencies here if needed
+// jest.mock('actual-dependency', () => ({
+//   // Mock implementation
+// }));
 
 describe('OpenAIService', () => {
   let openAIService: OpenAIService;
