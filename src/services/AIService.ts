@@ -1,12 +1,20 @@
 // src/services/AIService.ts
+
 import { retry, RetryOptions } from "../utils/retry";
 import { AIServiceError } from "../utils/error";
 import { fetchWithError } from "../utils/fetchWithError";
 
+
+/**
+ * AI service interface.
+ */
 export interface AIService {
 	analyze(content: string, template: string, style: string): Promise<string>;
 }
 
+/**
+ * OpenAI response interface.
+ */
 interface OpenAIResponse {
 	choices: {
 		message: {
@@ -15,6 +23,9 @@ interface OpenAIResponse {
 	}[];
 }
 
+/**
+ * OpenAI service implementation.
+ */
 export class OpenAIService implements AIService {
 	private readonly retryOptions: RetryOptions = {
 		maxAttempts: 3,
@@ -24,6 +35,13 @@ export class OpenAIService implements AIService {
 
 	constructor(private apiKey: string, private model: string) {}
 
+	/**
+	 * Analyze content with OpenAI.
+	 * @param content - The content to analyze.
+	 * @param template - The template to use.
+	 * @param style - The style to use.
+	 * @returns The analysis result.
+	 */
 	async analyze(
 		content: string,
 		template: string,
