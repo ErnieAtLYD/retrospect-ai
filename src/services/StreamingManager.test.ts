@@ -12,7 +12,7 @@ describe('StreamingEditorManager', () => {
 
     // Mock console.log to avoid cluttering test output
     beforeAll(() => {
-        jest.spyOn(console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterAll(() => {
