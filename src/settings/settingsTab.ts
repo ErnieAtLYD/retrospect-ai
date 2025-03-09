@@ -16,9 +16,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 	 * @param callback
 	 */
 	private async saveSettingsWithFeedback(callback: () => Promise<void>) {
-		const statusBar = (
-			this.app as ExtendedApp
-		).statusBar.addStatusBarItem();
+		const statusBar = this.plugin.addStatusBarItem();
 		statusBar.setText("Saving settings...");
 
 		try {

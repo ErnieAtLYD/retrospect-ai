@@ -10,7 +10,8 @@ import {
 import { RecapitanSettings, DEFAULT_SETTINGS, ExtendedApp } from "./types";
 import { RecapitanSettingTab } from "./settings/settingsTab";
 import { AnalysisManager } from "./services/AnalysisManager";
-import { OpenAIService, AIService } from "./services/AIService";
+import { AIService } from "./services/AIService";
+import { OpenAIService } from "./services/OpenAIService";
 import { OllamaService } from "./services/OllamaService";
 import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "services/StreamingManager";
@@ -20,6 +21,7 @@ export default class Recapitan extends Plugin {
 	private analysisManager!: AnalysisManager;
 	private aiService!: AIService;
 	private privacyManager!: PrivacyManager;
+	private statusBarItem: HTMLElement | null = null; // Add this line
 
 	async loadSettings() {
 		this.settings = Object.assign(
@@ -36,10 +38,29 @@ export default class Recapitan extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.initializeServices();
+
+        // Register the status bar item correctly if Obsidian's API provides it
+        try {
+            // Try to create a status bar item safely
+            if (this.app.workspace && "statusBar" in this.app.workspace) {
+                // @ts-ignore - Handle potential missing statusBar API
+                this.statusBarItem = this.app.workspace.statusBar?.addStatusBarItem();
+            }
+        } catch (e) {
+            console.log("Status bar API not available, using Notices instead");
+        }
+
 		this.addSettingTab(
 			new RecapitanSettingTab(this.app as ExtendedApp, this)
 		);
 		this.addCommands();
+	}
+
+	onunload() {
+		// Remove the status bar item if it exists
+		if (this.statusBarItem) {
+			this.statusBarItem.remove();
+		}
 	}
 
 	/**
@@ -121,34 +142,57 @@ export default class Recapitan extends Plugin {
 			id: "analyze-past-week",
 			name: "Analyze Past Week",
 			callback: async () => {
-				const statusBar = (
-					this.app as ExtendedApp
-				).statusBar.addStatusBarItem();
-				statusBar.setText("Analyzing past week...");
+				// Create a Notice instead of using statusBar
+				const loadingNotice = new Notice("Analyzing past week...", 0);
+				
+				try { 
+					// update status bar, if available
+					if (this.statusBarItem) {
+						this.statusBarItem.setText("Analyzing past week...");
+					}
 
-				try {
 					const entries = await this.getPastWeekEntries();
 					if (entries.length === 0) {
-						new Notice(
-							"No journal entries found for the past week",
-							5000
-						);
+						loadingNotice.hide();
+						new Notice("No journal entries found for the past week", 5000);
 						return;
 					}
 
 					const analysis = await this.analyzeWeeklyContent(entries);
 					await this.createWeeklyReflectionNote(analysis);
+					loadingNotice.hide();
+					if (this.statusBarItem) {
+						this.statusBarItem.setText("");
+					}
 					new Notice("Weekly analysis complete!", 3000);
 				} catch (error) {
-					const message =
-						error instanceof Error
-							? error.message
-							: "Unknown error";
+					const message = error instanceof Error ? error.message : "Unknown error";
+					loadingNotice.hide();
+					if (this.statusBarItem) {
+						this.statusBarItem.setText(`Error: ${message}`);
+					}
 					new Notice(`Weekly analysis failed: ${message}`, 5000);
-				} finally {
-					statusBar.remove();
+
 				}
-			},
+
+				try {
+					const entries = await this.getPastWeekEntries();
+					if (entries.length === 0) {
+						loadingNotice.hide();
+						new Notice("No journal entries found for the past week", 5000);
+						return;
+					}
+		
+					const analysis = await this.analyzeWeeklyContent(entries);
+					await this.createWeeklyReflectionNote(analysis);
+					loadingNotice.hide();
+					new Notice("Weekly analysis complete!", 3000);
+				} catch (error) {
+					const message = error instanceof Error ? error.message : "Unknown error";
+					loadingNotice.hide();
+					new Notice(`Weekly analysis failed: ${message}`, 5000);
+				}
+			},		
 		});
 	}
 
