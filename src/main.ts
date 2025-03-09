@@ -157,31 +157,6 @@ export default class Recapitan extends Plugin {
 						new Notice("No journal entries found for the past week", 5000);
 						return;
 					}
-
-					const analysis = await this.analyzeWeeklyContent(entries);
-					await this.createWeeklyReflectionNote(analysis);
-					loadingNotice.hide();
-					if (this.statusBarItem) {
-						this.statusBarItem.setText("");
-					}
-					new Notice("Weekly analysis complete!", 3000);
-				} catch (error) {
-					const message = error instanceof Error ? error.message : "Unknown error";
-					loadingNotice.hide();
-					if (this.statusBarItem) {
-						this.statusBarItem.setText(`Error: ${message}`);
-					}
-					new Notice(`Weekly analysis failed: ${message}`, 5000);
-
-				}
-
-				try {
-					const entries = await this.getPastWeekEntries();
-					if (entries.length === 0) {
-						loadingNotice.hide();
-						new Notice("No journal entries found for the past week", 5000);
-						return;
-					}
 		
 					const analysis = await this.analyzeWeeklyContent(entries);
 					await this.createWeeklyReflectionNote(analysis);
@@ -276,6 +251,11 @@ export default class Recapitan extends Plugin {
 	 */
 	private async analyzeContent(content: string): Promise<string> {
 		try {
+			// Check if the content is empty
+			if (content.trim() === "") {
+				throw new Error("Cannot analyze empty content. Please add some text to gather insights."); 
+			}	
+
 			// Remove private sections as before
 			const sanitizedContent =
 				this.privacyManager.removePrivateSections(content);
