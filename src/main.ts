@@ -137,7 +137,6 @@ export default class Recapitan extends Plugin {
 		});
 
 		// Add command for weekly analysis
-		// Weekly analysis command remains mostly the same
 		this.addCommand({
 			id: "analyze-past-week",
 			name: "Analyze Past Week",
@@ -251,18 +250,8 @@ export default class Recapitan extends Plugin {
 	 */
 	private async analyzeContent(content: string): Promise<string> {
 		try {
-			// Check if the content is empty
-			if (content.trim() === "") {
-				throw new Error("Cannot analyze empty content. Please add some text to gather insights."); 
-			}	
-
-			// Remove private sections as before
-			const sanitizedContent =
-				this.privacyManager.removePrivateSections(content);
-
-			// Use your existing AIService
-			return await this.aiService.analyze(
-				sanitizedContent,
+			return await this.analysisManager.analyzeContent(
+				content,
 				this.settings.reflectionTemplate,
 				this.settings.communicationStyle
 			);
