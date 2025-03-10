@@ -150,16 +150,13 @@ export default class Recapitan extends Plugin {
 			id: "analyze-past-week",
 			name: "Analyze Past Week",
 			callback: async () => {
-				// Create a Notice instead of using statusBar
+				// Create a Notice and update status bar if available
 				const loadingNotice = new Notice("Analyzing past week...", 0);
+				if (this.statusBarItem) {
+					this.statusBarItem.setText("Analyzing past week...");
+				}
 				
-				try { 
-					// update status bar, if available
-					if (this.statusBarItem) {
-						this.statusBarItem.setText("Analyzing past week...");
-					}
-
-					// Use the WeeklyAnalysisService instead of duplicated methods
+				try {
 					await this.weeklyAnalysisService.runWeeklyAnalysis();
 					
 					loadingNotice.hide();
@@ -174,7 +171,7 @@ export default class Recapitan extends Plugin {
 						this.statusBarItem.setText("");
 					}
 				}
-			},		
+			},
 		});
 	}
 
