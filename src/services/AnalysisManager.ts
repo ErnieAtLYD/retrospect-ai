@@ -20,6 +20,11 @@ export class AnalysisManager {
         template: string,
         style: string
     ): Promise<string> {
+        // Check if the content is empty
+        if (content.trim() === "") {
+            throw new Error("Cannot analyze empty content. Please add at least 20 characters of text to gather meaningful insights.");
+        }
+        
         const sanitizedContent = this.privacyManager.removePrivateSections(content);
         const cacheKey = this.cacheManager.generateKey(sanitizedContent, template, style);
         

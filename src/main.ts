@@ -15,12 +15,14 @@ import { OpenAIService } from "./services/OpenAIService";
 import { OllamaService } from "./services/OllamaService";
 import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "services/StreamingManager";
+import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
 
 export default class Recapitan extends Plugin {
 	settings!: RecapitanSettings;
 	private analysisManager!: AnalysisManager;
 	private aiService!: AIService;
 	private privacyManager!: PrivacyManager;
+	private weeklyAnalysisService!: WeeklyAnalysisService;
 	private statusBarItem: HTMLElement | null = null; // Add this line
 
 	async loadSettings() {
@@ -91,6 +93,13 @@ export default class Recapitan extends Plugin {
 			this.privacyManager,
 			this.settings.cacheTTLMinutes
 		);
+		
+		this.weeklyAnalysisService = new WeeklyAnalysisService(
+			this.settings,
+			this.app,
+			this.privacyManager,
+			this.aiService
+		);
 	}
 
 	/**
@@ -137,137 +146,35 @@ export default class Recapitan extends Plugin {
 		});
 
 		// Add command for weekly analysis
-		// Weekly analysis command remains mostly the same
 		this.addCommand({
 			id: "analyze-past-week",
 			name: "Analyze Past Week",
 			callback: async () => {
-				// Create a Notice instead of using statusBar
+				// Create a Notice and update status bar if available
 				const loadingNotice = new Notice("Analyzing past week...", 0);
+				if (this.statusBarItem) {
+					this.statusBarItem.setText("Analyzing past week...");
+				}
 				
-				try { 
-					// update status bar, if available
-					if (this.statusBarItem) {
-						this.statusBarItem.setText("Analyzing past week...");
-					}
-
-					const entries = await this.getPastWeekEntries();
-					if (entries.length === 0) {
-						loadingNotice.hide();
-						new Notice("No journal entries found for the past week", 5000);
-						return;
-					}
-
-					const analysis = await this.analyzeWeeklyContent(entries);
-					await this.createWeeklyReflectionNote(analysis);
+				try {
+					await this.weeklyAnalysisService.runWeeklyAnalysis();
+					
 					loadingNotice.hide();
+					new Notice("Weekly analysis complete!", 3000);
+				} catch (error) {
+					const message = error instanceof Error ? error.message : "Unknown error";
+					loadingNotice.hide();
+					new Notice(`Weekly analysis failed: ${message}`, 5000);
+				} finally {
+					// Clear status bar if it was used
 					if (this.statusBarItem) {
 						this.statusBarItem.setText("");
 					}
-					new Notice("Weekly analysis complete!", 3000);
-				} catch (error) {
-					const message = error instanceof Error ? error.message : "Unknown error";
-					loadingNotice.hide();
-					if (this.statusBarItem) {
-						this.statusBarItem.setText(`Error: ${message}`);
-					}
-					new Notice(`Weekly analysis failed: ${message}`, 5000);
-
 				}
-
-				try {
-					const entries = await this.getPastWeekEntries();
-					if (entries.length === 0) {
-						loadingNotice.hide();
-						new Notice("No journal entries found for the past week", 5000);
-						return;
-					}
-		
-					const analysis = await this.analyzeWeeklyContent(entries);
-					await this.createWeeklyReflectionNote(analysis);
-					loadingNotice.hide();
-					new Notice("Weekly analysis complete!", 3000);
-				} catch (error) {
-					const message = error instanceof Error ? error.message : "Unknown error";
-					loadingNotice.hide();
-					new Notice(`Weekly analysis failed: ${message}`, 5000);
-				}
-			},		
+			},
 		});
 	}
 
-	/**
-	 * Gets the past week's entries.
-	 * @returns
-	 */
-	private async getPastWeekEntries(): Promise<
-		{ date: string; content: string }[]
-	> {
-		const files = this.app.vault.getMarkdownFiles();
-		const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-
-		const entries = await Promise.all(
-			files
-				.filter((file) => {
-					const match = file.name.match(/^(\d{4}-\d{2}-\d{2})\.md$/);
-					if (!match) return false;
-					const fileDate = new Date(match[1]).getTime();
-					return fileDate >= oneWeekAgo && fileDate <= Date.now();
-				})
-				.map(async (file) => ({
-					date: file.name.replace(".md", ""),
-					content: await this.app.vault.read(file),
-				}))
-		);
-		return entries.sort((a, b) => a.date.localeCompare(b.date));
-	}
-
-	/**
-	 * Analyzes the weekly content.
-	 * @param entries
-	 * @returns
-	 */
-	private async analyzeWeeklyContent(
-		entries: { date: string; content: string }[]
-	): Promise<string> {
-		const sanitizedEntries = entries.map((entry) => ({
-			date: entry.date,
-			content: this.privacyManager.removePrivateSections(entry.content),
-		}));
-
-		const formattedContent = sanitizedEntries
-			.map((entry) => `## ${entry.date}\n\n${entry.content}`)
-			.join("\n\n");
-
-		return await this.aiService.analyze(
-			formattedContent,
-			this.settings.weeklyReflectionTemplate,
-			this.settings.communicationStyle
-		);
-	}
-
-	/**
-	 * Creates a weekly reflection note.
-	 * @param analysis
-	 */
-	private async createWeeklyReflectionNote(analysis: string): Promise<void> {
-		const today = new Date().toISOString().split("T")[0];
-		const fileName = `Weekly Reflections/${today} - Weekly Reflection.md`;
-
-		// Create Weekly Reflections folder if it doesn't exist
-		if (!(await this.app.vault.adapter.exists("Weekly Reflections"))) {
-			await this.app.vault.createFolder("Weekly Reflections");
-		}
-
-		const content = `# Weekly Reflection - ${today}\n\n${analysis}`;
-		await this.app.vault.create(fileName, content);
-
-		// Open the new note
-		const file = this.app.vault.getAbstractFileByPath(fileName);
-		if (file instanceof TFile) {
-			await this.app.workspace.getLeaf().openFile(file);
-		}
-	}
 
 	/**
 	 * Analyzes the content.
@@ -276,13 +183,8 @@ export default class Recapitan extends Plugin {
 	 */
 	private async analyzeContent(content: string): Promise<string> {
 		try {
-			// Remove private sections as before
-			const sanitizedContent =
-				this.privacyManager.removePrivateSections(content);
-
-			// Use your existing AIService
-			return await this.aiService.analyze(
-				sanitizedContent,
+			return await this.analysisManager.analyzeContent(
+				content,
 				this.settings.reflectionTemplate,
 				this.settings.communicationStyle
 			);

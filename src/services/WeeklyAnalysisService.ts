@@ -1,9 +1,8 @@
 // src/services/WeeklyAnalysisService.ts
 import { RecapitanSettings } from "../types";
-import { App } from "obsidian";
+import { App, TFile } from "obsidian";
 import { PrivacyManager } from "./PrivacyManager";
 import { AIService } from "./AIService";
-import { TFile } from "obsidian";
 
 export class WeeklyAnalysisService {
 	constructor(
@@ -79,6 +78,21 @@ export class WeeklyAnalysisService {
 	}
 
 	async createWeeklyReflectionNote(analysis: string): Promise<void> {
-		// Implementation of createWeeklyReflectionNote method
+		const today = new Date().toISOString().split("T")[0];
+		const fileName = `Weekly Reflections/${today} - Weekly Reflection.md`;
+
+		// Create Weekly Reflections folder if it doesn't exist
+		if (!(await this.app.vault.adapter.exists("Weekly Reflections"))) {
+			await this.app.vault.createFolder("Weekly Reflections");
+		}
+
+		const content = `# Weekly Reflection - ${today}\n\n${analysis}`;
+		await this.app.vault.create(fileName, content);
+
+		// Open the new note
+		const file = this.app.vault.getAbstractFileByPath(fileName);
+		if (file instanceof TFile) {
+			await this.app.workspace.getLeaf().openFile(file);
+		}
 	}
 }
