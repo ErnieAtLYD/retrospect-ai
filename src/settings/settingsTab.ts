@@ -56,21 +56,22 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Ollama Host")
-			.setDesc("The URL of your Ollama instance")
-			.addText((text) =>
-				text
-					.setPlaceholder("http://localhost:11434")
-					.setValue(this.plugin.settings.ollamaHost)
-					.onChange(async (value) => {
-						await this.saveSettingsWithFeedback(async () => {
-							this.plugin.settings.ollamaHost = value;
-							await this.plugin.saveSettings();
-						});
-					})
-			)
-			.setDisabled(this.plugin.settings.aiProvider !== "ollama");
+		if (this.plugin.settings.aiProvider === "ollama") {
+			new Setting(containerEl)
+				.setName("Ollama Host")
+				.setDesc("The URL of your Ollama instance")
+				.addText((text) =>
+					text
+						.setPlaceholder("http://localhost:11434")
+						.setValue(this.plugin.settings.ollamaHost)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.ollamaHost = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
+		}
 
 		new Setting(containerEl)
 			.setName("API Key")
