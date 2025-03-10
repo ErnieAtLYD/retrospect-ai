@@ -30,6 +30,9 @@ export class RecapitanSettingTab extends PluginSettingTab {
 		}
 	}
 
+	/**
+	 * Displays the settings UI.
+	 */
 	display(): void {
 		// Move settings UI code here...
 		const { containerEl } = this;
