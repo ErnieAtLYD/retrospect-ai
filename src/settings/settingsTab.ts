@@ -73,20 +73,22 @@ export class RecapitanSettingTab extends PluginSettingTab {
 				);
 		}
 
-		new Setting(containerEl)
-			.setName("API Key")
-			.setDesc("Enter your AI provider API key")
-			.addText((text) =>
-				text
-					.setPlaceholder("Enter API key...")
-					.setValue(this.plugin.settings.apiKey)
-					.onChange(async (value) => {
-						await this.saveSettingsWithFeedback(async () => {
-							this.plugin.settings.apiKey = value;
-							await this.plugin.saveSettings();
-						});
-					})
-			);
+		if (this.plugin.settings.aiProvider === "openai") {
+			new Setting(containerEl)
+				.setName("API Key")
+				.setDesc("Enter your OpenAI API key")
+				.addText((text) =>
+					text
+						.setPlaceholder("Enter API key...")
+						.setValue(this.plugin.settings.apiKey)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.apiKey = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
+		}
 
 		new Setting(containerEl)
 			.setName("Analysis Schedule")
