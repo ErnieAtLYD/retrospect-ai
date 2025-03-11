@@ -68,6 +68,22 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							});
 						})
 				);
+				
+			// Add Ollama model selection
+			new Setting(containerEl)
+				.setName("Ollama Model")
+				.setDesc("The model to use with Ollama (e.g., llama3.1:8b, deepseek-r1:latest)")
+				.addText((text) =>
+					text
+						.setPlaceholder("llama3.1:8b")
+						.setValue(this.plugin.settings.ollamaModel)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.ollamaModel = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
 		}
 
 		if (this.plugin.settings.aiProvider === "openai") {

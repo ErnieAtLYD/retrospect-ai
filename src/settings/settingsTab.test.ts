@@ -244,7 +244,8 @@ describe("SettingsTab", () => {
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
 			expect.objectContaining({
 				aiProvider: "ollama",
-				openaiModel: "gpt-4" // OpenAI model should be preserved
+				openaiModel: "gpt-4", // OpenAI model should be preserved
+				ollamaModel: "deepseek-r1:latest" // Ollama model should be preserved
 			})
 		);
 
@@ -257,6 +258,54 @@ describe("SettingsTab", () => {
 			expect.objectContaining({
 				aiProvider: "openai",
 				openaiModel: "gpt-4"
+			})
+		);
+	});
+	
+	test("should handle Ollama model selection", async () => {
+		// Create a new instance with ollama provider
+		const initialSettings: RecapitanSettings = {
+			aiProvider: "ollama",
+			apiKey: "",
+			analysisSchedule: "daily",
+			communicationStyle: "direct",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest", // Start with deepseek
+			openaiModel: "gpt-4",
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: ""
+		};
+
+		// Create settings tab instance with these settings
+		const testSettingsTab = new SettingsTab(
+			mockApp as App,
+			mockPlugin as Plugin,
+			initialSettings
+		);
+
+		// Change the model to llama3
+		testSettingsTab.settings.ollamaModel = "llama3.1:8b";
+		await testSettingsTab.saveSettings();
+
+		// Verify the model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ollamaModel: "llama3.1:8b",
+			})
+		);
+
+		// Change to another model
+		testSettingsTab.settings.ollamaModel = "mistral:7b";
+		await testSettingsTab.saveSettings();
+
+		// Verify the new model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ollamaModel: "mistral:7b",
 			})
 		);
 	});
