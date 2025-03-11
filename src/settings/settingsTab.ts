@@ -85,6 +85,24 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							});
 						})
 				);
+				
+			// Add OpenAI model selection
+			new Setting(containerEl)
+				.setName("OpenAI Model")
+				.setDesc("Select which OpenAI model to use")
+				.addDropdown((dropdown) =>
+					dropdown
+						.addOption("gpt-4o", "GPT-4o")
+						.addOption("gpt-4", "GPT-4")
+						.addOption("gpt-3.5-turbo", "GPT-3.5 Turbo")
+						.setValue(this.plugin.settings.openaiModel || "gpt-4")
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.openaiModel = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
 		}
 	}
 
