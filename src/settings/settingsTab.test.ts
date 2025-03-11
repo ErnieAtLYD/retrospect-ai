@@ -12,16 +12,16 @@ import {
 import { jest } from "@jest/globals";
 
 import { MockPlugin } from '../__mocks__/MockPlugin'
-import { AIReflectionSettings } from "../types";
+import { RecapitanSettings } from "../types";
 
 
 
 // Mock SettingsTab class that avoids DOM operations
 class SettingsTab extends PluginSettingTab {
-	settings: AIReflectionSettings;
+	settings: RecapitanSettings;
 	plugin: MockPlugin;
 
-	constructor(app: App, plugin: Plugin, settings: AIReflectionSettings) {
+	constructor(app: App, plugin: Plugin, settings: RecapitanSettings) {
 		super(app, plugin);
 		this.settings = settings;
 		this.plugin = plugin as MockPlugin;
@@ -35,7 +35,7 @@ class SettingsTab extends PluginSettingTab {
 		await this.plugin.saveData(this.settings);
 	}
 
-	loadSettings(): AIReflectionSettings {
+	loadSettings(): RecapitanSettings {
 		return this.settings;
 	}
 }
@@ -99,13 +99,20 @@ describe("SettingsTab", () => {
 		jest.spyOn(mockPlugin, "loadData").mockImplementation(async () => ({}));
 
 		// Initialize settings
-		const initialSettings: AIReflectionSettings = {
+		const initialSettings: RecapitanSettings = {
 			aiProvider: "openai",
 			apiKey: "",
 			analysisSchedule: "daily",
 			communicationStyle: "direct",
-			privacyLevel: "standard",
-			outputFormat: "markdown",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest",
+			openaiModel: "gpt-4",
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: ""
 		};
 
 		// Create settings tab instance
@@ -123,12 +130,12 @@ describe("SettingsTab", () => {
 	});
 
 	test("should save settings when updated", async () => {
-		settingsTab.settings.aiProvider = "local";
+		settingsTab.settings.aiProvider = "ollama";
 		await settingsTab.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
 			expect.objectContaining({
-				aiProvider: "local",
+				aiProvider: "ollama",
 			})
 		);
 	});
@@ -147,12 +154,12 @@ describe("SettingsTab", () => {
 
 	test("should maintain all settings when updating single value", async () => {
 		const originalSettings = { ...settingsTab.settings };
-		settingsTab.settings.aiProvider = "local";
+		settingsTab.settings.aiProvider = "ollama";
 		await settingsTab.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith({
 			...originalSettings,
-			aiProvider: "local",
+			aiProvider: "ollama",
 		});
 	});
 });
