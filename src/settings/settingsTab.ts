@@ -31,13 +31,9 @@ export class RecapitanSettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Displays the settings UI.
+	 * Creates the AI provider selection settings
 	 */
-	display(): void {
-		// Move settings UI code here...
-		const { containerEl } = this;
-		containerEl.empty();
-
+	private createProviderSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("AI Provider")
 			.setDesc("Choose your AI provider")
@@ -56,6 +52,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					})
 			);
 
+		// Provider-specific settings
 		if (this.plugin.settings.aiProvider === "ollama") {
 			new Setting(containerEl)
 				.setName("Ollama Host")
@@ -89,7 +86,12 @@ export class RecapitanSettingTab extends PluginSettingTab {
 						})
 				);
 		}
+	}
 
+	/**
+	 * Creates the analysis behavior settings
+	 */
+	private createAnalysisSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Analysis Schedule")
 			.setDesc("When to run the analysis")
@@ -138,7 +140,12 @@ export class RecapitanSettingTab extends PluginSettingTab {
 						});
 					})
 			);
+	}
 
+	/**
+	 * Creates the cache settings
+	 */
+	private createCacheSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Cache Duration')
 			.setDesc('How long to cache analysis results (in minutes)')
@@ -170,7 +177,12 @@ export class RecapitanSettingTab extends PluginSettingTab {
 						});
 					})
 			);
+	}
 
+	/**
+	 * Creates the template settings with text areas
+	 */
+	private createTemplateSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Daily Reflection Template")
 			.setDesc("Template for daily AI reflection prompts")
@@ -208,19 +220,47 @@ export class RecapitanSettingTab extends PluginSettingTab {
 				text.inputEl.rows = 6;
 				text.inputEl.cols = 50;
 				text.inputEl.addClass("reflection-template-input");
-
-				// Add custom styles for the textarea
-				const styleEl = document.createElement("style");
-				styleEl.innerHTML = `
-                    .reflection-template-input {
-                        width: 100%;
-                        font-family: var(--font-monospace);
-                        resize: vertical;
-                        min-height: 100px;
-                        padding: 8px;
-                    }
-                `;
-				containerEl.appendChild(styleEl);
 			});
+	}
+
+	/**
+	 * Adds custom styles for the settings
+	 */
+	private addCustomStyles(containerEl: HTMLElement): void {
+		const styleEl = document.createElement("style");
+		styleEl.innerHTML = `
+			.reflection-template-input {
+				width: 100%;
+				font-family: var(--font-monospace);
+				resize: vertical;
+				min-height: 100px;
+				padding: 8px;
+			}
+		`;
+		containerEl.appendChild(styleEl);
+	}
+
+	/**
+	 * Displays the settings UI.
+	 */
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		// Add section headings and call the appropriate methods
+		containerEl.createEl("h2", { text: "AI Provider Settings" });
+		this.createProviderSettings(containerEl);
+		
+		containerEl.createEl("h2", { text: "Analysis Settings" });
+		this.createAnalysisSettings(containerEl);
+		
+		containerEl.createEl("h2", { text: "Cache Settings" });
+		this.createCacheSettings(containerEl);
+		
+		containerEl.createEl("h2", { text: "Templates" });
+		this.createTemplateSettings(containerEl);
+		
+		// Add custom styles
+		this.addCustomStyles(containerEl);
 	}
 }
