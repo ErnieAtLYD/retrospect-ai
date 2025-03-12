@@ -96,7 +96,7 @@ export class LoggingService {
      * @param data - Optional additional data
      */
     debug(message: string, data?: unknown): void {
-        if (!this.enabled || this.level < LogLevel.DEBUG) return;
+        if (!this.enabled || this.level < LogLevel.DEBUG) {
         
         const timestamp = new Date().toISOString();
         console.debug(`[${timestamp}] [DEBUG] ${message}`, data);
