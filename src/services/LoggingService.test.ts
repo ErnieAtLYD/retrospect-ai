@@ -126,7 +126,7 @@ describe('LoggingService', () => {
             const logger = new LoggingService({} as RecapitanSettings, LogLevel.WARN, true);
             
             logger.warn('Warning message');
-            expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('[WARN] Warning message'));
+            expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[WARN\] Warning message/), undefined);
         });
         
         it('should not log warnings when disabled', () => {
@@ -149,7 +149,7 @@ describe('LoggingService', () => {
             const logger = new LoggingService({} as RecapitanSettings, LogLevel.INFO, true);
             
             logger.info('Info message');
-            expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('[INFO] Info message'));
+            expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[INFO\] Info message/), undefined);
         });
         
         it('should not log info when disabled', () => {
@@ -172,7 +172,7 @@ describe('LoggingService', () => {
             const logger = new LoggingService({} as RecapitanSettings, LogLevel.DEBUG, true);
             
             logger.debug('Debug message');
-            expect(consoleDebugSpy).toHaveBeenCalledWith(expect.stringContaining('[DEBUG] Debug message'));
+            expect(consoleDebugSpy).toHaveBeenCalledWith(expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[DEBUG\] Debug message/), undefined);
         });
         
         it('should not log debug when disabled', () => {
