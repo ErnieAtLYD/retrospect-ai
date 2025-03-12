@@ -12,16 +12,16 @@ import {
 import { jest } from "@jest/globals";
 
 import { MockPlugin } from '../__mocks__/MockPlugin'
-import { AIReflectionSettings } from "../types";
+import { RecapitanSettings } from "../types";
 
 
 
 // Mock SettingsTab class that avoids DOM operations
 class SettingsTab extends PluginSettingTab {
-	settings: AIReflectionSettings;
+	settings: RecapitanSettings;
 	plugin: MockPlugin;
 
-	constructor(app: App, plugin: Plugin, settings: AIReflectionSettings) {
+	constructor(app: App, plugin: Plugin, settings: RecapitanSettings) {
 		super(app, plugin);
 		this.settings = settings;
 		this.plugin = plugin as MockPlugin;
@@ -35,7 +35,7 @@ class SettingsTab extends PluginSettingTab {
 		await this.plugin.saveData(this.settings);
 	}
 
-	loadSettings(): AIReflectionSettings {
+	loadSettings(): RecapitanSettings {
 		return this.settings;
 	}
 }
@@ -99,13 +99,20 @@ describe("SettingsTab", () => {
 		jest.spyOn(mockPlugin, "loadData").mockImplementation(async () => ({}));
 
 		// Initialize settings
-		const initialSettings: AIReflectionSettings = {
+		const initialSettings: RecapitanSettings = {
 			aiProvider: "openai",
 			apiKey: "",
 			analysisSchedule: "daily",
 			communicationStyle: "direct",
-			privacyLevel: "standard",
-			outputFormat: "markdown",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest",
+			openaiModel: "gpt-4",
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: ""
 		};
 
 		// Create settings tab instance
@@ -123,12 +130,12 @@ describe("SettingsTab", () => {
 	});
 
 	test("should save settings when updated", async () => {
-		settingsTab.settings.aiProvider = "local";
+		settingsTab.settings.aiProvider = "ollama";
 		await settingsTab.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
 			expect.objectContaining({
-				aiProvider: "local",
+				aiProvider: "ollama",
 			})
 		);
 	});
@@ -147,12 +154,159 @@ describe("SettingsTab", () => {
 
 	test("should maintain all settings when updating single value", async () => {
 		const originalSettings = { ...settingsTab.settings };
-		settingsTab.settings.aiProvider = "local";
+		settingsTab.settings.aiProvider = "ollama";
 		await settingsTab.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith({
 			...originalSettings,
-			aiProvider: "local",
+			aiProvider: "ollama",
 		});
+	});
+
+	test("should handle OpenAI model selection", async () => {
+		// Create a new instance with openai provider
+		const initialSettings: RecapitanSettings = {
+			aiProvider: "openai",
+			apiKey: "test-key",
+			analysisSchedule: "daily",
+			communicationStyle: "direct",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest",
+			openaiModel: "gpt-3.5-turbo", // Start with 3.5
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: ""
+		};
+
+		// Create settings tab instance with these settings
+		const testSettingsTab = new SettingsTab(
+			mockApp as App,
+			mockPlugin as Plugin,
+			initialSettings
+		);
+
+		// Change the model to gpt-4
+		testSettingsTab.settings.openaiModel = "gpt-4";
+		await testSettingsTab.saveSettings();
+
+		// Verify the model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				openaiModel: "gpt-4",
+			})
+		);
+
+		// Change to gpt-4o
+		testSettingsTab.settings.openaiModel = "gpt-4o";
+		await testSettingsTab.saveSettings();
+
+		// Verify the new model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				openaiModel: "gpt-4o",
+			})
+		);
+	});
+
+	test("should maintain provider-specific settings when switching providers", async () => {
+		// Create a new instance with openai provider and settings
+		const initialSettings: RecapitanSettings = {
+			aiProvider: "openai",
+			apiKey: "test-key",
+			openaiModel: "gpt-4",
+			analysisSchedule: "daily",
+			communicationStyle: "direct",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest",
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: ""
+		};
+
+		// Create settings tab instance
+		const testSettingsTab = new SettingsTab(
+			mockApp as App,
+			mockPlugin as Plugin,
+			initialSettings
+		);
+
+		// Switch to ollama provider
+		testSettingsTab.settings.aiProvider = "ollama";
+		await testSettingsTab.saveSettings();
+
+		// Verify the provider was changed but openaiModel is preserved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				aiProvider: "ollama",
+				openaiModel: "gpt-4", // OpenAI model should be preserved
+				ollamaModel: "deepseek-r1:latest" // Ollama model should be preserved
+			})
+		);
+
+		// Switch back to openai
+		testSettingsTab.settings.aiProvider = "openai";
+		await testSettingsTab.saveSettings();
+
+		// Verify we switched back to openai and the model is still there
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				aiProvider: "openai",
+				openaiModel: "gpt-4"
+			})
+		);
+	});
+	
+	test("should handle Ollama model selection", async () => {
+		// Create a new instance with ollama provider
+		const initialSettings: RecapitanSettings = {
+			aiProvider: "ollama",
+			apiKey: "",
+			analysisSchedule: "daily",
+			communicationStyle: "direct",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest", // Start with deepseek
+			openaiModel: "gpt-4",
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: ""
+		};
+
+		// Create settings tab instance with these settings
+		const testSettingsTab = new SettingsTab(
+			mockApp as App,
+			mockPlugin as Plugin,
+			initialSettings
+		);
+
+		// Change the model to llama3
+		testSettingsTab.settings.ollamaModel = "llama3.1:8b";
+		await testSettingsTab.saveSettings();
+
+		// Verify the model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ollamaModel: "llama3.1:8b",
+			})
+		);
+
+		// Change to another model
+		testSettingsTab.settings.ollamaModel = "mistral:7b";
+		await testSettingsTab.saveSettings();
+
+		// Verify the new model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ollamaModel: "mistral:7b",
+			})
+		);
 	});
 });
