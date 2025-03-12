@@ -72,7 +72,7 @@ export class LoggingService {
      * @param data - Optional additional data
      */
     warn(message: string, data?: unknown): void {
-        if (!this.enabled || this.level < LogLevel.WARN) return;
+        if (!this.enabled || this.level < LogLevel.WARN) {
         
         const timestamp = new Date().toISOString();
         console.warn(`[${timestamp}] [WARN] ${message}`, data);
