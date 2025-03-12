@@ -214,6 +214,9 @@ export class RecapitanSettingTab extends PluginSettingTab {
 			);
 	}
 	
+	/**
+	 * Creates the logging settings
+	 */
 	private createLoggingSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Enable Logging")
@@ -248,6 +251,9 @@ export class RecapitanSettingTab extends PluginSettingTab {
 			);
 	}
 
+	/**
+	 * Creates the template settings
+	 */
 	private createTemplateSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Daily Reflection Template")
@@ -325,6 +331,9 @@ export class RecapitanSettingTab extends PluginSettingTab {
 		
 		containerEl.createEl("h2", { text: "Templates" });
 		this.createTemplateSettings(containerEl);
+
+		containerEl.createEl("h2", { text: "Logging Settings" });
+		this.createLoggingSettings(containerEl);
 		
 		// Add custom styles
 		this.addCustomStyles(containerEl);
