@@ -55,7 +55,7 @@ export class LoggingService {
      * @param error - Optional error object
      */
     error(message: string, error?: Error | unknown): void {
-        if (!this.enabled || this.level < LogLevel.ERROR) return;
+        if (!this.enabled || this.level < LogLevel.ERROR) {
         
         const timestamp = new Date().toISOString();
         console.error(`[${timestamp}] [ERROR] ${message}`, error);
