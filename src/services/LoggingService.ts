@@ -1,82 +1,104 @@
 import { RecapitanSettings } from "../types";
 
+/**
+ * Log levels for the logging service
+ */
 export enum LogLevel {
-    ERROR = 0,
-    WARN = 1,
-    INFO = 2,
-    DEBUG = 3
+    NONE = 0,
+    ERROR = 1,
+    WARN = 2,
+    INFO = 3,
+    DEBUG = 4
 }
 
+/**
+ * Service for logging messages at different levels
+ */
 export class LoggingService {
     private enabled: boolean;
     private level: LogLevel;
 
+    /**
+     * Creates a new LoggingService
+     * @param settings - The plugin settings
+     * @param level - The log level (default: INFO)
+     * @param enabled - Whether logging is enabled (default: false)
+     */
     constructor(
         private settings: RecapitanSettings,
         level: LogLevel = LogLevel.INFO,
         enabled: boolean = false
     ) {
         this.level = level;
-        this.enabled = enabled;
+        this.enabled = enabled || settings.loggingEnabled || false;
     }
 
     /**
-     * Set the log level
-     * @param level The log level to set
-     */
-    setLevel(level: LogLevel): void {
-        this.level = level;
-    }
-
-    /**
-     * Enable or disable logging
-     * @param enabled Whether logging should be enabled
+     * Set whether logging is enabled
+     * @param enabled - Whether to enable logging
      */
     setEnabled(enabled: boolean): void {
         this.enabled = enabled;
     }
 
     /**
-     * Log an error message
-     * @param message The message to log
-     * @param error Optional error object
+     * Set the log level
+     * @param level - The log level
      */
-    error(message: string, error?: Error): void {
-        if (this.enabled && this.level >= LogLevel.ERROR) {
-            console.error(`[ERROR] ${message}`);
-            if (error) {
-                console.error(error);
-            }
+    setLevel(level: LogLevel): void {
+        this.level = level;
+    }
+
+    /**
+     * Log an error message
+     * @param message - The message to log
+     * @param error - Optional error object
+     */
+    error(message: string, error?: Error | unknown): void {
+        if (!this.enabled || this.level < LogLevel.ERROR) return;
+        
+        const timestamp = new Date().toISOString();
+        console.error(`[${timestamp}] [ERROR] ${message}`, error);
+        
+        // Log stack trace if error object is provided
+        if (error instanceof Error && error.stack) {
+            console.error(error.stack);
         }
     }
 
     /**
      * Log a warning message
-     * @param message The message to log
+     * @param message - The message to log
+     * @param data - Optional additional data
      */
-    warn(message: string): void {
-        if (this.enabled && this.level >= LogLevel.WARN) {
-            console.warn(`[WARN] ${message}`);
-        }
+    warn(message: string, data?: unknown): void {
+        if (!this.enabled || this.level < LogLevel.WARN) return;
+        
+        const timestamp = new Date().toISOString();
+        console.warn(`[${timestamp}] [WARN] ${message}`, data);
     }
 
     /**
      * Log an info message
-     * @param message The message to log
+     * @param message - The message to log
+     * @param data - Optional additional data
      */
-    info(message: string): void {
-        if (this.enabled && this.level >= LogLevel.INFO) {
-            console.info(`[INFO] ${message}`);
-        }
+    info(message: string, data?: unknown): void {
+        if (!this.enabled || this.level < LogLevel.INFO) return;
+        
+        const timestamp = new Date().toISOString();
+        console.info(`[${timestamp}] [INFO] ${message}`, data);
     }
 
     /**
      * Log a debug message
-     * @param message The message to log
+     * @param message - The message to log
+     * @param data - Optional additional data
      */
-    debug(message: string): void {
-        if (this.enabled && this.level >= LogLevel.DEBUG) {
-            console.debug(`[DEBUG] ${message}`);
-        }
+    debug(message: string, data?: unknown): void {
+        if (!this.enabled || this.level < LogLevel.DEBUG) return;
+        
+        const timestamp = new Date().toISOString();
+        console.debug(`[${timestamp}] [DEBUG] ${message}`, data);
     }
 }
