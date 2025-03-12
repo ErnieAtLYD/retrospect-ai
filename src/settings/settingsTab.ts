@@ -2,6 +2,7 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
 import Recapitan from "../main";
 import { RecapitanSettings, ExtendedApp } from "../types";
+import { LogLevel } from "../services/LoggingService";
 
 export class RecapitanSettingTab extends PluginSettingTab {
 	plugin: Recapitan;
@@ -31,10 +32,29 @@ export class RecapitanSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		// Move settings UI code here...
 		const { containerEl } = this;
 		containerEl.empty();
 
+		// Create section headings
+		containerEl.createEl('h2', { text: 'AI Provider Settings' });
+		this.createProviderSettings(containerEl);
+		
+		containerEl.createEl('h2', { text: 'Analysis Settings' });
+		this.createAnalysisSettings(containerEl);
+		
+		containerEl.createEl('h2', { text: 'Cache Settings' });
+		this.createCacheSettings(containerEl);
+		
+		containerEl.createEl('h2', { text: 'Logging Settings' });
+		this.createLoggingSettings(containerEl);
+		
+		containerEl.createEl('h2', { text: 'Templates' });
+		this.createTemplateSettings(containerEl);
+		
+		this.addCustomStyles(containerEl);
+	}
+	
+	private createProviderSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("AI Provider")
 			.setDesc("Choose your AI provider")
@@ -53,37 +73,72 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Ollama Host")
-			.setDesc("The URL of your Ollama instance")
-			.addText((text) =>
-				text
-					.setPlaceholder("http://localhost:11434")
-					.setValue(this.plugin.settings.ollamaHost)
-					.onChange(async (value) => {
-						await this.saveSettingsWithFeedback(async () => {
-							this.plugin.settings.ollamaHost = value;
-							await this.plugin.saveSettings();
-						});
-					})
-			)
-			.setDisabled(this.plugin.settings.aiProvider !== "ollama");
+		if (this.plugin.settings.aiProvider === "openai") {
+			new Setting(containerEl)
+				.setName("OpenAI Model")
+				.setDesc("Choose the OpenAI model to use")
+				.addDropdown((dropdown) =>
+					dropdown
+						.addOption("gpt-3.5-turbo", "GPT-3.5 Turbo")
+						.addOption("gpt-4", "GPT-4")
+						.addOption("gpt-4o", "GPT-4o")
+						.setValue(this.plugin.settings.openaiModel)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.openaiModel = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
 
-		new Setting(containerEl)
-			.setName("API Key")
-			.setDesc("Enter your AI provider API key")
-			.addText((text) =>
-				text
-					.setPlaceholder("Enter API key...")
-					.setValue(this.plugin.settings.apiKey)
-					.onChange(async (value) => {
-						await this.saveSettingsWithFeedback(async () => {
-							this.plugin.settings.apiKey = value;
-							await this.plugin.saveSettings();
-						});
-					})
-			);
+			new Setting(containerEl)
+				.setName("API Key")
+				.setDesc("Enter your OpenAI API key")
+				.addText((text) =>
+					text
+						.setPlaceholder("Enter API key...")
+						.setValue(this.plugin.settings.apiKey)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.apiKey = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
+		} else if (this.plugin.settings.aiProvider === "ollama") {
+			new Setting(containerEl)
+				.setName("Ollama Host")
+				.setDesc("The URL of your Ollama instance")
+				.addText((text) =>
+					text
+						.setPlaceholder("http://localhost:11434")
+						.setValue(this.plugin.settings.ollamaHost)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.ollamaHost = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
 
+			new Setting(containerEl)
+				.setName("Ollama Model")
+				.setDesc("The model to use with Ollama")
+				.addText((text) =>
+					text
+						.setPlaceholder("deepseek-r1:latest")
+						.setValue(this.plugin.settings.ollamaModel)
+						.onChange(async (value) => {
+							await this.saveSettingsWithFeedback(async () => {
+								this.plugin.settings.ollamaModel = value;
+								await this.plugin.saveSettings();
+							});
+						})
+				);
+		}
+	}
+
+	private createAnalysisSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Analysis Schedule")
 			.setDesc("When to run the analysis")
@@ -132,7 +187,9 @@ export class RecapitanSettingTab extends PluginSettingTab {
 						});
 					})
 			);
+	}
 
+	private createCacheSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Cache Duration')
 			.setDesc('How long to cache analysis results (in minutes)')
@@ -164,7 +221,43 @@ export class RecapitanSettingTab extends PluginSettingTab {
 						});
 					})
 			);
+	}
+	
+	private createLoggingSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Enable Logging")
+			.setDesc("Enable detailed logging for troubleshooting")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.loggingEnabled)
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							this.plugin.settings.loggingEnabled = value;
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+			
+		new Setting(containerEl)
+			.setName("Log Level")
+			.setDesc("Set the level of detail for logs")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("error", "Error (Minimal)")
+					.addOption("warn", "Warning")
+					.addOption("info", "Info (Recommended)")
+					.addOption("debug", "Debug (Verbose)")
+					.setValue(this.plugin.settings.logLevel)
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							this.plugin.settings.logLevel = value as RecapitanSettings["logLevel"];
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+	}
 
+	private createTemplateSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Daily Reflection Template")
 			.setDesc("Template for daily AI reflection prompts")
@@ -202,19 +295,21 @@ export class RecapitanSettingTab extends PluginSettingTab {
 				text.inputEl.rows = 6;
 				text.inputEl.cols = 50;
 				text.inputEl.addClass("reflection-template-input");
-
-				// Add custom styles for the textarea
-				const styleEl = document.createElement("style");
-				styleEl.innerHTML = `
-                    .reflection-template-input {
-                        width: 100%;
-                        font-family: var(--font-monospace);
-                        resize: vertical;
-                        min-height: 100px;
-                        padding: 8px;
-                    }
-                `;
-				containerEl.appendChild(styleEl);
 			});
+	}
+
+	private addCustomStyles(containerEl: HTMLElement): void {
+		// Add custom styles for the textarea
+		const styleEl = document.createElement("style");
+		styleEl.innerHTML = `
+			.reflection-template-input {
+				width: 100%;
+				font-family: var(--font-monospace);
+				resize: vertical;
+				min-height: 100px;
+				padding: 8px;
+			}
+		`;
+		containerEl.appendChild(styleEl);
 	}
 }

@@ -2,6 +2,7 @@ import { AIService } from "./AIService";
 import { AIServiceError } from "../utils/error";
 import { retry, RetryOptions } from "../utils/retry";
 import { fetchWithError } from "../utils/fetchWithError";
+import { LoggingService } from "./LoggingService";
 
 interface FetchResponse {
 	response: string;
@@ -20,13 +21,17 @@ export class OllamaService implements AIService {
 		delayMs: 1000,
 		backoffFactor: 2,
 	};
+	private logger?: LoggingService;
 
 	/**
 	 * Constructs a new OllamaService instance.
 	 * @param host - The host URL of the Ollama server.
 	 * @param model - The model to use for the analysis.
+	 * @param logger - Optional logger for debugging.
 	 */
-	constructor(private host: string, private model: string) {}
+	constructor(private host: string, private model: string, logger?: LoggingService) {
+		this.logger = logger;
+	}
 
 	/**
 	 * Analyzes the content of a journal entry using Ollama.
@@ -40,8 +45,21 @@ export class OllamaService implements AIService {
 		template: string,
 		style: string
 	): Promise<string> {
+		this.logger?.info(`Analyzing content with Ollama model: ${this.model}`);
+		this.logger?.debug(`Using ${style} communication style`);
+		
 		return retry(async () => {
 			try {
+				this.logger?.debug(`Sending request to Ollama at ${this.host}/api/generate`);
+				
+				const prompt = `You are an insightful journaling assistant. Provide ${
+					style === "direct"
+						? "direct and honest"
+						: "supportive and gentle"
+				} feedback.\n\n${template}\n\nContent to analyze:\n${content}`;
+				
+				this.logger?.debug("Request prepared, sending to Ollama");
+				
 				const data = await fetchWithError<FetchResponse>({
 					url: `${this.host}/api/generate`,
 					method: "POST",
@@ -50,25 +68,28 @@ export class OllamaService implements AIService {
 					},
 					body: {
 						model: this.model,
-						prompt: `You are an insightful journaling assistant. Provide ${
-							style === "direct"
-								? "direct and honest"
-								: "supportive and gentle"
-						} feedback.\n\n${template}\n\nContent to analyze:\n${content}`,
+						prompt: prompt,
 						stream: false,
 					} as RequestBody,
 				});
 
 				if (!data.response) {
+					const errorMsg = "No content in response";
+					this.logger?.error(errorMsg);
 					throw new AIServiceError(
-						"No content in response",
+						errorMsg,
 						new Error("Empty response"),
 						false
 					);
 				}
+				
+				this.logger?.info("Successfully received response from Ollama");
+				this.logger?.debug(`Response length: ${data.response.length} characters`);
+				
 				return data.response;
 			} catch (error) {
 				if (error instanceof AIServiceError) {
+					this.logger?.error(`AIServiceError: ${error.message}`, error.cause);
 					throw error;
 				}
 
@@ -77,15 +98,19 @@ export class OllamaService implements AIService {
 					error instanceof Error &&
 					error.message.includes("HTTP error! status: 500")
 				) {
+					const errorMsg = "Ollama request failed: Internal Server Error";
+					this.logger?.error(errorMsg, error);
 					throw new AIServiceError(
-						"Ollama request failed: Internal Server Error",
+						errorMsg,
 						error,
 						true
 					);
 				}
 
+				const errorMsg = "Failed to communicate with Ollama";
+				this.logger?.error(errorMsg, error instanceof Error ? error : new Error(String(error)));
 				throw new AIServiceError(
-					"Failed to communicate with Ollama",
+					errorMsg,
 					error instanceof Error ? error : new Error(String(error)),
 					true
 				);

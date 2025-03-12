@@ -5,6 +5,7 @@ import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
 import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from './prompts/weeklyReflectionPrompt';
 
 export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
+export type LogLevel = "error" | "warn" | "info" | "debug";
 
 export interface StreamingOptions {
     streamingUpdateInterval?: number;
@@ -40,6 +41,8 @@ export interface RecapitanSettings {
     ollamaHost: string;
     cacheTTLMinutes: number;
     cacheMaxSize: number;
+    loggingEnabled: boolean;
+    logLevel: LogLevel;
 }
 
 
@@ -67,4 +70,6 @@ export const DEFAULT_SETTINGS: RecapitanSettings = {
     cacheMaxSize: 100,
     ollamaEndpoint: 'http://localhost:11434/api/generate',
     ollamaModel: 'deepseek-r1:latest',
+    loggingEnabled: false,
+    logLevel: 'info'
 }
