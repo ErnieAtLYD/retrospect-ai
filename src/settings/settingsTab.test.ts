@@ -112,7 +112,9 @@ describe("SettingsTab", () => {
 			ollamaModel: "deepseek-r1:latest",
 			openaiModel: "gpt-4",
 			reflectionTemplate: "",
-			weeklyReflectionTemplate: ""
+			weeklyReflectionTemplate: "",
+			loggingEnabled: false,
+			logLevel: "info"
 		};
 
 		// Create settings tab instance
@@ -178,7 +180,9 @@ describe("SettingsTab", () => {
 			ollamaModel: "deepseek-r1:latest",
 			openaiModel: "gpt-3.5-turbo", // Start with 3.5
 			reflectionTemplate: "",
-			weeklyReflectionTemplate: ""
+			weeklyReflectionTemplate: "",
+			loggingEnabled: false,
+			logLevel: "info"
 		};
 
 		// Create settings tab instance with these settings
@@ -226,7 +230,9 @@ describe("SettingsTab", () => {
 			ollamaEndpoint: "http://localhost:11434/api/generate",
 			ollamaModel: "deepseek-r1:latest",
 			reflectionTemplate: "",
-			weeklyReflectionTemplate: ""
+			weeklyReflectionTemplate: "",
+			loggingEnabled: false,
+			logLevel: "info"
 		};
 
 		// Create settings tab instance
@@ -277,7 +283,9 @@ describe("SettingsTab", () => {
 			ollamaModel: "deepseek-r1:latest", // Start with deepseek
 			openaiModel: "gpt-4",
 			reflectionTemplate: "",
-			weeklyReflectionTemplate: ""
+			weeklyReflectionTemplate: "",
+			loggingEnabled: false,
+			logLevel: "info"
 		};
 
 		// Create settings tab instance with these settings

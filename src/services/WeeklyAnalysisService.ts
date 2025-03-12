@@ -63,13 +63,18 @@ export class WeeklyAnalysisService {
                 .filter((file: TFile) => {
                     const match = file.name.match(/^(\d{4}-\d{2}-\d{2})\.md$/);
                     if (!match) {
+                        return false;
+                    }
+                    
                     const fileDate = new Date(match[1]).getTime();
                     return fileDate >= oneWeekAgo && fileDate <= Date.now();
                 })
-                .map(async (file: TFile) => ({
-                    date: file.name.replace(".md", ""),
-                    content: await this.app.vault.read(file),
-                }))
+                .map(async (file: TFile) => {
+                    return {
+                        date: file.name.replace(".md", ""),
+                        content: await this.app.vault.read(file)
+                    };
+                })
         );
         
         this.logger?.debug(`Found ${entries.length} entries in the past week`);

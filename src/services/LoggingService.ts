@@ -55,14 +55,14 @@ export class LoggingService {
      * @param error - Optional error object
      */
     error(message: string, error?: Error | unknown): void {
-        if (!this.enabled || this.level < LogLevel.ERROR) {
-        
-        const timestamp = new Date().toISOString();
-        console.error(`[${timestamp}] [ERROR] ${message}`, error);
-        
-        // Log stack trace if error object is provided
-        if (error instanceof Error && error.stack) {
-            console.error(error.stack);
+        if (this.enabled && this.level >= LogLevel.ERROR) {
+            const timestamp = new Date().toISOString();
+            console.error(`[${timestamp}] [ERROR] ${message}`, error);
+            
+            // Log stack trace if error object is provided
+            if (error instanceof Error && error.stack) {
+                console.error(error.stack);
+            }
         }
     }
 
@@ -72,10 +72,10 @@ export class LoggingService {
      * @param data - Optional additional data
      */
     warn(message: string, data?: unknown): void {
-        if (!this.enabled || this.level < LogLevel.WARN) {
-        
-        const timestamp = new Date().toISOString();
-        console.warn(`[${timestamp}] [WARN] ${message}`, data);
+        if (this.enabled && this.level >= LogLevel.WARN) {
+            const timestamp = new Date().toISOString();
+            console.warn(`[${timestamp}] [WARN] ${message}`, data);
+        }
     }
 
     /**
@@ -84,10 +84,10 @@ export class LoggingService {
      * @param data - Optional additional data
      */
     info(message: string, data?: unknown): void {
-        if (!this.enabled || this.level < LogLevel.INFO) {
-        
-        const timestamp = new Date().toISOString();
-        console.info(`[${timestamp}] [INFO] ${message}`, data);
+        if (this.enabled && this.level >= LogLevel.INFO) {
+            const timestamp = new Date().toISOString();
+            console.info(`[${timestamp}] [INFO] ${message}`, data);
+        }
     }
 
     /**
@@ -96,9 +96,9 @@ export class LoggingService {
      * @param data - Optional additional data
      */
     debug(message: string, data?: unknown): void {
-        if (!this.enabled || this.level < LogLevel.DEBUG) {
-        
-        const timestamp = new Date().toISOString();
-        console.debug(`[${timestamp}] [DEBUG] ${message}`, data);
+        if (this.enabled && this.level >= LogLevel.DEBUG) {
+            const timestamp = new Date().toISOString();
+            console.debug(`[${timestamp}] [DEBUG] ${message}`, data);
+        }
     }
 }
