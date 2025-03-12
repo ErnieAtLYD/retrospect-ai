@@ -16,6 +16,7 @@ import { OllamaService } from "./services/OllamaService";
 import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "services/StreamingManager";
 import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
+import { LoggingService, LogLevel } from "./services/LoggingService";
 
 export default class Recapitan extends Plugin {
 	settings!: RecapitanSettings;
@@ -23,7 +24,8 @@ export default class Recapitan extends Plugin {
 	private aiService!: AIService;
 	private privacyManager!: PrivacyManager;
 	private weeklyAnalysisService!: WeeklyAnalysisService;
-	private statusBarItem: HTMLElement | null = null; // Add this line
+	private statusBarItem: HTMLElement | null = null;
+	private logger!: LoggingService;
 
 	async loadSettings() {
 		this.settings = Object.assign(
@@ -69,23 +71,37 @@ export default class Recapitan extends Plugin {
 	 * Initializes the services.
 	 */
 	private initializeServices() {
+		// Initialize logger first so other services can use it
+		const logLevel = this.getLogLevel(this.settings.logLevel);
+		this.logger = new LoggingService(
+			this.settings,
+			logLevel,
+			this.settings.loggingEnabled
+		);
+		
+		this.logger.info("Initializing Recapitan services");
+		
 		this.privacyManager = new PrivacyManager(this.settings.privateMarker);
 
 		switch (this.settings.aiProvider) {
 			case "openai":
+				this.logger.debug("Initializing OpenAI service");
 				this.aiService = new OpenAIService(
 					this.settings.apiKey,
-					this.settings.model
+					this.settings.openaiModel
 				);
 				break;
 			case "ollama":
+				this.logger.debug("Initializing Ollama service");
 				this.aiService = new OllamaService(
 					this.settings.ollamaHost,
-					this.settings.model
+					this.settings.ollamaModel
 				);
 				break;
 			default:
-				throw new Error("Unsupported AI provider");
+				const errorMsg = "Unsupported AI provider";
+				this.logger.error(errorMsg);
+				throw new Error(errorMsg);
 		}
 
 		this.analysisManager = new AnalysisManager(
@@ -98,8 +114,24 @@ export default class Recapitan extends Plugin {
 			this.settings,
 			this.app,
 			this.privacyManager,
-			this.aiService
+			this.aiService,
+			this.logger
 		);
+		
+		this.logger.info("Services initialized successfully");
+	}
+	
+	/**
+	 * Converts string log level to enum value
+	 */
+	private getLogLevel(level: string): LogLevel {
+		switch (level) {
+			case "error": return LogLevel.ERROR;
+			case "warn": return LogLevel.WARN;
+			case "info": return LogLevel.INFO;
+			case "debug": return LogLevel.DEBUG;
+			default: return LogLevel.INFO;
+		}
 	}
 
 	/**

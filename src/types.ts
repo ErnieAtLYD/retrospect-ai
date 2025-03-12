@@ -4,16 +4,8 @@ import { App } from 'obsidian';
 import { DEFAULT_REFLECTION_TEMPLATE } from './prompts/reflectionPrompt';
 import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from './prompts/weeklyReflectionPrompt';
 
-export interface AIReflectionSettings {
-    aiProvider: string;
-    apiKey: string;
-    analysisSchedule: string;
-    communicationStyle: string;
-    privacyLevel: string;
-    outputFormat: string;
-}
-
 export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
+export type LogLevel = "error" | "warn" | "info" | "debug";
 
 export interface StreamingOptions {
     streamingUpdateInterval?: number;
@@ -38,7 +30,9 @@ type CommunicationStyle = 'direct' | 'gentle';
 export interface RecapitanSettings {
     apiKey: string;
     aiProvider: AIProvider;
-    model: string;
+    openaiModel: string;  // e.g. "gpt-4o", "gpt-3.5-turbo"
+    ollamaEndpoint: string; // e.g. "http://localhost:11434/api/generate"
+    ollamaModel: string; // e.g. "deepseek-r1:latest", "llama3.1:8b"
     reflectionTemplate: string;
     weeklyReflectionTemplate: string;
     analysisSchedule: AnalysisSchedule;
@@ -47,6 +41,8 @@ export interface RecapitanSettings {
     ollamaHost: string;
     cacheTTLMinutes: number;
     cacheMaxSize: number;
+    loggingEnabled: boolean;
+    logLevel: LogLevel;
 }
 
 
@@ -63,7 +59,7 @@ export interface ExtendedApp extends App {
 export const DEFAULT_SETTINGS: RecapitanSettings = {
     apiKey: '',
     aiProvider: 'openai',
-    model: 'gpt-4',
+    openaiModel: 'gpt-3.5-turbo',
     reflectionTemplate: DEFAULT_REFLECTION_TEMPLATE,
     weeklyReflectionTemplate: DEFAULT_WEEKLY_REFLECTION_TEMPLATE,
     analysisSchedule: 'daily',
@@ -71,5 +67,9 @@ export const DEFAULT_SETTINGS: RecapitanSettings = {
     privateMarker: ':::private',
     ollamaHost: 'http://localhost:11434',
     cacheTTLMinutes: 60,
-    cacheMaxSize: 100
+    cacheMaxSize: 100,
+    ollamaEndpoint: 'http://localhost:11434/api/generate',
+    ollamaModel: 'deepseek-r1:latest',
+    loggingEnabled: false,
+    logLevel: 'info'
 }

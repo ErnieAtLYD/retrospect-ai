@@ -2,6 +2,7 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
 import Recapitan from "../main";
 import { RecapitanSettings, ExtendedApp } from "../types";
+import { LogLevel } from "../services/LoggingService";
 
 export class RecapitanSettingTab extends PluginSettingTab {
 	plugin: Recapitan;
@@ -212,10 +213,41 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					})
 			);
 	}
+	
+	private createLoggingSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Enable Logging")
+			.setDesc("Enable detailed logging for troubleshooting")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.loggingEnabled)
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							this.plugin.settings.loggingEnabled = value;
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+			
+		new Setting(containerEl)
+			.setName("Log Level")
+			.setDesc("Set the level of detail for logs")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("error", "Error (Minimal)")
+					.addOption("warn", "Warning")
+					.addOption("info", "Info (Recommended)")
+					.addOption("debug", "Debug (Verbose)")
+					.setValue(this.plugin.settings.logLevel)
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							this.plugin.settings.logLevel = value as RecapitanSettings["logLevel"];
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+	}
 
-	/**
-	 * Creates the template settings with text areas
-	 */
 	private createTemplateSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Daily Reflection Template")
