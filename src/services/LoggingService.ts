@@ -84,7 +84,7 @@ export class LoggingService {
      * @param data - Optional additional data
      */
     info(message: string, data?: unknown): void {
-        if (!this.enabled || this.level < LogLevel.INFO) return;
+        if (!this.enabled || this.level < LogLevel.INFO) {
         
         const timestamp = new Date().toISOString();
         console.info(`[${timestamp}] [INFO] ${message}`, data);
