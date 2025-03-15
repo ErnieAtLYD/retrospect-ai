@@ -37,6 +37,8 @@ export default class Recapitan extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		// Re-initialize services to apply new settings
+		this.initializeServices();
 	}
 
 	async onload() {
@@ -80,8 +82,12 @@ export default class Recapitan extends Plugin {
 		);
 		
 		this.logger.info("Initializing Recapitan services");
+		this.logger.debug(`Current AI provider: ${this.settings.aiProvider}`);
 		
 		this.privacyManager = new PrivacyManager(this.settings.privateMarker);
+
+		// Clear existing service before creating a new one
+		this.aiService = null as any;
 
 		switch (this.settings.aiProvider) {
 			case "openai":
@@ -92,14 +98,14 @@ export default class Recapitan extends Plugin {
 				);
 				break;
 			case "ollama":
-				this.logger.debug("Initializing Ollama service");
+				this.logger.debug("Initializing Ollama service with host: " + this.settings.ollamaHost);
 				this.aiService = new OllamaService(
 					this.settings.ollamaHost,
 					this.settings.ollamaModel
 				);
 				break;
 			default:
-				const errorMsg = "Unsupported AI provider";
+				const errorMsg = `Unsupported AI provider: ${this.settings.aiProvider}`;
 				this.logger.error(errorMsg);
 				throw new Error(errorMsg);
 		}
