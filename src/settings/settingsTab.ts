@@ -2,7 +2,6 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
 import Recapitan from "../main";
 import { RecapitanSettings, ExtendedApp } from "../types";
-import { LogLevel } from "../services/LoggingService";
 
 export class RecapitanSettingTab extends PluginSettingTab {
 	plugin: Recapitan;
