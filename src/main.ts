@@ -17,6 +17,7 @@ import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "services/StreamingManager";
 import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "./services/LoggingService";
+import { debounce } from "utils/debounce";
 
 export default class Recapitan extends Plugin {
 	settings!: RecapitanSettings;
@@ -35,10 +36,15 @@ export default class Recapitan extends Plugin {
 		);
 	}
 
+	// Create a debounced version of the service initialization
+	private debouncedInitializeServices = debounce(() => {
+		this.initializeServices();
+	}, 500); // 500ms delay
+
 	async saveSettings() {
 		await this.saveData(this.settings);
-		// Re-initialize services to apply new settings
-		this.initializeServices();
+		// Use the debounced version instead of calling directly
+		this.debouncedInitializeServices();
 	}
 
 	async onload() {
