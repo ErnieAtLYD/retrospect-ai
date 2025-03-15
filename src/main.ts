@@ -17,11 +17,12 @@ import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "services/StreamingManager";
 import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "./services/LoggingService";
+import { debounce } from "utils/debounce";
 
 export default class Recapitan extends Plugin {
 	settings!: RecapitanSettings;
 	private analysisManager!: AnalysisManager;
-	private aiService!: AIService;
+	private aiService: AIService | undefined;
 	private privacyManager!: PrivacyManager;
 	private weeklyAnalysisService!: WeeklyAnalysisService;
 	private statusBarItem: HTMLElement | null = null;
@@ -35,8 +36,15 @@ export default class Recapitan extends Plugin {
 		);
 	}
 
+	// Create a debounced version of the service initialization
+	private debouncedInitializeServices = debounce(() => {
+		this.initializeServices();
+	}, 500); // 500ms delay
+
 	async saveSettings() {
 		await this.saveData(this.settings);
+		// Use the debounced version instead of calling directly
+		this.debouncedInitializeServices();
 	}
 
 	async onload() {
@@ -80,8 +88,12 @@ export default class Recapitan extends Plugin {
 		);
 		
 		this.logger.info("Initializing Recapitan services");
+		this.logger.debug(`Current AI provider: ${this.settings.aiProvider}`);
 		
 		this.privacyManager = new PrivacyManager(this.settings.privateMarker);
+
+		// Clear existing service before creating a new one
+		this.aiService = undefined;
 
 		switch (this.settings.aiProvider) {
 			case "openai":
@@ -92,14 +104,14 @@ export default class Recapitan extends Plugin {
 				);
 				break;
 			case "ollama":
-				this.logger.debug("Initializing Ollama service");
+				this.logger.debug("Initializing Ollama service with host: " + this.settings.ollamaHost);
 				this.aiService = new OllamaService(
 					this.settings.ollamaHost,
 					this.settings.ollamaModel
 				);
 				break;
 			default:
-				const errorMsg = "Unsupported AI provider";
+				const errorMsg = `Unsupported AI provider: ${this.settings.aiProvider}`;
 				this.logger.error(errorMsg);
 				throw new Error(errorMsg);
 		}

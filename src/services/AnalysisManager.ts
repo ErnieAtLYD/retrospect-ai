@@ -12,6 +12,9 @@ export class AnalysisManager {
         cacheTTLMinutes: number = 60,
         cacheMaxSize: number = 100
     ) {
+        if (!aiService) {
+            throw new Error("AI Service must be provided to AnalysisManager");
+        }
         this.cacheManager = new CacheManager(cacheTTLMinutes, cacheMaxSize);
     }
 
@@ -33,6 +36,7 @@ export class AnalysisManager {
             return cachedResult;
         }
 
+        // We know this.aiService is definitely AIService because of the constructor check
         const result = await this.aiService.analyze(sanitizedContent, template, style);
         this.cacheManager.set(cacheKey, result);
         return result;

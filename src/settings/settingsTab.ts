@@ -2,7 +2,6 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
 import Recapitan from "../main";
 import { RecapitanSettings, ExtendedApp } from "../types";
-import { LogLevel } from "../services/LoggingService";
 
 export class RecapitanSettingTab extends PluginSettingTab {
 	plugin: Recapitan;
@@ -48,6 +47,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							this.plugin.settings.aiProvider =
 								value as RecapitanSettings["aiProvider"];
 							await this.plugin.saveSettings();
+							// The saveSettings method will reinitialize services
 							this.display();
 						});
 					})
@@ -66,6 +66,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							await this.saveSettingsWithFeedback(async () => {
 								this.plugin.settings.ollamaHost = value;
 								await this.plugin.saveSettings();
+								// The saveSettings method will reinitialize services
 							});
 						})
 				);
@@ -82,6 +83,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							await this.saveSettingsWithFeedback(async () => {
 								this.plugin.settings.ollamaModel = value;
 								await this.plugin.saveSettings();
+								// The saveSettings method will reinitialize services
 							});
 						})
 				);
@@ -99,6 +101,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							await this.saveSettingsWithFeedback(async () => {
 								this.plugin.settings.apiKey = value;
 								await this.plugin.saveSettings();
+								// The saveSettings method will reinitialize services
 							});
 						})
 				);
@@ -117,6 +120,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 							await this.saveSettingsWithFeedback(async () => {
 								this.plugin.settings.openaiModel = value;
 								await this.plugin.saveSettings();
+								// The saveSettings method will reinitialize services
 							});
 						})
 				);
