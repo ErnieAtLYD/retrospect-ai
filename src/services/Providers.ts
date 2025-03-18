@@ -1,5 +1,5 @@
 import { Setting } from "obsidian";
-import { RetrospectAISettings } from "types";
+import { RetrospectAISettings, AIProvider } from "types";
 
 interface ProviderConfig {
 	name: string;
@@ -23,7 +23,7 @@ interface ProviderConfig {
  * connection to the provider, and the model settings
  * are used to select the model to use.
  */
-const providers: Record<string, ProviderConfig> = {
+const providers: Record<AIProvider, ProviderConfig> = {
 	openai: {
 		name: "OpenAI",
 		createConnectionSettings: (containerEl, settings, saveCallback) => {
