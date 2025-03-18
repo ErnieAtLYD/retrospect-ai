@@ -220,6 +220,74 @@ export default class RetrospectAI extends Plugin {
 
 
 	/**
+	 * Adds a ribbon icon for quick analysis of the daily journal
+	 */
+	private addRibbonIcon() {
+		const ribbonIconEl = this.addRibbonIcon(
+			'brain-cog', // You can choose a different icon from Obsidian's icon set
+			'Analyze Daily Journal',
+			async () => {
+				this.logger.info("Ribbon icon clicked - analyzing daily journal");
+				
+				try {
+					// Get today's date in YYYY-MM-DD format
+					const today = new Date();
+					const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+					
+					// Try to find a daily note with today's date in the filename
+					const files = this.app.vault.getMarkdownFiles();
+					const dailyNote = files.find(file => file.path.includes(formattedDate));
+					
+					if (!dailyNote) {
+						new Notice("No journal entry found for today");
+						this.logger.warn(`No journal entry found for today (${formattedDate})`);
+						return;
+					}
+					
+					// Read the file content
+					const content = await this.app.vault.read(dailyNote);
+					
+					// Open the file in a new leaf if it's not already open
+					const leaf = this.app.workspace.getLeaf(false);
+					await leaf.openFile(dailyNote);
+					
+					// Get the editor from the view
+					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+					if (!view) {
+						new Notice("Could not get editor view");
+						return;
+					}
+					
+					const editor = view.editor;
+					
+					// Create a streaming manager for the editor
+					const streamingManager = new StreamingEditorManager(editor);
+					
+					// Show a notice that analysis is starting
+					new Notice("Analyzing today's journal entry...");
+					
+					// Analyze the content and stream the results
+					await streamingManager.streamAnalysis(
+						this.analyzeContent(content),
+						{
+							loadingIndicatorPosition: "bottom",
+							streamingUpdateInterval: 50,
+						}
+					);
+					
+					new Notice("Journal analysis complete");
+				} catch (error) {
+					this.logger.error("Error analyzing daily journal", error);
+					new Notice("Error analyzing daily journal: " + (error instanceof Error ? error.message : String(error)));
+				}
+			}
+		);
+		
+		// Add a tooltip
+		ribbonIconEl.addClass('retrospect-ai-ribbon-icon');
+	}
+
+	/**
 	 * Analyzes the content.
 	 * @param content
 	 * @returns
