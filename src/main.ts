@@ -31,7 +31,7 @@ export default class RetrospectAI extends Plugin {
 	async loadSettings() {
 		this.settings = Object.assign(
 			{},
-			DEFAULT_SETTINGS,
+			DEFAULT_RETROSPECT_AI_SETTINGS,
 			await this.loadData()
 		);
 	}
@@ -63,7 +63,7 @@ export default class RetrospectAI extends Plugin {
         }
 
 		this.addSettingTab(
-			new RecapitanSettingTab(this.app as ExtendedApp, this)
+			new RetrospectAISettingTab(this.app as ExtendedApp, this)
 		);
 		this.addCommands();
 	}
@@ -87,7 +87,7 @@ export default class RetrospectAI extends Plugin {
 			this.settings.loggingEnabled
 		);
 		
-		this.logger.info("Initializing Recapitan services");
+		this.logger.info("Initializing Retrospect AI services");
 		this.logger.debug(`Current AI provider: ${this.settings.aiProvider}`);
 		
 		this.privacyManager = new PrivacyManager(this.settings.privateMarker);

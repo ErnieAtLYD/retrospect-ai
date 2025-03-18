@@ -45,7 +45,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
 							this.plugin.settings.aiProvider =
-								value as RecapitanSettings["aiProvider"];
+								value as RetrospectAISettings["aiProvider"];
 							await this.plugin.saveSettings();
 							// The saveSettings method will reinitialize services
 							this.display();
@@ -142,7 +142,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
 							this.plugin.settings.analysisSchedule =
-								value as RecapitanSettings["analysisSchedule"];
+								value as RetrospectAISettings["analysisSchedule"];
 							await this.plugin.saveSettings();
 						});
 					})
@@ -159,7 +159,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
 							this.plugin.settings.communicationStyle =
-								value as RecapitanSettings["communicationStyle"];
+								value as RetrospectAISettings["communicationStyle"];
 							await this.plugin.saveSettings();
 						});
 					})
@@ -248,7 +248,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.logLevel)
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
-							this.plugin.settings.logLevel = value as RecapitanSettings["logLevel"];
+							this.plugin.settings.logLevel = value as RetrospectAISettings["logLevel"];
 							await this.plugin.saveSettings();
 						});
 					})
