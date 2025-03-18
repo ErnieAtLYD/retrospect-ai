@@ -2,6 +2,7 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
 import RetrospectAI from "../main";
 import { RetrospectAISettings, ExtendedApp } from "../types";
+import providers from "../services/Providers";
 
 export class RetrospectAISettingTab extends PluginSettingTab {
 	plugin: RetrospectAI;
@@ -34,13 +35,17 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 	 * Creates the AI provider selection settings
 	 */
 	private createProviderSettings(containerEl: HTMLElement): void {
+		// Create provider selection dropdown
 		new Setting(containerEl)
 			.setName("AI Provider")
 			.setDesc("Choose your AI provider")
-			.addDropdown((dropdown) =>
+			.addDropdown((dropdown) => {
+				// Add options from providers
+				Object.entries(providers).forEach(([key, provider]) => {
+					dropdown.addOption(key, provider.name);
+				});
+				
 				dropdown
-					.addOption("openai", "OpenAI")
-					.addOption("ollama", "Ollama")
 					.setValue(this.plugin.settings.aiProvider)
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
@@ -50,81 +55,32 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 							// The saveSettings method will reinitialize services
 							this.display();
 						});
-					})
-			);
+					});
+			});
 
-		// Provider-specific settings
-		if (this.plugin.settings.aiProvider === "ollama") {
-			new Setting(containerEl)
-				.setName("Ollama Host")
-				.setDesc("The URL of your Ollama instance")
-				.addText((text) =>
-					text
-						.setPlaceholder("http://localhost:11434")
-						.setValue(this.plugin.settings.ollamaHost)
-						.onChange(async (value) => {
-							await this.saveSettingsWithFeedback(async () => {
-								this.plugin.settings.ollamaHost = value;
-								await this.plugin.saveSettings();
-								// The saveSettings method will reinitialize services
-							});
-						})
-				);
-				
-			// Add Ollama model selection
-			new Setting(containerEl)
-				.setName("Ollama Model")
-				.setDesc("The model to use with Ollama (e.g., llama3.1:8b, deepseek-r1:latest)")
-				.addText((text) =>
-					text
-						.setPlaceholder("llama3.1:8b")
-						.setValue(this.plugin.settings.ollamaModel)
-						.onChange(async (value) => {
-							await this.saveSettingsWithFeedback(async () => {
-								this.plugin.settings.ollamaModel = value;
-								await this.plugin.saveSettings();
-								// The saveSettings method will reinitialize services
-							});
-						})
-				);
+		// Get the current provider configuration
+		const currentProvider = providers[this.plugin.settings.aiProvider];
+		if (!currentProvider) {
+			throw new Error(`Provider ${this.plugin.settings.aiProvider} not found`);
 		}
 
-		if (this.plugin.settings.aiProvider === "openai") {
-			new Setting(containerEl)
-				.setName("API Key")
-				.setDesc("Enter your OpenAI API key")
-				.addText((text) =>
-					text
-						.setPlaceholder("Enter API key...")
-						.setValue(this.plugin.settings.apiKey)
-						.onChange(async (value) => {
-							await this.saveSettingsWithFeedback(async () => {
-								this.plugin.settings.apiKey = value;
-								await this.plugin.saveSettings();
-								// The saveSettings method will reinitialize services
-							});
-						})
-				);
-				
-			// Add OpenAI model selection
-			new Setting(containerEl)
-				.setName("OpenAI Model")
-				.setDesc("Select which OpenAI model to use")
-				.addDropdown((dropdown) =>
-					dropdown
-						.addOption("gpt-4o", "GPT-4o")
-						.addOption("gpt-4", "GPT-4")
-						.addOption("gpt-3.5-turbo", "GPT-3.5 Turbo")
-						.setValue(this.plugin.settings.openaiModel || "gpt-4")
-						.onChange(async (value) => {
-							await this.saveSettingsWithFeedback(async () => {
-								this.plugin.settings.openaiModel = value;
-								await this.plugin.saveSettings();
-								// The saveSettings method will reinitialize services
-							});
-						})
-				);
-		}
+		// Create provider-specific connection settings
+		currentProvider.createConnectionSettings(
+			containerEl,
+			this.plugin.settings,
+			async () => {
+				await this.plugin.saveSettings();
+			}
+		);
+
+		// Create provider-specific model settings
+		currentProvider.createModelSettings(
+			containerEl,
+			this.plugin.settings,
+			async () => {
+				await this.plugin.saveSettings();
+			}
+		);
 	}
 
 	/**
@@ -301,6 +257,8 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 
 	/**
 	 * Adds custom styles for the settings
+	 * @param containerEl
+	 * @returns void
 	 */
 	private addCustomStyles(containerEl: HTMLElement): void {
 		const styleEl = document.createElement("style");

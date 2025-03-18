@@ -6,5 +6,293 @@
     "deletedMessageIDs": [],
     "deletedPanelChatIDs": []
   },
-  "kv_store": {}
+  "kv_store": {
+    "unique_matched_lines_count": 0,
+    "total_repo_line_count": 3604,
+    "best_prompt_response": null,
+    "file_statistics": [
+      {
+        "file": ".editorconfig",
+        "total_lines": 11,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": ".eslintignore",
+        "total_lines": 4,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": ".npmrc",
+        "total_lines": 1,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "LICENSE",
+        "total_lines": 22,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "README.md",
+        "total_lines": 145,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "esbuild.config.mjs",
+        "total_lines": 50,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "eslint.config.js",
+        "total_lines": 56,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "jest.config.js",
+        "total_lines": 14,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "jest.setup.js",
+        "total_lines": 23,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "manifest.json",
+        "total_lines": 14,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "package.json",
+        "total_lines": 37,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/__mocks__/MockApp.ts",
+        "total_lines": 34,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/__mocks__/MockPlugin.ts",
+        "total_lines": 13,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/main.ts",
+        "total_lines": 240,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/prompts/reflectionPrompt.ts",
+        "total_lines": 29,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/prompts/weeklyReflectionPrompt.ts",
+        "total_lines": 31,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/AIService.ts",
+        "total_lines": 21,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/AnalysisManager.test.ts",
+        "total_lines": 60,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/AnalysisManager.ts",
+        "total_lines": 49,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/CacheManager.test.ts",
+        "total_lines": 14,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/CacheManager.ts",
+        "total_lines": 88,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/LoggingService.test.ts",
+        "total_lines": 398,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/LoggingService.ts",
+        "total_lines": 105,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/OllamaService.test.ts",
+        "total_lines": 140,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/OllamaService.ts",
+        "total_lines": 121,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/OpenAIService.test.ts",
+        "total_lines": 52,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/OpenAIService.ts",
+        "total_lines": 77,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/PrivacyManager.test.ts",
+        "total_lines": 58,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/PrivacyManager.ts",
+        "total_lines": 13,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/StreamingManager.test.ts",
+        "total_lines": 122,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/StreamingManager.ts",
+        "total_lines": 242,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/WeeklyAnalysisService.test.ts",
+        "total_lines": 29,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/WeeklyAnalysisService.ts",
+        "total_lines": 176,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/settings/settingsTab.test.ts",
+        "total_lines": 321,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/settings/settingsTab.ts",
+        "total_lines": 346,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/types.ts",
+        "total_lines": 76,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/debounce.ts",
+        "total_lines": 26,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/error.test.ts",
+        "total_lines": 37,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/error.ts",
+        "total_lines": 36,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/fetchWithError.test.ts",
+        "total_lines": 48,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/fetchWithError.ts",
+        "total_lines": 28,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/retry.test.ts",
+        "total_lines": 48,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/utils/retry.ts",
+        "total_lines": 82,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "styles.css",
+        "total_lines": 18,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "tsconfig.json",
+        "total_lines": 30,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "version-bump.mjs",
+        "total_lines": 15,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "versions.json",
+        "total_lines": 4,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      }
+    ]
+  }
 }
