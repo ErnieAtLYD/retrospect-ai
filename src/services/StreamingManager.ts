@@ -1,5 +1,6 @@
 import { Editor, EditorPosition } from "obsidian";
 import { StreamingAnalysisOptions, LoadingIndicatorPosition } from "types";
+import { debounce } from "../utils/debounce";
 
 /**
  * Manages the streaming of content to the editor.
@@ -22,9 +23,14 @@ export class StreamingEditorManager {
 	private loadingInterval: NodeJS.Timeout | null = null;
 	private initialCursorPos: EditorPosition | null = null;
 	private analysisStartLine: number | null = null;
+	private debouncedSetValue: (content: string) => void;
 
 	constructor(editor: Editor) {
 		this.editor = editor;
+		// Create a debounced version of setValue with a 100ms delay
+		this.debouncedSetValue = debounce((content: string) => {
+			this.editor.setValue(content);
+		}, 100);
 	}
 
 	/**
@@ -57,7 +63,7 @@ export class StreamingEditorManager {
 			// Add header and stream content from the same starting position
 			const startLine = this.analysisStartLine || 0;
 			const headerAndContent = `## AI Reflection\n${fullResponse}`;
-			
+
 			// Stream the content
 			await this.streamContent(
 				headerAndContent,
@@ -85,55 +91,61 @@ export class StreamingEditorManager {
 	 * @param updateInterval - The interval to update the content.
 	 * @param startLine - The line to start the content.
 	 */
-    async streamContent(content: string, updateInterval = 50, startLine = 0): Promise<void> {
-        if (!content) return;
+	async streamContent(
+		content: string,
+		updateInterval = 50,
+		startLine = 0
+	): Promise<void> {
+		if (!content) {
+			return;
+		}
 
-        const lines = content.split('\n');
-        let currentLine = startLine;
-        
-        // Get current content
-        const currentContent = this.editor.getValue();
-        const currentLines = currentContent.split('\n');
-        
-        // Stream each line
-        for (const line of lines) {
-            // Ensure we have enough lines by adding empty lines if needed
-            while (currentLines.length <= currentLine) {
-                currentLines.push('');
-            }
-            
-            // Update the line
-            currentLines[currentLine] = line;
-            
-            // Set the content
-            const newContent = currentLines.join('\n').trimEnd();
-            this.editor.setValue(newContent);
-            
-            // Try to set cursor position safely
-			this.setCursorSafely(currentLine, line.length)
-            
-            await new Promise(resolve => setTimeout(resolve, updateInterval));
-            currentLine++;
-        }
-    }
+		const lines = content.split("\n");
+		let currentLine = startLine;
+
+		// Get current content
+		const currentContent = this.editor.getValue();
+		const currentLines = currentContent.split("\n");
+
+		// Stream each line
+		for (const line of lines) {
+			// Ensure we have enough lines by adding empty lines if needed
+			while (currentLines.length <= currentLine) {
+				currentLines.push("");
+			}
+
+			// Update the line
+			currentLines[currentLine] = line;
+
+			// Set the content
+			const newContent = currentLines.join("\n").trimEnd();
+			this.debouncedSetValue(newContent);
+
+			// Try to set cursor position safely
+			this.setCursorSafely(currentLine, line.length);
+
+			await new Promise((resolve) => setTimeout(resolve, updateInterval));
+			currentLine++;
+		}
+	}
 
 	/**
 	 * Set the cursor safely.
 	 * @param line - The line to set the cursor to.
 	 * @param ch - The character to set the cursor to.
 	 */
-	private async setCursorSafely (line: number, ch: number): Promise<void> {
+	private async setCursorSafely(line: number, ch: number): Promise<void> {
 		try {
 			const lineCount = this.editor.lineCount();
 			if (line < lineCount) {
-				const currentLineContent = this.editor.getLine(line) || '';
+				const currentLineContent = this.editor.getLine(line) || "";
 				this.editor.setCursor({
 					line,
-					ch: Math.min(ch, currentLineContent.length)
+					ch: Math.min(ch, currentLineContent.length),
 				});
 			}
 		} catch (e) {
-			console.debug('Could not set cursor position', e);
+			console.debug("Could not set cursor position", e);
 		}
 	}
 
@@ -227,4 +239,3 @@ export class StreamingEditorManager {
 		}
 	}
 }
-
