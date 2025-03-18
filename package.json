@@ -1,7 +1,7 @@
 {
-	"name": "recapitan",
+	"name": "retrospect-ai",
 	"version": "1.0.0",
-	"description": "AI-powered reflection and analysis plugin for Obsidian",
+	"description": "AI-powered insights plugin for Obsidian",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

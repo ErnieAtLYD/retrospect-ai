@@ -1,4 +1,4 @@
-import { RecapitanSettings } from "../types";
+import { RetrospectAISettings } from "../types";
 
 /**
  * Log levels for the logging service
@@ -25,7 +25,7 @@ export class LoggingService {
      * @param enabled - Whether logging is enabled (default: false)
      */
     constructor(
-        private settings: RecapitanSettings,
+        private settings: RetrospectAISettings,
         level: LogLevel = LogLevel.INFO,
         enabled: boolean = false
     ) {

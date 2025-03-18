@@ -1,7 +1,7 @@
 import { PrivacyManager } from "./PrivacyManager";
 import { WeeklyAnalysisService } from "./WeeklyAnalysisService";
 import { AIService } from "./AIService";
-import { RecapitanSettings } from "../types";
+import { RetrospectAISettings } from "../types";
 import { App } from "obsidian";
 
 describe('WeeklyAnalysisService', () => {
@@ -10,7 +10,7 @@ describe('WeeklyAnalysisService', () => {
 
     beforeEach(() => {
         const mockAIService = {} as AIService;
-        const mockSettings = {} as RecapitanSettings;
+        const mockSettings = {} as RetrospectAISettings;
         const mockApp = {} as App;
         
         privacyManager = new PrivacyManager(':::private');

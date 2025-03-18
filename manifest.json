@@ -1,9 +1,9 @@
 {
-	"id": "recapitan",
-	"name": "Recapitan",
+	"id": "retrospectai",
+	"name": "Retrospect AI",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "AI-powered reflection and analysis plugin that helps you gain deeper insights from your notes and journal entries.",
+	"description": "AI-powered reflection and analysis plugin for deeper insights from your notes and journal entries.",
 	"author": "Ernie Hsiung",
 	"isDesktopOnly": false,
 	"fundingUrl": {

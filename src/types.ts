@@ -26,8 +26,8 @@ type AIProvider = 'openai' | 'ollama';
 type AnalysisSchedule = 'daily' | 'manual';
 type CommunicationStyle = 'direct' | 'gentle';
 
-// Update the RecapitanSettings interface
-export interface RecapitanSettings {
+// Update the RetrospectAISettings interface
+export interface RetrospectAISettings {
     apiKey: string;
     aiProvider: AIProvider;
     openaiModel: string;  // e.g. "gpt-4o", "gpt-3.5-turbo"
@@ -56,7 +56,7 @@ export interface ExtendedApp extends App {
 	};
 }
 
-export const DEFAULT_SETTINGS: RecapitanSettings = {
+export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
     apiKey: '',
     aiProvider: 'openai',
     openaiModel: 'gpt-3.5-turbo',

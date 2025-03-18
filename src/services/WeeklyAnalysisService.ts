@@ -1,5 +1,5 @@
 // src/services/WeeklyAnalysisService.ts
-import { RecapitanSettings } from "../types";
+import { RetrospectAISettings } from "../types";
 import { App, TFile } from "obsidian";
 import { PrivacyManager } from "./PrivacyManager";
 import { AIService } from "./AIService";
@@ -11,7 +11,7 @@ export class WeeklyAnalysisService {
 	private readonly aiService: AIService;
 
 	constructor(
-		private settings: RecapitanSettings,
+		private settings: RetrospectAISettings,
 		private app: App,
 		private privacyManager: PrivacyManager,
 		aiService: AIService, // Remove private modifier here

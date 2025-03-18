@@ -8,7 +8,7 @@
 
 ## Overview
 
-The AI Reflection Plugin provides thoughtful, AI-powered analysis of your daily journal entries and weekly reviews within Obsidian. It helps identify patterns, track tasks, and offer personalized insights to support your personal growth journey.
+The Retrospect AI Plugin provides thoughtful, AI-powered analysis of your daily journal entries and weekly reviews within Obsidian. It helps identify patterns, track tasks, and offer personalized insights to support your personal growth journey.
 
 ![Plugin Screenshot](assets/screenshot.png)
 

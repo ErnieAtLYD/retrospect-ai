@@ -2,13 +2,12 @@
 import {
 	Plugin,
 	Notice,
-	TFile,
 	MarkdownView,
 	Editor,
 	MarkdownFileInfo,
 } from "obsidian";
-import { RecapitanSettings, DEFAULT_SETTINGS, ExtendedApp } from "./types";
-import { RecapitanSettingTab } from "./settings/settingsTab";
+import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp } from "./types";
+import { RetrospectAISettingTab } from "./settings/settingsTab";
 import { AnalysisManager } from "./services/AnalysisManager";
 import { AIService } from "./services/AIService";
 import { OpenAIService } from "./services/OpenAIService";
@@ -19,8 +18,8 @@ import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "./services/LoggingService";
 import { debounce } from "utils/debounce";
 
-export default class Recapitan extends Plugin {
-	settings!: RecapitanSettings;
+export default class RetrospectAI extends Plugin {
+	settings!: RetrospectAISettings;
 	private analysisManager!: AnalysisManager;
 	private aiService: AIService | undefined;
 	private privacyManager!: PrivacyManager;
@@ -31,7 +30,7 @@ export default class Recapitan extends Plugin {
 	async loadSettings() {
 		this.settings = Object.assign(
 			{},
-			DEFAULT_SETTINGS,
+			DEFAULT_RETROSPECT_AI_SETTINGS,
 			await this.loadData()
 		);
 	}
@@ -63,7 +62,7 @@ export default class Recapitan extends Plugin {
         }
 
 		this.addSettingTab(
-			new RecapitanSettingTab(this.app as ExtendedApp, this)
+			new RetrospectAISettingTab(this.app as ExtendedApp, this)
 		);
 		this.addCommands();
 	}
@@ -87,7 +86,7 @@ export default class Recapitan extends Plugin {
 			this.settings.loggingEnabled
 		);
 		
-		this.logger.info("Initializing Recapitan services");
+		this.logger.info("Initializing Retrospect AI services");
 		this.logger.debug(`Current AI provider: ${this.settings.aiProvider}`);
 		
 		this.privacyManager = new PrivacyManager(this.settings.privateMarker);

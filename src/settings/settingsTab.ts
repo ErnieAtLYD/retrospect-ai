@@ -1,12 +1,12 @@
 // src/settings/SettingsTab.ts
 import { PluginSettingTab, Setting, Notice } from "obsidian";
-import Recapitan from "../main";
-import { RecapitanSettings, ExtendedApp } from "../types";
+import RetrospectAI from "../main";
+import { RetrospectAISettings, ExtendedApp } from "../types";
 
-export class RecapitanSettingTab extends PluginSettingTab {
-	plugin: Recapitan;
+export class RetrospectAISettingTab extends PluginSettingTab {
+	plugin: RetrospectAI;
 
-	constructor(app: ExtendedApp, plugin: Recapitan) {
+	constructor(app: ExtendedApp, plugin: RetrospectAI) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -45,7 +45,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
 							this.plugin.settings.aiProvider =
-								value as RecapitanSettings["aiProvider"];
+								value as RetrospectAISettings["aiProvider"];
 							await this.plugin.saveSettings();
 							// The saveSettings method will reinitialize services
 							this.display();
@@ -142,7 +142,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
 							this.plugin.settings.analysisSchedule =
-								value as RecapitanSettings["analysisSchedule"];
+								value as RetrospectAISettings["analysisSchedule"];
 							await this.plugin.saveSettings();
 						});
 					})
@@ -159,7 +159,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
 							this.plugin.settings.communicationStyle =
-								value as RecapitanSettings["communicationStyle"];
+								value as RetrospectAISettings["communicationStyle"];
 							await this.plugin.saveSettings();
 						});
 					})
@@ -248,7 +248,7 @@ export class RecapitanSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.logLevel)
 					.onChange(async (value) => {
 						await this.saveSettingsWithFeedback(async () => {
-							this.plugin.settings.logLevel = value as RecapitanSettings["logLevel"];
+							this.plugin.settings.logLevel = value as RetrospectAISettings["logLevel"];
 							await this.plugin.saveSettings();
 						});
 					})
