@@ -1,5 +1,6 @@
 import { Editor, EditorPosition } from "obsidian";
 import { StreamingAnalysisOptions, LoadingIndicatorPosition } from "types";
+import { debounce } from "../utils/debounce";
 
 /**
  * Manages the streaming of content to the editor.
@@ -22,9 +23,14 @@ export class StreamingEditorManager {
 	private loadingInterval: NodeJS.Timeout | null = null;
 	private initialCursorPos: EditorPosition | null = null;
 	private analysisStartLine: number | null = null;
+	private debouncedSetValue: (content: string) => void;
 
 	constructor(editor: Editor) {
 		this.editor = editor;
+		// Create a debounced version of setValue with a 100ms delay
+		this.debouncedSetValue = debounce((content: string) => {
+			this.editor.setValue(content);
+		}, 100);
 	}
 
 	/**
@@ -111,7 +117,7 @@ export class StreamingEditorManager {
 
 			// Set the content
 			const newContent = currentLines.join("\n").trimEnd();
-			this.editor.setValue(newContent);
+			this.debouncedSetValue(newContent);
 
 			// Try to set cursor position safely
 			this.setCursorSafely(currentLine, line.length);
