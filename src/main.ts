@@ -61,6 +61,9 @@ export default class RetrospectAI extends Plugin {
             console.log("Status bar API not available, using Notices instead");
         }
 
+		// Add the ribbon icon
+		this.addRibbonIcon();
+
 		this.addSettingTab(
 			new RetrospectAISettingTab(this.app as ExtendedApp, this)
 		);
