@@ -27,7 +27,7 @@ type AnalysisSchedule = 'daily' | 'manual';
 type CommunicationStyle = 'direct' | 'gentle';
 
 // Update the RecapitanSettings interface
-export interface RecapitanSettings {
+export interface RetrospectAISettings {
     apiKey: string;
     aiProvider: AIProvider;
     openaiModel: string;  // e.g. "gpt-4o", "gpt-3.5-turbo"
@@ -56,7 +56,7 @@ export interface ExtendedApp extends App {
 	};
 }
 
-export const DEFAULT_SETTINGS: RecapitanSettings = {
+export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
     apiKey: '',
     aiProvider: 'openai',
     openaiModel: 'gpt-3.5-turbo',
@@ -70,6 +70,9 @@ export const DEFAULT_SETTINGS: RecapitanSettings = {
     cacheMaxSize: 100,
     ollamaEndpoint: 'http://localhost:11434/api/generate',
     ollamaModel: 'deepseek-r1:latest',
+    loggingEnabled: false,
+    logLevel: 'info'
+}
     loggingEnabled: false,
     logLevel: 'info'
 }

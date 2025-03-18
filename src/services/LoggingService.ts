@@ -1,4 +1,4 @@
-import { RecapitanSettings } from "../types";
+import { RetrospectAISettings } from "../types";
 
 /**
  * Log levels for the logging service

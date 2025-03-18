@@ -1,12 +1,12 @@
 // src/settings/SettingsTab.ts
 import { PluginSettingTab, Setting, Notice } from "obsidian";
-import Recapitan from "../main";
-import { RecapitanSettings, ExtendedApp } from "../types";
+import RetrospectAI from "../main";
+import { RetrospectAISettings, ExtendedApp } from "../types";
 
-export class RecapitanSettingTab extends PluginSettingTab {
-	plugin: Recapitan;
+export class RetrospectAISettingTab extends PluginSettingTab {
+	plugin: RetrospectAI;
 
-	constructor(app: ExtendedApp, plugin: Recapitan) {
+	constructor(app: ExtendedApp, plugin: RetrospectAI) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
