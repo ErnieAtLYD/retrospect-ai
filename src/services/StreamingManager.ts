@@ -96,7 +96,7 @@ export class StreamingEditorManager {
 		updateInterval = 50,
 		startLine = 0
 	): Promise<void> {
-		if (!content) return;
+		if (!content) {
 
 		const lines = content.split("\n");
 		let currentLine = startLine;
