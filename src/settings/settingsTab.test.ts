@@ -12,16 +12,16 @@ import {
 import { jest } from "@jest/globals";
 
 import { MockPlugin } from '../__mocks__/MockPlugin'
-import { RecapitanSettings } from "../types";
+import { RetrospectAISettings } from "../types";
 
 
 
 // Mock SettingsTab class that avoids DOM operations
 class SettingsTab extends PluginSettingTab {
-	settings: RecapitanSettings;
+	settings: RetrospectAISettings;
 	plugin: MockPlugin;
 
-	constructor(app: App, plugin: Plugin, settings: RecapitanSettings) {
+	constructor(app: App, plugin: Plugin, settings: RetrospectAISettings) {
 		super(app, plugin);
 		this.settings = settings;
 		this.plugin = plugin as MockPlugin;
@@ -35,7 +35,7 @@ class SettingsTab extends PluginSettingTab {
 		await this.plugin.saveData(this.settings);
 	}
 
-	loadSettings(): RecapitanSettings {
+	loadSettings(): RetrospectAISettings {
 		return this.settings;
 	}
 }
@@ -99,7 +99,7 @@ describe("SettingsTab", () => {
 		jest.spyOn(mockPlugin, "loadData").mockImplementation(async () => ({}));
 
 		// Initialize settings
-		const initialSettings: RecapitanSettings = {
+		const initialSettings: RetrospectAISettings = {
 			aiProvider: "openai",
 			apiKey: "",
 			analysisSchedule: "daily",
@@ -167,7 +167,7 @@ describe("SettingsTab", () => {
 
 	test("should handle OpenAI model selection", async () => {
 		// Create a new instance with openai provider
-		const initialSettings: RecapitanSettings = {
+		const initialSettings: RetrospectAISettings = {
 			aiProvider: "openai",
 			apiKey: "test-key",
 			analysisSchedule: "daily",
@@ -217,7 +217,7 @@ describe("SettingsTab", () => {
 
 	test("should maintain provider-specific settings when switching providers", async () => {
 		// Create a new instance with openai provider and settings
-		const initialSettings: RecapitanSettings = {
+		const initialSettings: RetrospectAISettings = {
 			aiProvider: "openai",
 			apiKey: "test-key",
 			openaiModel: "gpt-4",
@@ -270,7 +270,7 @@ describe("SettingsTab", () => {
 	
 	test("should handle Ollama model selection", async () => {
 		// Create a new instance with ollama provider
-		const initialSettings: RecapitanSettings = {
+		const initialSettings: RetrospectAISettings = {
 			aiProvider: "ollama",
 			apiKey: "",
 			analysisSchedule: "daily",

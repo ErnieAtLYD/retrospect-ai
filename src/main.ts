@@ -2,7 +2,6 @@
 import {
 	Plugin,
 	Notice,
-	TFile,
 	MarkdownView,
 	Editor,
 	MarkdownFileInfo,

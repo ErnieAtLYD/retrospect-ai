@@ -26,7 +26,7 @@ type AIProvider = 'openai' | 'ollama';
 type AnalysisSchedule = 'daily' | 'manual';
 type CommunicationStyle = 'direct' | 'gentle';
 
-// Update the RecapitanSettings interface
+// Update the RetrospectAISettings interface
 export interface RetrospectAISettings {
     apiKey: string;
     aiProvider: AIProvider;
@@ -70,9 +70,6 @@ export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
     cacheMaxSize: 100,
     ollamaEndpoint: 'http://localhost:11434/api/generate',
     ollamaModel: 'deepseek-r1:latest',
-    loggingEnabled: false,
-    logLevel: 'info'
-}
     loggingEnabled: false,
     logLevel: 'info'
 }
