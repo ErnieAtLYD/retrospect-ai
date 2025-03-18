@@ -1,10 +1,10 @@
-# Retrospect AI Plugin for Obsidian
+# RetrospectAI Plugin for Obsidian
 
 > AI-powered insights for your daily journals and weekly reviews in Obsidian.
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/username/obsidian-ai-reflection?style=flat-square)](https://github.com/username/obsidian-ai-reflection/releases/latest)
-[![GitHub all releases](https://img.shields.io/github/downloads/username/obsidian-ai-reflection/total?style=flat-square)](https://github.com/username/obsidian-ai-reflection/releases)
-[![License](https://img.shields.io/github/license/username/obsidian-ai-reflection?style=flat-square)](LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ErnieAtLYD/retrospect-ai?style=flat-square)](https://github.com/ErnieAtLYD/retrospect-ai/releases/latest)
+[![GitHub all releases](https://img.shields.io/github/downloads/ErnieAtLYD/retrospect-ai/total?style=flat-square)](https://github.com/ErnieAtLYD/retrospect-ai/releases)
+[![License](https://img.shields.io/github/license/ErnieAtLYD/retrospect-ai?style=flat-square)](LICENSE)
 
 ## Overview
 
@@ -32,7 +32,7 @@ The Retrospect AI Plugin provides thoughtful, AI-powered analysis of your daily 
 
 ### Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/username/obsidian-ai-reflection/releases)
+1. Download the latest release from the [releases page](https://github.com/ErnieAtLYD/retrospect-ai/releases)
 2. Extract the ZIP file into your Obsidian vault's `.obsidian/plugins` directory
 3. Enable the plugin in Obsidian's settings
 
@@ -121,7 +121,7 @@ The plugin currently supports:
 - [ ] Additional AI provider integrations
 - [ ] Enhanced visualization features
 
-See the [project board](https://github.com/username/obsidian-ai-reflection/projects) for more details.
+See the [project board](https://github.com/ErnieAtLYD/retrospect-ai/projects) for more details.
 
 ## Contributing
 
