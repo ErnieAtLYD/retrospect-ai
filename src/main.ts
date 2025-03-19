@@ -62,7 +62,7 @@ export default class RetrospectAI extends Plugin {
         }
 
 		// Add the ribbon icon
-		this.addRibbonIcon();
+		this.addAnalysisRibbonIcon();
 
 		this.addSettingTab(
 			new RetrospectAISettingTab(this.app as ExtendedApp, this)
@@ -137,6 +137,9 @@ export default class RetrospectAI extends Plugin {
 	
 	/**
 	 * Converts string log level to enum value
+	 * @param level - The log level to convert
+	 * @returns The converted log level
+	 * @throws Error if the log level is not valid
 	 */
 	private getLogLevel(level: string): LogLevel {
 		switch (level) {
@@ -225,7 +228,7 @@ export default class RetrospectAI extends Plugin {
 	/**
 	 * Adds a ribbon icon for quick analysis of the daily journal
 	 */
-	private addRibbonIcon() {
+	private addAnalysisRibbonIcon() {
 		const ribbonIconEl = this.addRibbonIcon(
 			'brain-cog', // You can choose a different icon from Obsidian's icon set
 			'Analyze Daily Journal',
@@ -293,7 +296,8 @@ export default class RetrospectAI extends Plugin {
 	/**
 	 * Analyzes the content.
 	 * @param content
-	 * @returns
+	 * @return Promise<string>
+	 * @throws Error if the content analysis fails
 	 */
 	private async analyzeContent(content: string): Promise<string> {
 		try {
