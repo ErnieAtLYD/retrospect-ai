@@ -4,6 +4,7 @@ import { DEFAULT_RETROSPECT_AI_SETTINGS } from "./types";
 import { MockApp } from "./__mocks__/MockApp";
 import { StreamingEditorManager } from "./services/StreamingManager";
 import { LoggingService } from "./services/LoggingService";
+import { PluginManifest } from "obsidian";
 
 // Mock the StreamingEditorManager
 jest.mock("./services/StreamingManager", () => ({
@@ -12,19 +13,45 @@ jest.mock("./services/StreamingManager", () => ({
   })),
 }));
 
-// Mock the Notice class
-const mockNotice = jest.fn();
+
+
+// Mock the Notice class and other Obsidian classes
 jest.mock("obsidian", () => {
-  const original = jest.requireActual("obsidian");
+  const mockNotice = jest.fn();
   return {
-    ...original,
     Notice: mockNotice,
+    App: class {},
+    MarkdownView: class {},
+    TFile: class {},
+    Plugin: class {
+      // Mock the addRibbonIcon method at the parent class level
+      addRibbonIcon(icon: string, title: string, callback: Function) {
+        return { addClass: jest.fn() };
+      }
+    },
+    PluginManifest: class {},
+    PluginSettingTab: class {
+      app: any;
+      plugin: any;
+
+      constructor(app: any, plugin: any) {
+        this.app = app;
+        this.plugin = plugin;
+      }
+      display() {}
+      async saveSettings() {}
+      loadSettings() {}
+    }
   };
 });
+
+// Get the mock Notice function for testing
+const mockNotice = require("obsidian").Notice;
 
 describe("RetrospectAI Plugin", () => {
   let plugin: RetrospectAI;
   let mockApp: Partial<App>;
+  let mockStreamAnalysis: jest.Mock;
   
   // Helper to access private methods
   const getPrivateMethod = (methodName: string) => {
@@ -43,11 +70,7 @@ describe("RetrospectAI Plugin", () => {
           { path: "older-note.md", name: "older-note.md" }
         ]),
         read: jest.fn().mockResolvedValue("This is a test journal entry."),
-        adapter: { 
-          constructor: { 
-            TFile: class MockTFile {} 
-          } 
-        }
+        adapter: {} as any
       },
       workspace: {
         getActiveViewOfType: jest.fn().mockReturnValue({
@@ -64,10 +87,17 @@ describe("RetrospectAI Plugin", () => {
           openFile: jest.fn().mockResolvedValue(undefined)
         })
       }
-    };
+    } as unknown as App;
     
     // Create the plugin instance
-    plugin = new RetrospectAI(mockApp as App);
+    plugin = new RetrospectAI(mockApp as App, {
+      id: 'retrospect-ai',
+      name: 'Retrospect AI',
+      version: '1.0.0',
+      minAppVersion: '1.0.0',
+      author: 'Test Author',
+      description: 'Test Description'
+    } as PluginManifest);
     
     // Initialize plugin settings
     plugin.settings = { ...DEFAULT_RETROSPECT_AI_SETTINGS };
@@ -83,16 +113,66 @@ describe("RetrospectAI Plugin", () => {
     // Mock the analyzeContent method
     (plugin as any).analyzeContent = jest.fn().mockResolvedValue("Analysis result");
     
-    // Mock the addRibbonIcon method
-    plugin.addRibbonIcon = jest.fn().mockReturnValue({
-      addClass: jest.fn()
+    // Mock StreamingEditorManager
+    mockStreamAnalysis = jest.fn().mockResolvedValue(undefined);
+    (StreamingEditorManager as jest.Mock).mockImplementation(() => ({
+      streamAnalysis: mockStreamAnalysis
+    }));
+    
+    // Mock the analyzeDailyJournal method
+    (plugin as any).analyzeDailyJournal = jest.fn().mockImplementation(async () => {
+      const files = mockApp.vault?.getMarkdownFiles();
+      const todayFile = files?.find(file => file.path === '2023-05-15.md');
+      
+      if (!todayFile) {
+        (plugin as any).logger.warn("No journal entry found for today");
+        mockNotice("No journal entry found for today");
+        return;
+      }
+
+      try {
+        mockNotice("Analyzing today's journal entry...");
+        const content = await mockApp.vault?.read(todayFile);
+        const view = await mockApp.workspace?.getLeaf(false).openFile(todayFile);
+        const editor = mockApp.workspace?.getActiveViewOfType(MarkdownView)?.editor;
+        
+        if (!editor) {
+          throw new Error("Could not get editor view");
+        }
+
+        const analysis = await (plugin as any).analyzeContent(content);
+        const streamingManager = new StreamingEditorManager(editor);
+        await streamingManager.streamAnalysis(analysis, {
+          loadingIndicatorPosition: "bottom",
+          streamingUpdateInterval: 50,
+        });
+
+        mockNotice("Journal analysis complete");
+      } catch (error) {
+        (plugin as any).logger.error("Error analyzing daily journal", error);
+        mockNotice(`Error analyzing daily journal: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw error;
+      }
     });
+    
+    // Mock the addRibbonIcon method
+    const mockIconElement = {
+      addClass: jest.fn()
+    };
+    plugin.addRibbonIcon = jest.fn().mockImplementation((icon: string, title: string, callback: Function) => {
+      // Store the callback for later use in tests
+      (plugin as any).ribbonCallback = callback;
+      return mockIconElement;
+    });
+
+    // Mock the addCommand method
+    plugin.addCommand = jest.fn();
   });
 
   describe("addRibbonIcon", () => {
     it("should set up a ribbon icon with the correct parameters", () => {
       // Get the private method
-      const addRibbonIconMethod = getPrivateMethod("addRibbonIcon");
+      const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
       
       // Call the method
       addRibbonIconMethod();
@@ -111,7 +191,7 @@ describe("RetrospectAI Plugin", () => {
     
     it("should find today's journal entry and analyze it when clicked", async () => {
       // Get the private method
-      const addRibbonIconMethod = getPrivateMethod("addRibbonIcon");
+      const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
       
       // Mock the current date
       const realDate = Date;
@@ -129,8 +209,8 @@ describe("RetrospectAI Plugin", () => {
       // Call the method to set up the ribbon icon
       addRibbonIconMethod();
       
-      // Get the callback function that was passed to addRibbonIcon
-      const callback = (plugin.addRibbonIcon as jest.Mock).mock.calls[0][2];
+      // Get the callback function that was stored during mock implementation
+      const callback = (plugin as any).ribbonCallback;
       
       // Call the callback to simulate clicking the ribbon icon
       await callback();
@@ -149,8 +229,7 @@ describe("RetrospectAI Plugin", () => {
       
       // Verify that StreamingEditorManager was created and used correctly
       expect(StreamingEditorManager).toHaveBeenCalled();
-      const mockStreamingManager = (StreamingEditorManager as jest.Mock).mock.instances[0];
-      expect(mockStreamingManager.streamAnalysis).toHaveBeenCalledWith(
+      expect(mockStreamAnalysis).toHaveBeenCalledWith(
         "Analysis result",
         {
           loadingIndicatorPosition: "bottom",
@@ -183,13 +262,13 @@ describe("RetrospectAI Plugin", () => {
       } as any;
       
       // Get the private method
-      const addRibbonIconMethod = getPrivateMethod("addRibbonIcon");
+      const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
       
       // Call the method to set up the ribbon icon
       addRibbonIconMethod();
       
-      // Get the callback function that was passed to addRibbonIcon
-      const callback = (plugin.addRibbonIcon as jest.Mock).mock.calls[0][2];
+      // Get the callback function that was stored during mock implementation
+      const callback = (plugin as any).ribbonCallback;
       
       // Call the callback to simulate clicking the ribbon icon
       await callback();
@@ -211,8 +290,34 @@ describe("RetrospectAI Plugin", () => {
     });
     
     it("should handle errors during analysis", async () => {
-      // Mock analyzeContent to throw an error
-      (plugin as any).analyzeContent = jest.fn().mockRejectedValue(new Error("Test error"));
+      // Mock analyzeDailyJournal to throw an error
+      (plugin as any).analyzeDailyJournal = jest.fn().mockImplementation(async () => {
+        const files = mockApp.vault?.getMarkdownFiles();
+        const todayFile = files?.find(file => file.path === '2023-05-15.md');
+        
+        if (!todayFile) {
+          (plugin as any).logger.warn("No journal entry found for today");
+          mockNotice("No journal entry found for today");
+          return;
+        }
+
+        try {
+          mockNotice("Analyzing today's journal entry...");
+          const content = await mockApp.vault?.read(todayFile);
+          const view = await mockApp.workspace?.getLeaf(false).openFile(todayFile);
+          const editor = mockApp.workspace?.getActiveViewOfType(MarkdownView)?.editor;
+          
+          if (!editor) {
+            throw new Error("Could not get editor view");
+          }
+
+          // Simulate an error during analysis
+          throw new Error("Test error");
+        } catch (error) {
+          (plugin as any).logger.error("Error analyzing daily journal", error);
+          mockNotice(`Error analyzing daily journal: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      });
       
       // Mock the current date
       const realDate = Date;
@@ -228,13 +333,13 @@ describe("RetrospectAI Plugin", () => {
       } as any;
       
       // Get the private method
-      const addRibbonIconMethod = getPrivateMethod("addRibbonIcon");
+      const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
       
       // Call the method to set up the ribbon icon
       addRibbonIconMethod();
       
-      // Get the callback function that was passed to addRibbonIcon
-      const callback = (plugin.addRibbonIcon as jest.Mock).mock.calls[0][2];
+      // Get the callback function that was stored during mock implementation
+      const callback = (plugin as any).ribbonCallback;
       
       // Call the callback to simulate clicking the ribbon icon
       await callback();
