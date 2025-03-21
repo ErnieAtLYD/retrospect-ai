@@ -4,7 +4,16 @@ import { DEFAULT_RETROSPECT_AI_SETTINGS } from "./types";
 import { MockApp } from "./__mocks__/MockApp";
 import { StreamingEditorManager } from "./services/StreamingManager";
 import { LoggingService } from "./services/LoggingService";
+import { JournalAnalysisService } from "./services/JournalAnalysisService";
 import { PluginManifest } from "obsidian";
+
+// Mock the JournalAnalysisService
+jest.mock("./services/JournalAnalysisService", () => ({
+  JournalAnalysisService: jest.fn().mockImplementation(() => ({
+    analyzeDailyJournal: jest.fn().mockResolvedValue(undefined),
+    analyzeContent: jest.fn().mockResolvedValue("Analysis result")
+  })),
+}));
 
 // Mock the StreamingEditorManager
 jest.mock("./services/StreamingManager", () => ({
@@ -110,14 +119,13 @@ describe("RetrospectAI Plugin", () => {
       debug: jest.fn()
     };
     
-    // Mock the analyzeContent method
-    (plugin as any).analyzeContent = jest.fn().mockResolvedValue("Analysis result");
-    
     // Mock StreamingEditorManager
     mockStreamAnalysis = jest.fn().mockResolvedValue(undefined);
     (StreamingEditorManager as jest.Mock).mockImplementation(() => ({
       streamAnalysis: mockStreamAnalysis
     }));
+    
+    // The JournalAnalysisService mock is already set up at the top of the file
     
     // Mock the analyzeDailyJournal method
     (plugin as any).analyzeDailyJournal = jest.fn().mockImplementation(async () => {
@@ -224,8 +232,9 @@ describe("RetrospectAI Plugin", () => {
       expect(mockApp.workspace?.getLeaf).toHaveBeenCalledWith(false);
       expect(mockApp.workspace?.getActiveViewOfType).toHaveBeenCalledWith(MarkdownView);
       
-      // Verify that the analyzeContent method was called with the correct content
-      expect((plugin as any).analyzeContent).toHaveBeenCalledWith("This is a test journal entry.");
+      // Verify that the JournalAnalysisService was used
+      const mockJournalAnalysisService = (JournalAnalysisService as jest.Mock).mock.instances[0];
+      expect(mockJournalAnalysisService.analyzeDailyJournal).toHaveBeenCalled();
       
       // Verify that StreamingEditorManager was created and used correctly
       expect(StreamingEditorManager).toHaveBeenCalled();

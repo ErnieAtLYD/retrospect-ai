@@ -17,14 +17,15 @@ import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "./services/StreamingManager";
 import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "./services/LoggingService";
+import { JournalAnalysisService } from "./services/JournalAnalysisService";
 import { debounce } from "./utils/debounce";
-;
 export default class RetrospectAI extends Plugin {
 	settings!: RetrospectAISettings;
 	private analysisManager!: AnalysisManager;
 	private aiService: AIService | undefined;
 	private privacyManager!: PrivacyManager;
 	private weeklyAnalysisService!: WeeklyAnalysisService;
+	private journalAnalysisService!: JournalAnalysisService;
 	private statusBarItem: HTMLElement | null = null;
 	private logger!: LoggingService;
 
@@ -133,6 +134,13 @@ export default class RetrospectAI extends Plugin {
 			this.logger
 		);
 		
+		this.journalAnalysisService = new JournalAnalysisService(
+			this.app,
+			this.settings,
+			this.analysisManager,
+			this.logger
+		);
+		
 		this.logger.info("Services initialized successfully");
 	}
 	
@@ -182,7 +190,7 @@ export default class RetrospectAI extends Plugin {
 
 				try {
 					// Create a promise for the analysis
-					const analysisPromise = this.analyzeContent(content);
+					const analysisPromise = this.journalAnalysisService.analyzeContent(content);
 
 					// Use streaming manager to handle the updates
 					await streamingManager.streamAnalysis(analysisPromise, {
@@ -307,28 +315,11 @@ export default class RetrospectAI extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon(
 			'brain-cog', // You can choose a different icon from Obsidian's icon set
 			'Analyze Daily Journal',
-			async () => this.analyzeDailyJournal() 
+			async () => this.journalAnalysisService.analyzeDailyJournal() 
 		);
 		
 		// Add a tooltip
 		ribbonIconEl.addClass('retrospect-ai-ribbon-icon');
 	}
 
-	/**
-	 * Analyzes the content.
-	 * @param content
-	 * @returns
-	 */
-	private async analyzeContent(content: string): Promise<string> {
-		try {
-			return await this.analysisManager.analyzeContent(
-				content,
-				this.settings.reflectionTemplate,
-				this.settings.communicationStyle
-			);
-		} catch (error) {
-			console.error("Error during content analysis:", error);
-			throw error; // Let the streaming manager handle the error
-		}
-	}
 }
