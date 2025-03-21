@@ -245,7 +245,14 @@ export default class RetrospectAI extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon(
 			'brain-cog', // You can choose a different icon from Obsidian's icon set
 			'Analyze Daily Journal',
-			async () => this.journalAnalysisService.analyzeDailyJournal() 
+			async () => {
+				try {
+					await this.journalAnalysisService.analyzeDailyJournal();
+				} catch (error) {
+					this.logger.error("Error analyzing daily journal", error);
+					new Notice(`Error analyzing daily journal: ${error instanceof Error ? error.message : String(error)}`);
+				}
+			}
 		);
 		
 		// Add a tooltip
