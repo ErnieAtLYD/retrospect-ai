@@ -5,6 +5,7 @@ import {
 	MarkdownView,
 	Editor,
 	MarkdownFileInfo,
+	TFile,
 } from "obsidian";
 import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp } from "./types";
 import { RetrospectAISettingTab } from "./settings/settingsTab";
@@ -13,17 +14,18 @@ import { AIService } from "./services/AIService";
 import { OpenAIService } from "./services/OpenAIService";
 import { OllamaService } from "./services/OllamaService";
 import { PrivacyManager } from "./services/PrivacyManager";
-import { StreamingEditorManager } from "services/StreamingManager";
+import { StreamingEditorManager } from "./services/StreamingManager";
 import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "./services/LoggingService";
-import { debounce } from "utils/debounce";
-
+import { JournalAnalysisService } from "./services/JournalAnalysisService";
+import { debounce } from "./utils/debounce";
 export default class RetrospectAI extends Plugin {
 	settings!: RetrospectAISettings;
 	private analysisManager!: AnalysisManager;
 	private aiService: AIService | undefined;
 	private privacyManager!: PrivacyManager;
 	private weeklyAnalysisService!: WeeklyAnalysisService;
+	private journalAnalysisService!: JournalAnalysisService;
 	private statusBarItem: HTMLElement | null = null;
 	private logger!: LoggingService;
 
@@ -132,6 +134,13 @@ export default class RetrospectAI extends Plugin {
 			this.logger
 		);
 		
+		this.journalAnalysisService = new JournalAnalysisService(
+			this.app,
+			this.settings,
+			this.analysisManager,
+			this.logger
+		);
+		
 		this.logger.info("Services initialized successfully");
 	}
 	
@@ -150,6 +159,7 @@ export default class RetrospectAI extends Plugin {
 			default: return LogLevel.INFO;
 		}
 	}
+
 
 	/**
 	 * Adds the commands to the plugin.
@@ -176,7 +186,7 @@ export default class RetrospectAI extends Plugin {
 
 				try {
 					// Create a promise for the analysis
-					const analysisPromise = this.analyzeContent(content);
+					const analysisPromise = this.journalAnalysisService.analyzeContent(content);
 
 					// Use streaming manager to handle the updates
 					await streamingManager.streamAnalysis(analysisPromise, {
@@ -225,6 +235,9 @@ export default class RetrospectAI extends Plugin {
 	}
 
 
+
+
+
 	/**
 	 * Adds a ribbon icon for quick analysis of the daily journal
 	 */
@@ -232,61 +245,7 @@ export default class RetrospectAI extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon(
 			'brain-cog', // You can choose a different icon from Obsidian's icon set
 			'Analyze Daily Journal',
-			async () => {
-				this.logger.info("Ribbon icon clicked - analyzing daily journal");
-				
-				try {
-					// Get today's date in YYYY-MM-DD format
-					const today = new Date();
-					const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-					
-					// Try to find a daily note with today's date in the filename
-					const files = this.app.vault.getMarkdownFiles();
-					const dailyNote = files.find(file => file.path.includes(formattedDate));
-					
-					if (!dailyNote) {
-						new Notice("No journal entry found for today");
-						this.logger.warn(`No journal entry found for today (${formattedDate})`);
-						return;
-					}
-					
-					// Read the file content
-					const content = await this.app.vault.read(dailyNote);
-					
-					// Open the file in a new leaf if it's not already open
-					const leaf = this.app.workspace.getLeaf(false);
-					await leaf.openFile(dailyNote);
-					
-					// Get the editor from the view
-					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-					if (!view) {
-						new Notice("Could not get editor view");
-						return;
-					}
-					
-					const editor = view.editor;
-					
-					// Create a streaming manager for the editor
-					const streamingManager = new StreamingEditorManager(editor);
-					
-					// Show a notice that analysis is starting
-					new Notice("Analyzing today's journal entry...");
-					
-					// Analyze the content and stream the results
-					await streamingManager.streamAnalysis(
-						this.analyzeContent(content),
-						{
-							loadingIndicatorPosition: "bottom",
-							streamingUpdateInterval: 50,
-						}
-					);
-					
-					new Notice("Journal analysis complete");
-				} catch (error) {
-					this.logger.error("Error analyzing daily journal", error);
-					new Notice("Error analyzing daily journal: " + (error instanceof Error ? error.message : String(error)));
-				}
-			}
+			async () => this.journalAnalysisService.analyzeDailyJournal() 
 		);
 		
 		// Add a tooltip
