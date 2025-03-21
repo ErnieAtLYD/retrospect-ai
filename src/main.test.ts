@@ -6,13 +6,20 @@ import { StreamingEditorManager } from "./services/StreamingManager";
 import { LoggingService } from "./services/LoggingService";
 import { JournalAnalysisService } from "./services/JournalAnalysisService";
 import { PluginManifest } from "obsidian";
+import { PrivacyManager } from "./services/PrivacyManager";
+import { OpenAIService } from "./services/OpenAIService";
+import { AnalysisManager } from "./services/AnalysisManager";
+import { LogLevel } from "./services/LoggingService";
 
 // Mock the JournalAnalysisService
+const mockAnalyzeDailyJournal = jest.fn().mockResolvedValue(undefined);
+const mockAnalyzeContent = jest.fn().mockResolvedValue("Analysis result");
+
 jest.mock("./services/JournalAnalysisService", () => ({
   JournalAnalysisService: jest.fn().mockImplementation(() => ({
-    analyzeDailyJournal: jest.fn().mockResolvedValue(undefined),
-    analyzeContent: jest.fn().mockResolvedValue("Analysis result")
-  })),
+    analyzeDailyJournal: mockAnalyzeDailyJournal,
+    analyzeContent: mockAnalyzeContent
+  }))
 }));
 
 // Mock the StreamingEditorManager
@@ -21,7 +28,6 @@ jest.mock("./services/StreamingManager", () => ({
     streamAnalysis: jest.fn().mockResolvedValue(undefined),
   })),
 }));
-
 
 
 // Mock the Notice class and other Obsidian classes
@@ -111,7 +117,7 @@ describe("RetrospectAI Plugin", () => {
     // Initialize plugin settings
     plugin.settings = { ...DEFAULT_RETROSPECT_AI_SETTINGS };
     
-    // Mock the logger
+    // Initialize the logger with mocked methods
     (plugin as any).logger = {
       info: jest.fn(),
       warn: jest.fn(),
@@ -119,49 +125,35 @@ describe("RetrospectAI Plugin", () => {
       debug: jest.fn()
     };
     
+    // Initialize the privacy manager
+    (plugin as any).privacyManager = new PrivacyManager(plugin.settings.privateMarker);
+    
+    // Initialize the AI service
+    (plugin as any).aiService = new OpenAIService(
+      "test-api-key",
+      "gpt-3.5-turbo"
+    );
+    
+    // Initialize the analysis manager
+    (plugin as any).analysisManager = new AnalysisManager(
+      (plugin as any).aiService,
+      (plugin as any).privacyManager,
+      60
+    );
+    
+    // Initialize the journal analysis service
+    (plugin as any).journalAnalysisService = new JournalAnalysisService(
+      mockApp as App,
+      plugin.settings,
+      (plugin as any).analysisManager,
+      (plugin as any).logger
+    );
+    
     // Mock StreamingEditorManager
     mockStreamAnalysis = jest.fn().mockResolvedValue(undefined);
     (StreamingEditorManager as jest.Mock).mockImplementation(() => ({
       streamAnalysis: mockStreamAnalysis
     }));
-    
-    // The JournalAnalysisService mock is already set up at the top of the file
-    
-    // Mock the analyzeDailyJournal method
-    (plugin as any).analyzeDailyJournal = jest.fn().mockImplementation(async () => {
-      const files = mockApp.vault?.getMarkdownFiles();
-      const todayFile = files?.find(file => file.path === '2023-05-15.md');
-      
-      if (!todayFile) {
-        (plugin as any).logger.warn("No journal entry found for today");
-        mockNotice("No journal entry found for today");
-        return;
-      }
-
-      try {
-        mockNotice("Analyzing today's journal entry...");
-        const content = await mockApp.vault?.read(todayFile);
-        const view = await mockApp.workspace?.getLeaf(false).openFile(todayFile);
-        const editor = mockApp.workspace?.getActiveViewOfType(MarkdownView)?.editor;
-        
-        if (!editor) {
-          throw new Error("Could not get editor view");
-        }
-
-        const analysis = await (plugin as any).analyzeContent(content);
-        const streamingManager = new StreamingEditorManager(editor);
-        await streamingManager.streamAnalysis(analysis, {
-          loadingIndicatorPosition: "bottom",
-          streamingUpdateInterval: 50,
-        });
-
-        mockNotice("Journal analysis complete");
-      } catch (error) {
-        (plugin as any).logger.error("Error analyzing daily journal", error);
-        mockNotice(`Error analyzing daily journal: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        throw error;
-      }
-    });
     
     // Mock the addRibbonIcon method
     const mockIconElement = {
@@ -197,79 +189,7 @@ describe("RetrospectAI Plugin", () => {
       expect(mockIconElement.addClass).toHaveBeenCalledWith('retrospect-ai-ribbon-icon');
     });
     
-    it("should find today's journal entry and analyze it when clicked", async () => {
-      // Get the private method
-      const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
-      
-      // Mock the current date
-      const realDate = Date;
-      const mockDate = new Date('2023-05-15T12:00:00Z');
-      global.Date = class extends Date {
-        constructor() {
-          super();
-          return mockDate;
-        }
-        static now() {
-          return mockDate.getTime();
-        }
-      } as any;
-      
-      // Call the method to set up the ribbon icon
-      addRibbonIconMethod();
-      
-      // Get the callback function that was stored during mock implementation
-      const callback = (plugin as any).ribbonCallback;
-      
-      // Call the callback to simulate clicking the ribbon icon
-      await callback();
-      
-      // Restore the original Date
-      global.Date = realDate;
-      
-      // Verify that the correct methods were called
-      expect(mockApp.vault?.getMarkdownFiles).toHaveBeenCalled();
-      expect(mockApp.vault?.read).toHaveBeenCalled();
-      expect(mockApp.workspace?.getLeaf).toHaveBeenCalledWith(false);
-      expect(mockApp.workspace?.getActiveViewOfType).toHaveBeenCalledWith(MarkdownView);
-      
-      // Verify that the JournalAnalysisService was used
-      const mockJournalAnalysisService = (JournalAnalysisService as jest.Mock).mock.instances[0];
-      expect(mockJournalAnalysisService.analyzeDailyJournal).toHaveBeenCalled();
-      
-      // Verify that StreamingEditorManager was created and used correctly
-      expect(StreamingEditorManager).toHaveBeenCalled();
-      expect(mockStreamAnalysis).toHaveBeenCalledWith(
-        "Analysis result",
-        {
-          loadingIndicatorPosition: "bottom",
-          streamingUpdateInterval: 50,
-        }
-      );
-      
-      // Verify that the notices were shown
-      expect(mockNotice).toHaveBeenCalledWith("Analyzing today's journal entry...");
-      expect(mockNotice).toHaveBeenCalledWith("Journal analysis complete");
-    });
-    
-    it("should show a notice when no journal entry is found for today", async () => {
-      // Override the getMarkdownFiles mock to return no files matching today's date
-      (mockApp.vault?.getMarkdownFiles as jest.Mock).mockReturnValue([
-        { path: "older-note.md", name: "older-note.md" }
-      ]);
-      
-      // Mock the current date
-      const realDate = Date;
-      const mockDate = new Date('2023-05-15T12:00:00Z');
-      global.Date = class extends Date {
-        constructor() {
-          super();
-          return mockDate;
-        }
-        static now() {
-          return mockDate.getTime();
-        }
-      } as any;
-      
+    it("should call analyzeDailyJournal when the ribbon icon is clicked", async () => {
       // Get the private method
       const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
       
@@ -282,64 +202,13 @@ describe("RetrospectAI Plugin", () => {
       // Call the callback to simulate clicking the ribbon icon
       await callback();
       
-      // Restore the original Date
-      global.Date = realDate;
-      
-      // Verify that the correct methods were called
-      expect(mockApp.vault?.getMarkdownFiles).toHaveBeenCalled();
-      
-      // Verify that the Notice was called with the correct message
-      expect(mockNotice).toHaveBeenCalledWith("No journal entry found for today");
-      
-      // Verify that the logger.warn method was called
-      expect((plugin as any).logger.warn).toHaveBeenCalled();
-      
-      // Verify that analyzeContent was not called
-      expect((plugin as any).analyzeContent).not.toHaveBeenCalled();
+      // Verify that analyzeDailyJournal was called
+      expect(mockAnalyzeDailyJournal).toHaveBeenCalled();
     });
     
-    it("should handle errors during analysis", async () => {
+    it("should handle errors when analyzeDailyJournal fails", async () => {
       // Mock analyzeDailyJournal to throw an error
-      (plugin as any).analyzeDailyJournal = jest.fn().mockImplementation(async () => {
-        const files = mockApp.vault?.getMarkdownFiles();
-        const todayFile = files?.find(file => file.path === '2023-05-15.md');
-        
-        if (!todayFile) {
-          (plugin as any).logger.warn("No journal entry found for today");
-          mockNotice("No journal entry found for today");
-          return;
-        }
-
-        try {
-          mockNotice("Analyzing today's journal entry...");
-          const content = await mockApp.vault?.read(todayFile);
-          const view = await mockApp.workspace?.getLeaf(false).openFile(todayFile);
-          const editor = mockApp.workspace?.getActiveViewOfType(MarkdownView)?.editor;
-          
-          if (!editor) {
-            throw new Error("Could not get editor view");
-          }
-
-          // Simulate an error during analysis
-          throw new Error("Test error");
-        } catch (error) {
-          (plugin as any).logger.error("Error analyzing daily journal", error);
-          mockNotice(`Error analyzing daily journal: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      });
-      
-      // Mock the current date
-      const realDate = Date;
-      const mockDate = new Date('2023-05-15T12:00:00Z');
-      global.Date = class extends Date {
-        constructor() {
-          super();
-          return mockDate;
-        }
-        static now() {
-          return mockDate.getTime();
-        }
-      } as any;
+      mockAnalyzeDailyJournal.mockImplementationOnce(() => Promise.reject(new Error("Test error")));
       
       // Get the private method
       const addRibbonIconMethod = getPrivateMethod("addAnalysisRibbonIcon");
@@ -352,9 +221,6 @@ describe("RetrospectAI Plugin", () => {
       
       // Call the callback to simulate clicking the ribbon icon
       await callback();
-      
-      // Restore the original Date
-      global.Date = realDate;
       
       // Verify that the error was logged
       expect((plugin as any).logger.error).toHaveBeenCalledWith(
