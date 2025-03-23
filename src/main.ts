@@ -5,7 +5,6 @@ import {
 	MarkdownView,
 	Editor,
 	MarkdownFileInfo,
-	TFile,
 } from "obsidian";
 import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp } from "./types";
 import { RetrospectAISettingTab } from "./settings/settingsTab";
@@ -192,7 +191,6 @@ export default class RetrospectAI extends Plugin {
 					await streamingManager.streamAnalysis(analysisPromise, {
 						streamingUpdateInterval: 150,
 						loadingIndicatorPosition: "cursor",
-						chunkSize: 75,
 					});
 				} catch (error) {
 					const message =

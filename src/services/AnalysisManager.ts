@@ -9,8 +9,8 @@ export class AnalysisManager {
     constructor(
         private aiService: AIService,
         private privacyManager: PrivacyManager,
-        cacheTTLMinutes: number = 60,
-        cacheMaxSize: number = 100
+        cacheTTLMinutes = 60,
+        cacheMaxSize = 100
     ) {
         if (!aiService) {
             throw new Error("AI Service must be provided to AnalysisManager");
