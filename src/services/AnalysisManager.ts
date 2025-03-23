@@ -23,9 +23,17 @@ export class AnalysisManager {
         template: string,
         style: string
     ): Promise<string> {
-        // Check if the content is empty
-        if (content.trim() === "") {
+        // Validate inputs
+        if (!content || content.trim() === "") {
             throw new Error("Cannot analyze empty content. Please add at least 20 characters of text to gather meaningful insights.");
+        }
+        
+        if (!template) {
+            throw new Error("Analysis template is required");
+        }
+        
+        if (!style || !["direct", "gentle"].includes(style)) {
+            throw new Error("Invalid communication style. Must be 'direct' or 'gentle'");
         }
         
         const sanitizedContent = this.privacyManager.removePrivateSections(content);

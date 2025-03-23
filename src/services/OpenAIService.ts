@@ -24,7 +24,14 @@ export class OpenAIService implements AIService {
 		backoffFactor: 2,
 	};
 
-	constructor(private apiKey: string, private model: string) {}
+	constructor(private apiKey: string, private model: string) {
+		if (!apiKey) {
+			throw new Error("OpenAI API key is required");
+		}
+		if (!model) {
+			throw new Error("OpenAI model name is required");
+		}
+	}
 
 	/**
 	 * Analyze content with OpenAI.
