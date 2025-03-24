@@ -97,9 +97,11 @@ export class AnthropicService implements AIService {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = "";
+            let isDone = false;
 
-            while (true) {
+            while (!isDone) {
                 const { done, value } = await reader.read();
+                isDone = done;
                 if (done) break;
                 
                 buffer += decoder.decode(value, { stream: true });
@@ -131,5 +133,10 @@ export class AnthropicService implements AIService {
             this.logger?.error("Error in Anthropic streaming API request", error);
             throw error;
         }
+    }
+
+    async analyze(content: string, template: string, style: string): Promise<string> {
+        const prompt = `${template}\n\nContent to analyze:\n${content}\n\nStyle: ${style}`;
+        return this.generateText(prompt);
     }
 }
