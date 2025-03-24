@@ -8,7 +8,7 @@
   },
   "kv_store": {
     "unique_matched_lines_count": 0,
-    "total_repo_line_count": 3604,
+    "total_repo_line_count": 4159,
     "best_prompt_response": null,
     "file_statistics": [
       {
@@ -49,7 +49,7 @@
       },
       {
         "file": "eslint.config.js",
-        "total_lines": 56,
+        "total_lines": 115,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -73,7 +73,7 @@
       },
       {
         "file": "package.json",
-        "total_lines": 37,
+        "total_lines": 38,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -90,8 +90,32 @@
         "ai_generated_percentage": 0
       },
       {
+        "file": "src/core/CommandManager.ts",
+        "total_lines": 22,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/core/ServiceManager.ts",
+        "total_lines": 15,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/core/UIManager.ts",
+        "total_lines": 25,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/main.test.ts",
+        "total_lines": 238,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
         "file": "src/main.ts",
-        "total_lines": 240,
+        "total_lines": 279,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -134,6 +158,12 @@
       {
         "file": "src/services/CacheManager.ts",
         "total_lines": 88,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/JournalAnalysisService.ts",
+        "total_lines": 111,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -186,6 +216,12 @@
         "ai_generated_percentage": 0
       },
       {
+        "file": "src/services/Providers.ts",
+        "total_lines": 90,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
         "file": "src/services/StreamingManager.test.ts",
         "total_lines": 122,
         "ai_generated_lines": 0,
@@ -193,7 +229,7 @@
       },
       {
         "file": "src/services/StreamingManager.ts",
-        "total_lines": 242,
+        "total_lines": 241,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -217,13 +253,13 @@
       },
       {
         "file": "src/settings/settingsTab.ts",
-        "total_lines": 346,
+        "total_lines": 304,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/types.ts",
-        "total_lines": 76,
+        "total_lines": 74,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
