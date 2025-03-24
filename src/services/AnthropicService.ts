@@ -158,7 +158,7 @@ export class AnthropicService implements AIService {
             while (!isDone) {
                 const { done, value } = await reader.read();
                 isDone = done;
-                if (done) {
+                if (done) break;
                 
                 buffer += decoder.decode(value, { stream: true });
                 
@@ -170,7 +170,7 @@ export class AnthropicService implements AIService {
                     
                     if (line.startsWith("data: ")) {
                         const data = line.substring(6);
-                        if (data === "[DONE]") {
+                        if (data === "[DONE]") continue;
                         
                         try {
                             const parsed = JSON.parse(data);
