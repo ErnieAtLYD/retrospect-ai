@@ -12,6 +12,7 @@ import { AnalysisManager } from "./services/AnalysisManager";
 import { AIService } from "./services/AIService";
 import { OpenAIService } from "./services/OpenAIService";
 import { OllamaService } from "./services/OllamaService";
+import { AnthropicService } from "./services/AnthropicService";
 import { PrivacyManager } from "./services/PrivacyManager";
 import { StreamingEditorManager } from "./services/StreamingManager";
 import { WeeklyAnalysisService } from "./services/WeeklyAnalysisService";
@@ -165,6 +166,17 @@ export default class RetrospectAI extends Plugin {
 					this.aiService = new OllamaService(
 						this.settings.ollamaHost,
 						this.settings.ollamaModel,
+						this.logger
+					);
+					break;
+				case "anthropic":
+					this.logger.debug("Initializing Anthropic service");
+					if (!this.settings.anthropicApiKey) {
+						throw new Error("Anthropic API key is required");
+					}
+					this.aiService = new AnthropicService(
+						this.settings.anthropicApiKey,
+						this.settings.anthropicModel,
 						this.logger
 					);
 					break;

@@ -7,7 +7,7 @@ import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from "./prompts/weeklyReflectionPr
 // Define union types
 export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
 export type LogLevel = "error" | "warn" | "info" | "debug";
-export type AIProvider = "openai" | "ollama";
+export type AIProvider = "openai" | "ollama" | "anthropic";
 export type AnalysisSchedule = "daily" | "manual";
 export type CommunicationStyle = "direct" | "gentle";
 
@@ -32,6 +32,8 @@ export interface RetrospectAISettings {
 	openaiModel: string; // e.g. "gpt-4o", "gpt-3.5-turbo"
 	ollamaEndpoint: string; // e.g. "http://localhost:11434/api/generate"
 	ollamaModel: string; // e.g. "deepseek-r1:latest", "llama3.1:8b"
+	anthropicModel: string; // e.g. "claude-3-opus-20240229", "claude-3-sonnet-20240229"
+	anthropicApiKey: string;
 	reflectionTemplate: string;
 	weeklyReflectionTemplate: string;
 	analysisSchedule: AnalysisSchedule;
@@ -70,4 +72,6 @@ export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
 	ollamaModel: "deepseek-r1:latest",
 	loggingEnabled: false,
 	logLevel: "info",
+	anthropicModel: "claude-3-haiku-20240307",
+	anthropicApiKey: "",
 };
