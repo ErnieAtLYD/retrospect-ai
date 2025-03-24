@@ -8,7 +8,7 @@ export class CacheManager {
 	private ttlMillis: number;
 	private maxSize: number;
 
-	constructor(ttlMinutes: number, maxSize: number = 100) {
+	constructor(ttlMinutes: number, maxSize = 100) {
 		this.ttlMillis = ttlMinutes * 60 * 1000;
 		this.maxSize = maxSize;
 	}
