@@ -47,6 +47,14 @@ After installation, you'll need to:
 
 ![Settings Screenshot](assets/settings.png)
 
+### AI Provider Configuration
+
+You can choose between multiple AI providers:
+
+1. **OpenAI**: Requires an API key and supports models like GPT-4o and GPT-3.5 Turbo
+2. **Ollama**: For self-hosted models, requires a host URL and supports models like Llama 3.1
+3. **Anthropic**: Requires an API key and supports Claude 3 models (Opus, Sonnet, and Haiku)
+
 ## Usage
 
 ### Analyzing Daily Notes
@@ -91,13 +99,13 @@ The plugin generates structured insights in the following format:
 - Productivity tips and motivational notes
 ```
 
-## API Providers
+## AI Providers
 
 The plugin currently supports:
 
 - OpenAI (default)
 - Self-hosted models (e.g., Ollama)
-- *More providers coming soon*
+- Anthropic Claude (Claude 3 Opus, Sonnet, and Haiku)
 
 ## Development
 
@@ -116,9 +124,9 @@ The plugin currently supports:
 
 - [x] Basic plugin setup and OpenAI integration
 - [x] Daily note analysis
+- [x] Local AI model support (via Ollama)
+- [x] Additional AI provider integrations (Anthropic Claude)
 - [ ] Weekly synthesis
-- [ ] Local AI model support
-- [ ] Additional AI provider integrations
 - [ ] Enhanced visualization features
 
 See the [project board](https://github.com/ErnieAtLYD/retrospect-ai/projects) for more details.
