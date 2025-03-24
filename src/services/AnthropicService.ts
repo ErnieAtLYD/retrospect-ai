@@ -158,7 +158,7 @@ export class AnthropicService implements AIService {
             while (!isDone) {
                 const { done, value } = await reader.read();
                 isDone = done;
-                if (done) break;
+                if (done) {
                 
                 buffer += decoder.decode(value, { stream: true });
                 
