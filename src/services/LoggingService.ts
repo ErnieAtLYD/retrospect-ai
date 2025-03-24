@@ -27,7 +27,7 @@ export class LoggingService {
     constructor(
         private settings: RetrospectAISettings,
         level: LogLevel = LogLevel.INFO,
-        enabled: boolean = false
+        enabled = false
     ) {
         this.level = level;
         this.enabled = enabled || settings.loggingEnabled || false;

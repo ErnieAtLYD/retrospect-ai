@@ -12,9 +12,12 @@ export interface AIService {
 }
 
 // Type guard to check if AIService is properly implemented
-export function isAIService(service: AIService | undefined): service is AIService {
-	return service !== undefined && typeof service.analyze === 'function';
+export function isAIService(service: unknown): service is AIService {
+	return service !== undefined && 
+	       typeof service === 'object' && 
+	       service !== null &&
+	       'analyze' in service && 
+	       typeof (service as AIService).analyze === 'function';
 }
-
 
 

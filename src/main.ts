@@ -5,7 +5,6 @@ import {
 	MarkdownView,
 	Editor,
 	MarkdownFileInfo,
-	TFile,
 } from "obsidian";
 import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp } from "./types";
 import { RetrospectAISettingTab } from "./settings/settingsTab";
@@ -83,65 +82,57 @@ export default class RetrospectAI extends Plugin {
 	 * Initializes the services.
 	 */
 	private initializeServices() {
-		// Initialize logger first so other services can use it
-		const logLevel = this.getLogLevel(this.settings.logLevel);
-		this.logger = new LoggingService(
-			this.settings,
-			logLevel,
-			this.settings.loggingEnabled
-		);
-		
-		this.logger.info("Initializing Retrospect AI services");
-		this.logger.debug(`Current AI provider: ${this.settings.aiProvider}`);
-		
-		this.privacyManager = new PrivacyManager(this.settings.privateMarker);
+		try {
+			// Initialize logger first so other services can use it
+			const logLevel = this.getLogLevel(this.settings.logLevel);
+			this.logger = new LoggingService(
+				this.settings,
+				logLevel,
+				this.settings.loggingEnabled
+			);
+			
+			this.logger.info("Initializing Retrospect AI services");
+			this.logger.debug(`Current AI provider: ${this.settings.aiProvider}`);
+			
+			this.privacyManager = new PrivacyManager(this.settings.privateMarker);
 
-		// Clear existing service before creating a new one
-		this.aiService = undefined;
+			// Clear existing service before creating a new one
+			this.aiService = undefined;
 
-		switch (this.settings.aiProvider) {
-			case "openai":
-				this.logger.debug("Initializing OpenAI service");
-				this.aiService = new OpenAIService(
-					this.settings.apiKey,
-					this.settings.openaiModel
-				);
-				break;
-			case "ollama":
-				this.logger.debug("Initializing Ollama service with host: " + this.settings.ollamaHost);
-				this.aiService = new OllamaService(
-					this.settings.ollamaHost,
-					this.settings.ollamaModel
-				);
-				break;
-			default:
-				const errorMsg = `Unsupported AI provider: ${this.settings.aiProvider}`;
-				this.logger.error(errorMsg);
-				throw new Error(errorMsg);
+			// Create the appropriate AI service based on settings
+			this.createAIService();
+
+			// Validate that we have a valid AI service
+			if (!this.aiService) {
+				throw new Error("Failed to initialize AI service");
+			}
+
+			this.analysisManager = new AnalysisManager(
+				this.aiService,
+				this.privacyManager,
+				this.settings.cacheTTLMinutes
+			);
+			
+			this.weeklyAnalysisService = new WeeklyAnalysisService(
+				this.settings,
+				this.app,
+				this.privacyManager,
+				this.aiService,
+				this.logger
+			);
+			
+			this.journalAnalysisService = new JournalAnalysisService(
+				this.app,
+				this.settings,
+				this.analysisManager,
+				this.logger
+			);
+			
+			this.logger.info("Services initialized successfully");
+		} catch (error) {
+			console.error("Failed to initialize services:", error);
+			new Notice(`Failed to initialize services: ${error instanceof Error ? error.message : String(error)}`);
 		}
-
-		this.analysisManager = new AnalysisManager(
-			this.aiService,
-			this.privacyManager,
-			this.settings.cacheTTLMinutes
-		);
-		
-		this.weeklyAnalysisService = new WeeklyAnalysisService(
-			this.settings,
-			this.app,
-			this.privacyManager,
-			this.aiService,
-			this.logger
-		);
-		
-		this.journalAnalysisService = new JournalAnalysisService(
-			this.app,
-			this.settings,
-			this.analysisManager,
-			this.logger
-		);
-		
-		this.logger.info("Services initialized successfully");
 	}
 	
 	/**
@@ -150,6 +141,44 @@ export default class RetrospectAI extends Plugin {
 	 * @returns The converted log level
 	 * @throws Error if the log level is not valid
 	 */
+	/**
+	 * Creates the appropriate AI service based on settings
+	 */
+	private createAIService(): void {
+		try {
+			switch (this.settings.aiProvider) {
+				case "openai":
+					this.logger.debug("Initializing OpenAI service");
+					if (!this.settings.apiKey) {
+						throw new Error("OpenAI API key is required");
+					}
+					this.aiService = new OpenAIService(
+						this.settings.apiKey,
+						this.settings.openaiModel
+					);
+					break;
+				case "ollama":
+					this.logger.debug("Initializing Ollama service with host: " + this.settings.ollamaHost);
+					if (!this.settings.ollamaHost) {
+						throw new Error("Ollama host URL is required");
+					}
+					this.aiService = new OllamaService(
+						this.settings.ollamaHost,
+						this.settings.ollamaModel,
+						this.logger
+					);
+					break;
+				default:
+					const errorMsg = `Unsupported AI provider: ${this.settings.aiProvider}`;
+					this.logger.error(errorMsg);
+					throw new Error(errorMsg);
+			}
+		} catch (error) {
+			this.logger.error("Failed to create AI service", error);
+			throw error;
+		}
+	}
+
 	private getLogLevel(level: string): LogLevel {
 		switch (level) {
 			case "error": return LogLevel.ERROR;
@@ -192,7 +221,6 @@ export default class RetrospectAI extends Plugin {
 					await streamingManager.streamAnalysis(analysisPromise, {
 						streamingUpdateInterval: 150,
 						loadingIndicatorPosition: "cursor",
-						chunkSize: 75,
 					});
 				} catch (error) {
 					const message =
@@ -259,22 +287,5 @@ export default class RetrospectAI extends Plugin {
 		ribbonIconEl.addClass('retrospect-ai-ribbon-icon');
 	}
 
-	/**
-	 * Analyzes the content.
-	 * @param content
-	 * @return Promise<string>
-	 * @throws Error if the content analysis fails
-	 */
-	private async analyzeContent(content: string): Promise<string> {
-		try {
-			return await this.analysisManager.analyzeContent(
-				content,
-				this.settings.reflectionTemplate,
-				this.settings.communicationStyle
-			);
-		} catch (error) {
-			console.error("Error during content analysis:", error);
-			throw error; // Let the streaming manager handle the error
-		}
-	}
+	// Remove duplicate method - use journalAnalysisService.analyzeContent instead
 }

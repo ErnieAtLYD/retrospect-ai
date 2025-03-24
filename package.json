@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "AI-powered insights plugin for Obsidian",
 	"main": "main.js",
+	"type": "module",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",

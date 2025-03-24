@@ -31,6 +31,15 @@ export class OllamaService implements AIService {
 	 */
 	constructor(private host: string, private model: string, logger?: LoggingService) {
 		this.logger = logger;
+		
+		// Validate host URL format
+		try {
+			new URL(host);
+		} catch (e) {
+			const errorMsg = `Invalid Ollama host URL: ${host}`;
+			this.logger?.error(errorMsg);
+			throw new Error(errorMsg);
+		}
 	}
 
 	/**

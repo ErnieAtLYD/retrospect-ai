@@ -1,6 +1,5 @@
 // ./src/core/CommandManager.ts
 
-import { Editor } from "obsidian";
 import RetrospectAI from "main";
 
 export class CommandManager {
