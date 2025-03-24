@@ -170,7 +170,7 @@ export class AnthropicService implements AIService {
                     
                     if (line.startsWith("data: ")) {
                         const data = line.substring(6);
-                        if (data === "[DONE]") continue;
+                        if (data === "[DONE]") {
                         
                         try {
                             const parsed = JSON.parse(data);
