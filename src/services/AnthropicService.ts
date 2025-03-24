@@ -191,8 +191,4 @@ export class AnthropicService implements AIService {
         }
     }
 
-    async analyze(content: string, template: string, style: string): Promise<string> {
-        const prompt = `${template}\n\nContent to analyze:\n${content}\n\nStyle: ${style}`;
-        return this.generateText(prompt);
-    }
 }
