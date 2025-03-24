@@ -1,19 +1,75 @@
 import { AIService } from "./AIService";
+import { AIServiceError } from "../utils/error";
+import { RetryOptions, retry } from "../utils/retry";
 import { LoggingService } from "./LoggingService";
+
+interface AnthropicResponse {
+    content: Array<{
+        type: string;
+        text: string;
+    }>;
+}
 
 /**
  * AnthropicService implements the AIService interface for Anthropic's Claude API
  */
 export class AnthropicService implements AIService {
-    private apiKey: string;
-    private model: string;
-    private logger?: LoggingService;
+    private readonly retryOptions: RetryOptions = {
+        maxAttempts: 3,
+        delayMs: 1000,
+        backoffFactor: 2,
+    };
     private baseUrl = "https://api.anthropic.com/v1/messages";
 
-    constructor(apiKey: string, model: string, logger?: LoggingService) {
-        this.apiKey = apiKey;
-        this.model = model;
-        this.logger = logger;
+    constructor(private apiKey: string, private model: string, private logger?: LoggingService) {
+        if (!apiKey) {
+            const errorMsg = "Anthropic API key is required";
+            this.logger?.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+        
+        if (!model) {
+            const errorMsg = "Anthropic model name is required";
+            this.logger?.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+    }
+
+    /**
+     * Implements the AIService interface analyze method
+     * @param content The content to analyze
+     * @param template The template to use for the analysis
+     * @param style The style to use for the analysis
+     * @returns The analysis result
+     */
+    async analyze(content: string, template: string, style: string): Promise<string> {
+        this.logger?.debug("Analyzing content with Anthropic", { contentLength: content.length, model: this.model });
+        
+        const prompt = this.formatPrompt(content, template, style);
+        
+        try {
+            return await retry(async () => {
+                return await this.generateText(prompt);
+            }, this.retryOptions);
+        } catch (error) {
+            const errorMsg = `Anthropic API error: ${error instanceof Error ? error.message : String(error)}`;
+            this.logger?.error(errorMsg, error);
+            throw new AIServiceError(errorMsg, error instanceof Error ? error : undefined);
+        }
+    }
+
+    /**
+     * Formats the prompt using the template and style
+     * @param content The content to analyze
+     * @param template The template to use
+     * @param style The style to use
+     * @returns The formatted prompt
+     */
+    private formatPrompt(content: string, template: string, style: string): string {
+        // Replace placeholders in the template
+        return template
+            .replace("{content}", content)
+            .replace("{style}", style);
     }
 
     /**
