@@ -45,7 +45,6 @@ export class StreamingEditorManager {
 		const {
 			streamingUpdateInterval = 100,
 			loadingIndicatorPosition = "cursor",
-			chunkSize = 50,
 		} = options;
 
 		try {
