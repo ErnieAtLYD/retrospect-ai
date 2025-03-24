@@ -84,6 +84,38 @@ const providers: Record<AIProvider, ProviderConfig> = {
 				});
 		},
 	},
+	anthropic: {
+		name: "Anthropic",
+		createConnectionSettings: (containerEl, settings, saveCallback) => {
+			new Setting(containerEl)
+				.setName("Anthropic API Key")
+				.setDesc("Enter your Anthropic API key")
+				.addTextArea((text) => {
+					text.setValue(settings.anthropicApiKey).onChange(
+						async (value) => {
+							settings.anthropicApiKey = value;
+							await saveCallback();
+						}
+					);
+				});
+		},
+		createModelSettings: (containerEl, settings, saveCallback) => {
+			new Setting(containerEl)
+				.setName("Anthropic Model")
+				.setDesc("Select the Anthropic Claude model to use")
+				.addDropdown((dropdown) => {
+					dropdown
+						.addOption("claude-3-opus-20240229", "Claude 3 Opus")
+						.addOption("claude-3-sonnet-20240229", "Claude 3 Sonnet")
+						.addOption("claude-3-haiku-20240307", "Claude 3 Haiku")
+						.setValue(settings.anthropicModel)
+						.onChange(async (value) => {
+							settings.anthropicModel = value;
+							await saveCallback();
+						});
+				});
+		},
+	},
 };
 
 export default providers;

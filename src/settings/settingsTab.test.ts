@@ -114,7 +114,9 @@ describe("SettingsTab", () => {
 			reflectionTemplate: "",
 			weeklyReflectionTemplate: "",
 			loggingEnabled: false,
-			logLevel: "info"
+			logLevel: "info",
+			anthropicModel: "claude-3-haiku-20240307",
+			anthropicApiKey: ""
 		};
 
 		// Create settings tab instance
@@ -182,7 +184,9 @@ describe("SettingsTab", () => {
 			reflectionTemplate: "",
 			weeklyReflectionTemplate: "",
 			loggingEnabled: false,
-			logLevel: "info"
+			logLevel: "info",
+			anthropicModel: "claude-3-haiku-20240307",
+			anthropicApiKey: ""
 		};
 
 		// Create settings tab instance with these settings
@@ -232,7 +236,9 @@ describe("SettingsTab", () => {
 			reflectionTemplate: "",
 			weeklyReflectionTemplate: "",
 			loggingEnabled: false,
-			logLevel: "info"
+			logLevel: "info",
+			anthropicModel: "claude-3-haiku-20240307",
+			anthropicApiKey: ""
 		};
 
 		// Create settings tab instance
@@ -285,7 +291,9 @@ describe("SettingsTab", () => {
 			reflectionTemplate: "",
 			weeklyReflectionTemplate: "",
 			loggingEnabled: false,
-			logLevel: "info"
+			logLevel: "info",
+			anthropicModel: "claude-3-haiku-20240307",
+			anthropicApiKey: ""
 		};
 
 		// Create settings tab instance with these settings
@@ -314,6 +322,58 @@ describe("SettingsTab", () => {
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
 			expect.objectContaining({
 				ollamaModel: "mistral:7b",
+			})
+		);
+	});
+
+	test("should handle Anthropic model selection", async () => {
+		// Create a new instance with anthropic provider
+		const initialSettings: RetrospectAISettings = {
+			aiProvider: "anthropic",
+			apiKey: "",
+			analysisSchedule: "daily",
+			communicationStyle: "direct",
+			privateMarker: ":::private",
+			ollamaHost: "http://localhost:11434",
+			cacheTTLMinutes: 60,
+			cacheMaxSize: 100,
+			ollamaEndpoint: "http://localhost:11434/api/generate",
+			ollamaModel: "deepseek-r1:latest",
+			openaiModel: "gpt-4",
+			reflectionTemplate: "",
+			weeklyReflectionTemplate: "",
+			loggingEnabled: false,
+			logLevel: "info",
+			anthropicModel: "claude-3-haiku-20240307", // Start with haiku
+			anthropicApiKey: "test-key"
+		};
+
+		// Create settings tab instance with these settings
+		const testSettingsTab = new SettingsTab(
+			mockApp as App,
+			mockPlugin as Plugin,
+			initialSettings
+		);
+
+		// Change the model to opus
+		testSettingsTab.settings.anthropicModel = "claude-3-opus-20240229";
+		await testSettingsTab.saveSettings();
+
+		// Verify the model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				anthropicModel: "claude-3-opus-20240229",
+			})
+		);
+
+		// Change to sonnet
+		testSettingsTab.settings.anthropicModel = "claude-3-sonnet-20240229";
+		await testSettingsTab.saveSettings();
+
+		// Verify the new model was saved
+		expect(mockPlugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				anthropicModel: "claude-3-sonnet-20240229",
 			})
 		);
 	});
