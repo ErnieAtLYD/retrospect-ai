@@ -1,8 +1,11 @@
-import { AnthropicService } from './AnthropicService';
+import { AnthropicService, setRequestFunction } from './AnthropicService';
 import { LoggingService, LogLevel } from './LoggingService';
 
 // Mock the fetch function
 global.fetch = jest.fn();
+
+// Mock the request function
+const mockRequest = jest.fn();
 
 describe('AnthropicService', () => {
     let mockLogger: LoggingService;
@@ -10,6 +13,9 @@ describe('AnthropicService', () => {
     beforeEach(() => {
         // Reset mocks
         jest.clearAllMocks();
+        
+        // Set up mock request
+        setRequestFunction(mockRequest as any);
         
         // Create a mock logger
         mockLogger = new LoggingService(
@@ -59,10 +65,7 @@ describe('AnthropicService', () => {
         const mockResponse = {
             content: [{ type: 'text', text: 'Analysis result' }]
         };
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            ok: true,
-            json: async () => mockResponse
-        });
+        mockRequest.mockResolvedValueOnce(JSON.stringify(mockResponse));
         
         // Act
         const result = await service.analyze(
@@ -73,11 +76,68 @@ describe('AnthropicService', () => {
         
         // Assert
         expect(result).toBe('Analysis result');
-        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(mockRequest).toHaveBeenCalledTimes(1);
         
         // Verify the request body contains correctly formatted prompt
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const requestBody = JSON.parse(fetchCall[1].body);
-        expect(requestBody.messages[0].content).toBe('Analyze this: Test content in concise style');
+        const requestCall = mockRequest.mock.calls[0][0];
+        expect(requestCall.body).toBe(JSON.stringify({
+            model: model,
+            messages: [{ role: 'user', content: 'Analyze this: Test content in concise style' }],
+            max_tokens: 4000
+        }));
+    });
+
+    test('should handle API error responses', async () => {
+        // Arrange
+        const apiKey = 'test-api-key';
+        const model = 'claude-3-opus-20240229';
+        const service = new AnthropicService(apiKey, model, mockLogger);
+        
+        mockRequest.mockRejectedValueOnce(new Error('API Error'));
+        
+        // Act & Assert
+        await expect(service.analyze(
+            'Test content',
+            'Test template',
+            'direct'
+        )).rejects.toThrow('Anthropic API error: API Error');
+        
+        expect(mockLogger.error).toHaveBeenCalled();
+    });
+
+    test('should handle invalid JSON responses', async () => {
+        // Arrange
+        const apiKey = 'test-api-key';
+        const model = 'claude-3-opus-20240229';
+        const service = new AnthropicService(apiKey, model, mockLogger);
+        
+        mockRequest.mockResolvedValueOnce('invalid json');
+        
+        // Act & Assert
+        await expect(service.analyze(
+            'Test content',
+            'Test template',
+            'direct'
+        )).rejects.toThrow('Anthropic API error: Unexpected token');
+        
+        expect(mockLogger.error).toHaveBeenCalled();
+    });
+
+    test('should handle empty or invalid response format', async () => {
+        // Arrange
+        const apiKey = 'test-api-key';
+        const model = 'claude-3-opus-20240229';
+        const service = new AnthropicService(apiKey, model, mockLogger);
+        
+        mockRequest.mockResolvedValueOnce(JSON.stringify({ content: [] }));
+        
+        // Act & Assert
+        await expect(service.analyze(
+            'Test content',
+            'Test template',
+            'direct'
+        )).rejects.toThrow('Unexpected response format from Anthropic API');
+        
+        expect(mockLogger.error).toHaveBeenCalled();
     });
 });
