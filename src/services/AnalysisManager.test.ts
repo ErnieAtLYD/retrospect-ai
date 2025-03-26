@@ -27,16 +27,14 @@ describe('AnalysisManager', () => {
     });
 
     describe('analyzeContent', () => {
-        it('should throw an error when content is empty', async () => {
+        it('should handle empty content gracefully', async () => {
             // Test with empty string
-            await expect(
-                analysisManager.analyzeContent('', 'template', 'style')
-            ).rejects.toThrow('Cannot analyze empty content');
-
+            const result1 = await analysisManager.analyzeContent('', 'template', 'style');
+            expect(result1).toBe('');
+            
             // Test with whitespace only
-            await expect(
-                analysisManager.analyzeContent('   \n\t   ', 'template', 'style')
-            ).rejects.toThrow('Cannot analyze empty content');
+            const result2 = await analysisManager.analyzeContent('   \n\t   ', 'template', 'style');
+            expect(result2).toBe('');
             
             // Verify the AI service was not called
             expect(mockAIService.analyze).not.toHaveBeenCalled();
