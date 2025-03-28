@@ -84,6 +84,7 @@ export default class RetrospectAI extends Plugin {
     }
 
     onunload() {
+        this.serviceManager.shutdown();
         this.uiManager.cleanup();
     }
 }

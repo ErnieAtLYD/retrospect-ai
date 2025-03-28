@@ -113,6 +113,19 @@ export class ServiceManager {
             default: return LogLevel.INFO;
         }
     }
+    
+    shutdown() {
+        this.logger.info("Shutting down Retrospect AI services");
+        
+        // Clean up any resources that need explicit cleanup
+        this.aiService = undefined;
+        this.analysisManager = undefined as any;
+        this.weeklyAnalysisService = undefined as any;
+        this.journalAnalysisService = undefined as any;
+        
+        this.logger.info("Services shutdown complete");
+        this.logger = undefined as any;
+    }
 
     async analyzeContent(content: string): Promise<string> {
         try {
