@@ -9,6 +9,7 @@ import { LoggingService, LogLevel } from "../services/LoggingService";
 import { JournalAnalysisService } from "../services/JournalAnalysisService";
 import { debounce } from "../utils/debounce";
 import RetrospectAI from "../main";
+import { AnthropicService } from "../services/AnthropicService";
 
 export class ServiceManager {
     private plugin: RetrospectAI;
@@ -65,6 +66,14 @@ export class ServiceManager {
                 this.aiService = new OllamaService(
                     this.plugin.settings.ollamaHost,
                     this.plugin.settings.ollamaModel
+                );
+                break;
+            case "anthropic":
+                this.logger.debug("Initializing Anthropic service");
+                this.aiService = new AnthropicService(
+                    this.plugin.settings.anthropicApiKey,
+                    this.plugin.settings.anthropicModel,
+                    this.logger
                 );
                 break;
             default:
