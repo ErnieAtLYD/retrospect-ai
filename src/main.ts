@@ -50,7 +50,7 @@ export default class RetrospectAI extends Plugin {
             // 3. Append the analysis
 
             // For now, let's just get the analysis service and call it
-            const analysisManager = this.serviceManager.analysisManager;
+            const {analysisManager} = this.serviceManager;
             if (!analysisManager) {
                 throw new Error("Analysis manager not initialized");
             }
