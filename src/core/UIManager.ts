@@ -32,13 +32,9 @@ export class UIManager {
 	private setupStatusBar() {
 		try {
 			// Try to create a status bar item safely
-			if (
-				this.plugin.app.workspace &&
-				"statusBar" in this.plugin.app.workspace
-			) {
-				// @ts-ignore - Handle potential missing statusBar API
-				this.statusBarItem =
-					this.plugin.app.workspace.statusBar?.addStatusBarItem();
+			const app = this.plugin.app as any;
+			if (app.workspace && app.workspace.statusBar) {
+				this.statusBarItem = app.workspace.statusBar.addStatusBarItem();
 			}
 		} catch (e) {
 			console.log("Status bar API not available, using Notices instead");
