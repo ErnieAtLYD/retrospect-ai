@@ -1,4 +1,5 @@
 // src/services/PrivacyManager.ts
+
 export class PrivacyManager {
 	constructor(private privateMarker: string) {}
 

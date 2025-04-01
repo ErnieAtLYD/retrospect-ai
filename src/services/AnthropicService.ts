@@ -99,6 +99,18 @@ export class AnthropicService implements AIService {
 	}
 
 	/**
+	 * Builds the headers for the Anthropic API request
+	 * @returns The headers for the Anthropic API request
+	 */
+	private buildHeaders(): Record<string, string> {
+		return {
+			"Content-Type": "application/json",
+			"x-api-key": this.apiKey,
+			"anthropic-version": "2023-06-01",
+		};
+	}
+
+	/**
 	 * Sends a prompt to the Anthropic API and returns the response
 	 * @param prompt The prompt to send to the API
 	 * @returns The response from the API
@@ -112,11 +124,7 @@ export class AnthropicService implements AIService {
 			const response = await request({
 				url: this.baseUrl,
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"x-api-key": this.apiKey,
-					"anthropic-version": "2023-06-01",
-				},
+				headers: this.buildHeaders(),
 				body: JSON.stringify({
 					model: this.model,
 					messages: [{ role: "user", content: prompt }],
@@ -156,11 +164,7 @@ export class AnthropicService implements AIService {
 			const response = await request({
 				url: this.baseUrl,
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"x-api-key": this.apiKey,
-					"anthropic-version": "2023-06-01",
-				},
+				headers: this.buildHeaders(),
 				body: JSON.stringify({
 					model: this.model,
 					messages: [{ role: "user", content: prompt }],

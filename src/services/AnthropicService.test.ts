@@ -140,4 +140,24 @@ describe('AnthropicService', () => {
         
         expect(mockLogger.error).toHaveBeenCalled();
     });
+
+    test('generateText method formats prompt correctly', async () => {
+        // Arrange
+        const apiKey = 'test-api-key';
+        const model = 'claude-3-opus-20240229';
+        const service = new AnthropicService(apiKey, model, mockLogger);
+        
+        // Mock successful response
+        const mockResponse = {
+            content: [{ type: 'text', text: 'Analysis result' }]
+        };
+        mockRequest.mockResolvedValueOnce(JSON.stringify(mockResponse));
+        
+        // Act
+        const result = await service.generateText('Test prompt');
+        
+        // Assert
+        expect(result).toBe('Analysis result');
+        expect(mockRequest).toHaveBeenCalledTimes(1);
+    });
 });
