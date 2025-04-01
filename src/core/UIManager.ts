@@ -1,6 +1,5 @@
 // core/UIManager.ts
-import { MarkdownView, Notice } from "obsidian";
-import { StreamingEditorManager } from "../services/StreamingManager";
+import { Notice } from "obsidian";
 import RetrospectAI from "../main";
 
 export class UIManager {
@@ -26,22 +25,22 @@ export class UIManager {
 		);
 
 		this.setupStatusBar();
-		this.addAnalysisRibbonIcon();
+		this.setupRibbonIcons();
 	}
 
-	private setupStatusBar() {
+	private setupStatusBar(): void {
 		try {
 			// Try to create a status bar item safely
-			const app = this.plugin.app as any;
-			if (app.workspace && app.workspace.statusBar) {
-				this.statusBarItem = app.workspace.statusBar.addStatusBarItem();
+			if (this.plugin.app.workspace) {
+				this.statusBarItem = this.plugin.addStatusBarItem();
+				this.statusBarItem.setText('RetrospectAI ready');  
 			}
 		} catch (e) {
 			console.log("Status bar API not available, using Notices instead");
 		}
 	}
 
-	private addAnalysisRibbonIcon() {
+	private setupRibbonIcons(): void {
 		const ribbonIcon = this.plugin.addRibbonIcon(
 			"brain-cog",
 			"Analyze Daily Journal",
@@ -60,84 +59,6 @@ export class UIManager {
 		);
 
 		ribbonIcon.addClass("retrospect-ai-ribbon-icon");
-	}
-
-	private addAnalysisRibbonIcon2() {
-		const ribbonIconEl = this.plugin.addRibbonIcon(
-			"brain-cog",
-			"Analyze Daily Journal",
-			async () => {
-				const { logger } = this.plugin.serviceManager;
-				logger.info("Ribbon icon clicked - analyzing daily journal");
-
-				try {
-					// Get today's date in YYYY-MM-DD format
-					const today = new Date();
-					const formattedDate = today.toISOString().split("T")[0];
-
-					// Try to find a daily note with today's date in the filename
-					const files = this.plugin.app.vault.getMarkdownFiles();
-					const dailyNote = files.find((file) =>
-						file.path.includes(formattedDate)
-					);
-
-					if (!dailyNote) {
-						new Notice("No journal entry found for today");
-						logger.warn(
-							`No journal entry found for today (${formattedDate})`
-						);
-						return;
-					}
-
-					// Read the file content
-					const content = await this.plugin.app.vault.read(dailyNote);
-
-					// Open the file in a new leaf if it's not already open
-					const leaf = this.plugin.app.workspace.getLeaf(false);
-					await leaf.openFile(dailyNote);
-
-					// Get the editor from the view
-					const view =
-						this.plugin.app.workspace.getActiveViewOfType(
-							MarkdownView
-						);
-					if (!view) {
-						new Notice("Could not get editor view");
-						return;
-					}
-
-					const { editor } = view;
-
-					// Create a streaming manager for the editor
-					const streamingManager = new StreamingEditorManager(editor);
-
-					// Show a notice that analysis is starting
-					new Notice("Analyzing today's journal entry...");
-
-					// Analyze the content and stream the results
-					await streamingManager.streamAnalysis(
-						this.plugin.serviceManager.analyzeContent(content),
-						{
-							loadingIndicatorPosition: "bottom",
-							streamingUpdateInterval: 50,
-						}
-					);
-
-					new Notice("Journal analysis complete");
-				} catch (error) {
-					logger.error("Error analyzing daily journal", error);
-					new Notice(
-						"Error analyzing daily journal: " +
-							(error instanceof Error
-								? error.message
-								: String(error))
-					);
-				}
-			}
-		);
-
-		// Add a tooltip
-		ribbonIconEl.addClass("retrospect-ai-ribbon-icon");
 	}
 
 	/**
