@@ -33,7 +33,7 @@ export class UIManager {
 			// Try to create a status bar item safely
 			if (this.plugin.app.workspace) {
 				this.statusBarItem = this.plugin.addStatusBarItem();
-				this.statusBarItem.setText('RetrospectAI ready');  
+				this.statusBarItem.setText("RetrospectAI ready");
 			}
 		} catch (e) {
 			console.log("Status bar API not available, using Notices instead");
