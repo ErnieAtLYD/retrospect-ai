@@ -10,7 +10,7 @@ import { JournalAnalysisService } from "../services/JournalAnalysisService";
 import { debounce } from "../utils/debounce";
 import RetrospectAI from "../main";
 import { AnthropicService } from "../services/AnthropicService";
-import { Notice } from "obsidian";
+import { ServiceInitializationError, AIServiceError, AnalysisError } from "../errors/ServiceErrors";
 
 export class ServiceManager {
 	private plugin: RetrospectAI;
@@ -23,6 +23,11 @@ export class ServiceManager {
 
 	constructor(plugin: RetrospectAI) {
 		this.plugin = plugin;
+		this.aiService = undefined;
+		this.analysisManager = undefined as any;
+		this.weeklyAnalysisService = undefined as any;
+		this.journalAnalysisService = undefined as any;
+		this.logger = undefined as any;
 		this.initializeLogger();
 
 		// Create a debounced version of service initialization
@@ -77,11 +82,11 @@ export class ServiceManager {
 			default:
 				const errorMsg = `Unsupported AI provider: ${this.plugin.settings.aiProvider}`;
 				this.logger.error(errorMsg);
-				throw new Error(errorMsg);
+				throw new AIServiceError(errorMsg);
 		}
 
 		if (!isAIService(this.aiService)) {
-			throw new Error("Failed to initialize AI service");
+			throw new AIServiceError("Failed to initialize AI service");
 		}
 	}
 
@@ -121,16 +126,21 @@ export class ServiceManager {
 		this.logger.info("Initializing Retrospect AI services");
 
 		try {
-            this.initializePrivacyManager();
-            this.initializeAIService();
-            this.initializeAnalysisManager();
-            this.initializeWeeklyAnalysisService();
-            this.initializeJournalAnalysisService();
-            this.logger.info("Services initialized successfully");
-    
+			this.initializePrivacyManager();
+			this.initializeAIService();
+			this.initializeAnalysisManager();
+			this.initializeWeeklyAnalysisService();
+			this.initializeJournalAnalysisService();
+			this.logger.info("Services initialized successfully");
 		} catch (error) {
-            console.error("Failed to initialize services:", error);
-            new Notice(`Failed to initialize services: ${error instanceof Error ? error.message : String(error)}`);
+			console.error("Failed to initialize services:", error);
+			if (error instanceof AIServiceError) {
+				throw new AIServiceError(`AI Service Error: ${error.message}`);
+			} else if (error instanceof AnalysisError) {
+				throw new AnalysisError(`Analysis Error: ${error.message}`);
+			} else {
+				throw new ServiceInitializationError(`Failed to initialize services: ${error instanceof Error ? error.message : String(error)}`);
+			}
 		}
 	}
 
@@ -151,13 +161,13 @@ export class ServiceManager {
 
 	shutdown() {
 		this.logger.info("Shutting down Retrospect AI services");
-
+		
 		// Clean up any resources that need explicit cleanup
 		this.aiService = undefined;
 		this.analysisManager = undefined as any;
 		this.weeklyAnalysisService = undefined as any;
 		this.journalAnalysisService = undefined as any;
-
+		
 		this.logger.info("Services shutdown complete");
 		this.logger = undefined as any;
 	}
@@ -171,7 +181,7 @@ export class ServiceManager {
 			);
 		} catch (error) {
 			this.logger.error("Error during content analysis:", error);
-			throw error;
+			throw new AnalysisError(error instanceof Error ? error.message : String(error));
 		}
 	}
 }
