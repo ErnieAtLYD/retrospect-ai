@@ -8,7 +8,7 @@
   },
   "kv_store": {
     "unique_matched_lines_count": 0,
-    "total_repo_line_count": 4230,
+    "total_repo_line_count": 4635,
     "best_prompt_response": null,
     "file_statistics": [
       {
@@ -37,7 +37,7 @@
       },
       {
         "file": "README.md",
-        "total_lines": 145,
+        "total_lines": 153,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -91,31 +91,31 @@
       },
       {
         "file": "src/core/CommandManager.ts",
-        "total_lines": 22,
+        "total_lines": 76,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/core/ServiceManager.ts",
-        "total_lines": 15,
+        "total_lines": 152,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/core/UIManager.ts",
-        "total_lines": 25,
+        "total_lines": 73,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/main.test.ts",
-        "total_lines": 238,
+        "total_lines": 126,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/main.ts",
-        "total_lines": 292,
+        "total_lines": 91,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -145,13 +145,25 @@
       },
       {
         "file": "src/services/AnalysisManager.test.ts",
-        "total_lines": 60,
+        "total_lines": 58,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/services/AnalysisManager.ts",
-        "total_lines": 57,
+        "total_lines": 62,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/AnthropicService.test.ts",
+        "total_lines": 164,
+        "ai_generated_lines": 0,
+        "ai_generated_percentage": 0
+      },
+      {
+        "file": "src/services/AnthropicService.ts",
+        "total_lines": 205,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -217,13 +229,13 @@
       },
       {
         "file": "src/services/PrivacyManager.ts",
-        "total_lines": 13,
+        "total_lines": 14,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
       {
         "file": "src/services/Providers.ts",
-        "total_lines": 90,
+        "total_lines": 124,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -253,7 +265,7 @@
       },
       {
         "file": "src/settings/settingsTab.test.ts",
-        "total_lines": 321,
+        "total_lines": 381,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },
@@ -265,7 +277,7 @@
       },
       {
         "file": "src/types.ts",
-        "total_lines": 74,
+        "total_lines": 78,
         "ai_generated_lines": 0,
         "ai_generated_percentage": 0
       },

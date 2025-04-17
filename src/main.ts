@@ -32,6 +32,11 @@ export default class RetrospectAI extends Plugin {
         this.serviceManager.reinitializeServices();
     }
 
+    private initializeUI() {
+        this.uiManager = new UIManager(this);
+        this.uiManager.setupUI();
+    }
+
     /**
      * Analyze the current daily journal entry
      * This method is expected by the tests
@@ -75,12 +80,11 @@ export default class RetrospectAI extends Plugin {
         // Initialize managers
         this.serviceManager = new ServiceManager(this);
         this.commandManager = new CommandManager(this);
-        this.uiManager = new UIManager(this);
         
         // Set up the plugin
         this.addSettingTab(new RetrospectAISettingTab(this.app as ExtendedApp, this));
         this.commandManager.registerCommands();
-        this.uiManager.setupUI();
+        this.initializeUI();
     }
 
     onunload() {
