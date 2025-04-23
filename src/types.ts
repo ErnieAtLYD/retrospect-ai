@@ -4,6 +4,8 @@ import { App } from "obsidian";
 import { DEFAULT_REFLECTION_TEMPLATE } from "./prompts/reflectionPrompt";
 import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from "./prompts/weeklyReflectionPrompt";
 
+export const COMMENTARY_VIEW_TYPE = "commentary-view";
+
 // Define union types
 export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
 export type LogLevel = "error" | "warn" | "info" | "debug";
@@ -43,6 +45,7 @@ export interface RetrospectAISettings {
 	cacheTTLMinutes: number;
 	cacheMaxSize: number;
 	loggingEnabled: boolean;
+	commentaryViewEnabled: boolean;
 	logLevel: LogLevel;
 }
 
@@ -74,4 +77,5 @@ export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
 	logLevel: "info",
 	anthropicModel: "claude-3-haiku-20240307",
 	anthropicApiKey: "",
+	commentaryViewEnabled: true,
 };

@@ -52,41 +52,57 @@ export class ServiceManager {
 	}
 
 	private initializeAIService() {
-		// Initialize AI service based on settings
-		switch (this.plugin.settings.aiProvider) {
-			case "openai":
-				this.logger?.debug("Initializing OpenAI service");
-				this.aiService = new OpenAIService(
-					this.plugin.settings.apiKey,
-					this.plugin.settings.openaiModel
-				);
-				break;
-			case "ollama":
-			this.logger?.debug(
-					"Initializing Ollama service with host: " +
-						this.plugin.settings.ollamaHost
-				);
-				this.aiService = new OllamaService(
-					this.plugin.settings.ollamaHost,
-					this.plugin.settings.ollamaModel
-				);
-				break;
-			case "anthropic":
-				this.logger?.debug("Initializing Anthropic service");
-				this.aiService = new AnthropicService(
-					this.plugin.settings.anthropicApiKey,
-					this.plugin.settings.anthropicModel,
-					this.logger
-				);
-				break;
-			default:
-				const errorMsg = `Unsupported AI provider: ${this.plugin.settings.aiProvider}`;
-				this.logger?.error(errorMsg);
-				throw new AIServiceError(errorMsg);
-		}
+		try {
+			this.logger?.debug("Starting AI service initialization");
+			
+			if (!this.privacyManager) {
+				throw new Error("Privacy Manager must be initialized before AI Service");
+			}
 
-		if (!isAIService(this.aiService)) {
-			throw new AIServiceError("Failed to initialize AI service");
+			// Initialize AI service based on settings
+			switch (this.plugin.settings.aiProvider) {
+				case "openai":
+					this.logger?.debug("Initializing OpenAI service with model:", this.plugin.settings.openaiModel);
+					if (!this.plugin.settings.apiKey) {
+						throw new Error("OpenAI API key is required but not set");
+					}
+					this.aiService = new OpenAIService(
+						this.plugin.settings.apiKey,
+						this.plugin.settings.openaiModel
+					);
+					break;
+				case "ollama":
+					this.logger?.debug("Initializing Ollama service with host:", this.plugin.settings.ollamaHost);
+					this.aiService = new OllamaService(
+						this.plugin.settings.ollamaHost,
+						this.plugin.settings.ollamaModel
+					);
+					break;
+				case "anthropic":
+					this.logger?.debug("Initializing Anthropic service with model:", this.plugin.settings.anthropicModel);
+					if (!this.plugin.settings.anthropicApiKey) {
+						throw new Error("Anthropic API key is required but not set");
+					}
+					this.aiService = new AnthropicService(
+						this.plugin.settings.anthropicApiKey,
+						this.plugin.settings.anthropicModel,
+						this.logger
+					);
+					break;
+				default:
+					const errorMsg = `Unsupported AI provider: ${this.plugin.settings.aiProvider}`;
+					this.logger?.error(errorMsg);
+					throw new AIServiceError(errorMsg);
+			}
+
+			if (!isAIService(this.aiService)) {
+				throw new AIServiceError("Failed to initialize AI service - service is not properly configured");
+			}
+
+			this.logger?.debug("AI service initialized successfully");
+		} catch (error) {
+			this.logger?.error("Failed to initialize AI service", error instanceof Error ? error : new Error(String(error)));
+			throw error;
 		}
 	}
 
@@ -102,11 +118,29 @@ export class ServiceManager {
 	 * 
 	 */
 	private initializeAnalysisManager() {
-		this.analysisManager = new AnalysisManager(
-			this.aiService as AIService,
-			this.privacyManager,
-			this.plugin.settings.cacheTTLMinutes
-		);
+		try {
+			this.logger?.debug("Starting Analysis Manager initialization");
+			
+			if (!this.privacyManager) {
+				throw new Error("Privacy Manager must be initialized before Analysis Manager");
+			}
+			
+			if (!this.aiService) {
+				throw new Error("AI Service must be initialized before Analysis Manager");
+			}
+
+			this.analysisManager = new AnalysisManager(
+				this.plugin,
+				this.aiService as AIService,
+				this.privacyManager,
+				this.plugin.settings.cacheTTLMinutes
+			);
+
+			this.logger?.debug("Analysis Manager initialized successfully");
+		} catch (error) {
+			this.logger?.error("Failed to initialize Analysis Manager", error instanceof Error ? error : new Error(String(error)));
+			throw error;
+		}
 	}
 
 	/**
@@ -185,14 +219,36 @@ export class ServiceManager {
 	private initializeServices() {
 		this.logger?.info("Initializing Retrospect AI services");
 		try {
+			this.logger?.debug("Starting service initialization...");
+			
+			// Initialize Privacy Manager
+			this.logger?.debug("Initializing Privacy Manager...");
 			this.initializePrivacyManager();
+			this.logger?.debug("Privacy Manager initialized successfully");
+			
+			// Initialize AI Service
+			this.logger?.debug("Initializing AI Service...");
 			this.initializeAIService();
+			this.logger?.debug("AI Service initialized successfully");
+			
+			// Initialize Analysis Manager
+			this.logger?.debug("Initializing Analysis Manager...");
 			this.initializeAnalysisManager();
+			this.logger?.debug("Analysis Manager initialized successfully");
+			
+			// Initialize Weekly Analysis Service
+			this.logger?.debug("Initializing Weekly Analysis Service...");
 			this.initializeWeeklyAnalysisService();
+			this.logger?.debug("Weekly Analysis Service initialized successfully");
+			
+			// Initialize Journal Analysis Service
+			this.logger?.debug("Initializing Journal Analysis Service...");
 			this.initializeJournalAnalysisService();
-			this.logger?.info("Services initialized successfully");
+			this.logger?.debug("Journal Analysis Service initialized successfully");
+			
+			this.logger?.info("All services initialized successfully");
 		} catch (error) {
-			console.error("Failed to initialize services:", error);
+			this.logger?.error("Failed to initialize services:", error);
 			if (error instanceof AIServiceError) {
 				throw new AIServiceError(`AI Service Error: ${error.message}`);
 			} else if (error instanceof AnalysisError) {
@@ -248,16 +304,16 @@ export class ServiceManager {
 	/**
 	 * Analyze content
 	 * @param {string} content - The content to analyze
-	 * @returns {Promise<string>} The analyzed content
+	 * @returns {Promise<void>} The analyzed content
 	 * @throws {Error} if the analysis manager is not initialized
 	 * 
 	 */
-	async analyzeContent(content: string): Promise<string> {
+	async analyzeContent(content: string): Promise<void> {
 		try {
 			if (!this.analysisManager) {
 				throw new Error("Analysis manager is not initialized");
 			}
-			return await this.analysisManager.analyzeContent(
+			await this.analysisManager.analyzeContent(
 				content,
 				this.plugin.settings.reflectionTemplate,
 				this.plugin.settings.communicationStyle

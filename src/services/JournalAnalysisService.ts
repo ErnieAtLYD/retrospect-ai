@@ -42,11 +42,12 @@ export class JournalAnalysisService {
      */
     async analyzeContent(content: string): Promise<string> {
         try {
-            return await this.analysisManager.analyzeContent(
+            await this.analysisManager.analyzeContent(
                 content,
                 this.settings.reflectionTemplate,
                 this.settings.communicationStyle
             );
+            return "Analysis complete"; // Return a string since the method is expected to return Promise<string>
         } catch (error) {
             console.error("Error during content analysis:", error);
             throw error; // Let the streaming manager handle the error

@@ -18,7 +18,16 @@ describe('AnalysisManager', () => {
         } as any;
 
         // Create the analysis manager with mocks
+        const mockPlugin = {
+            settings: {},
+            serviceManager: {},
+            commandManager: {},
+            uiManager: {},
+            app: {}
+        } as any;
+
         analysisManager = new AnalysisManager(
+            mockPlugin,
             mockAIService,
             mockPrivacyManager,
             60, // cacheTTLMinutes

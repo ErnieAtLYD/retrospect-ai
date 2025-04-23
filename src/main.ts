@@ -1,11 +1,12 @@
 // main.ts
 import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
-import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp } from "./types";
+import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp, COMMENTARY_VIEW_TYPE } from "./types";
 import { RetrospectAISettingTab } from "./settings/settingsTab";
 import { ServiceManager } from "./core/ServiceManager";
 import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
-import { ReactView, REACT_VIEW_TYPE } from "./view";
+// import { ReactView, REACT_VIEW_TYPE } from "./views/view";
+import { CommentaryView } from "./views/CommentaryView";
 
 
 
@@ -78,7 +79,8 @@ export default class RetrospectAI extends Plugin {
         const { workspace } = this.app;
 
         let leaf: WorkspaceLeaf | null = null;
-        const leaves = workspace.getLeavesOfType(REACT_VIEW_TYPE);
+        const leaves = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
+        console.log("leaves", leaves);
     
         if (leaves.length > 0) {
           // A leaf with our view already exists, use that
@@ -87,7 +89,7 @@ export default class RetrospectAI extends Plugin {
           // Our view could not be found in the workspace, create a new leaf
           // in the right sidebar for it
           leaf = workspace.getRightLeaf(false);
-          await leaf?.setViewState({ type: REACT_VIEW_TYPE, active: true });
+          await leaf?.setViewState({ type: COMMENTARY_VIEW_TYPE, active: true });
         }
     
         // "Reveal" the leaf in case it is in a collapsed sidebar
@@ -97,7 +99,8 @@ export default class RetrospectAI extends Plugin {
     }
 
     async onload() {
-        this.registerView(REACT_VIEW_TYPE, (leaf) => new ReactView(leaf));
+        // Register the view type first
+        this.registerView(COMMENTARY_VIEW_TYPE, (leaf) => new CommentaryView(leaf));
 
         await this.loadSettings();
         
@@ -109,10 +112,18 @@ export default class RetrospectAI extends Plugin {
         this.commandManager.registerCommands();
         this.initializeUI();
 
-        await this.activateView();
+        // Wait for the workspace to be ready
+        await this.app.workspace.onLayoutReady(async () => {
+            try {
+                // Activate the view after workspace is ready
+                await this.uiManager.activateView();
+            } catch (error) {
+                console.error("Failed to activate view:", error);
+            }
+        });
     }
 
-    async onunload() {
+    onunload() {
         this.serviceManager.shutdown();
         this.uiManager.cleanup();
     }
