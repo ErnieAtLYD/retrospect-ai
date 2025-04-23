@@ -42,11 +42,18 @@ export class CommandManager {
                     const template = this.plugin.settings.reflectionTemplate;
                     const style = this.plugin.settings.communicationStyle;
 
+                    // Get the current file info
+                    const currentFile = ctx.file;
+                    const noteId = currentFile.path;
+                    const noteName = currentFile.basename;
+
                     // Run the analysis
                     await this.plugin.serviceManager.analysisManager.analyzeContent(
                         content,
                         template,
-                        style
+                        style,
+                        noteId,
+                        noteName
                     );
 
                     loadingNotice.hide();

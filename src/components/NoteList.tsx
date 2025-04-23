@@ -1,9 +1,14 @@
 import * as React from 'react';
 
+interface Note {
+  id: string;
+  name: string;
+}
+
 interface NoteListProps {
-  notes: string[];
+  notes: Note[];
   selectedNote: string | null;
-  onSelectNote: (note: string) => void;
+  onSelectNote: (noteId: string) => void;
 }
 
 export const NoteList: React.FC<NoteListProps> = ({ 
@@ -15,15 +20,19 @@ export const NoteList: React.FC<NoteListProps> = ({
     <div className="note-list">
       <h3>Your Notes</h3>
       <ul>
-        {notes.map((note) => (
-          <li 
-            key={note}
-            className={note === selectedNote ? 'selected' : ''}
-            onClick={() => onSelectNote(note)}
-          >
-            {note}
-          </li>
-        ))}
+        {notes.length > 0 ? (
+          notes.map((note) => (
+            <li 
+              key={note.id}
+              className={note.id === selectedNote ? 'selected' : ''}
+              onClick={() => onSelectNote(note.id)}
+            >
+              {note.name}
+            </li>
+          ))
+        ) : (
+          <li className="empty-list">No analyzed notes yet</li>
+        )}
       </ul>
     </div>
   );

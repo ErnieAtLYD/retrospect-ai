@@ -6,6 +6,14 @@ import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from "./prompts/weeklyReflectionPr
 
 export const COMMENTARY_VIEW_TYPE = "commentary-view";
 
+// Interface for storing note analysis data
+export interface NoteAnalysis {
+  noteId: string;
+  noteName: string;
+  content: string;
+  timestamp: number;
+}
+
 // Define union types
 export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
 export type LogLevel = "error" | "warn" | "info" | "debug";

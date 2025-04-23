@@ -38,14 +38,18 @@ export class JournalAnalysisService {
     /**
      * Analyzes the content.
      * @param content
+     * @param noteId
+     * @param noteName
      * @returns
      */
-    async analyzeContent(content: string): Promise<string> {
+    async analyzeContent(content: string, noteId?: string, noteName?: string): Promise<string> {
         try {
             await this.analysisManager.analyzeContent(
                 content,
                 this.settings.reflectionTemplate,
-                this.settings.communicationStyle
+                this.settings.communicationStyle,
+                noteId,
+                noteName
             );
             return "Analysis complete"; // Return a string since the method is expected to return Promise<string>
         } catch (error) {
@@ -123,7 +127,7 @@ export class JournalAnalysisService {
 
         const content = await this.getNoteContent(note);
         await streamingManager.streamAnalysis(
-            this.analyzeContent(content),
+            this.analyzeContent(content, note.path, note.basename),
             {
                 loadingIndicatorPosition: "bottom",
                 streamingUpdateInterval: 50,

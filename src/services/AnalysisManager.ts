@@ -11,6 +11,8 @@ export type AnalysisStyle = "direct" | "gentle";
 export interface AnalysisResult {
 	content: string;
 	timestamp: number;
+	noteId?: string;
+	noteName?: string;
 }
 
 export interface AnalysisRequest {
@@ -88,7 +90,9 @@ export class AnalysisManager {
 	async analyzeContent(
 		content: string,
 		template: string,
-		style: AnalysisStyle
+		style: AnalysisStyle,
+		noteId?: string,
+		noteName?: string
 	): Promise<void> {
 		try {
 			const request: AnalysisRequest = { content, template, style };
@@ -116,6 +120,8 @@ export class AnalysisManager {
 			const analysisResult: AnalysisResult = {
 				content: result,
 				timestamp: Date.now(),
+				noteId,
+				noteName
 			};
 
 			this.cacheManager.set(cacheKey, analysisResult);
@@ -130,7 +136,7 @@ export class AnalysisManager {
 		}
 	}
 
-	private async updateSidePanel(content: string): Promise<void> {
+	private async updateSidePanel(content: string, noteId?: string, noteName?: string): Promise<void> {
 		try {
 			await this.plugin.uiManager.activateView();
 
@@ -152,7 +158,7 @@ export class AnalysisManager {
 			}
 
 			// @ts-ignore - We know the view has this method
-			view.updateContent(content);
+			view.updateContent(content, noteId, noteName);
 		} catch (error) {
 			if (error instanceof AnalysisError) {
 				new Notice(error.message);

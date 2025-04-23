@@ -5,25 +5,34 @@ import { useState, useEffect } from 'react';
 import { NoteList } from './NoteList';
 import { Editor } from './Editor';
 import { App as ObsidianApp } from 'obsidian';
+import { NoteAnalysis } from '../types';
 
 interface AppProps {
   app: ObsidianApp;
   content?: string;
+  currentNoteId?: string;
+  currentNoteName?: string;
+  analysisHistory: NoteAnalysis[];
+  onSelectNote: (noteId: string) => void;
 }
 
 export const REACT_VIEW_TYPE = "react-view";
 
 export const AppComponent: React.FC<AppProps> = ({ app, content }) => {
-  const [notes, setNotes] = useState<string[]>([]);
-  const [selectedNote, setSelectedNote] = useState<string | null>(null);
+  const [selectedNote, setSelectedNote] = useState<string | null>(currentNoteId || null);
   
-  // Example of loading data when component mounts
+  // Update selected note when currentNoteId changes
   useEffect(() => {
-    app.vault.getMarkdownFiles().forEach((file) => {
-      console.log(file.name);
-      setNotes((prevNotes) => [...prevNotes, file.name]);
-    });
-  }, []);
+    if (currentNoteId) {
+      setSelectedNote(currentNoteId);
+    }
+  }, [currentNoteId]);
+  
+  // Handle note selection
+  const handleSelectNote = (noteId: string) => {
+    setSelectedNote(noteId);
+    onSelectNote(noteId);
+  };
 
   console.log({content});
 
@@ -32,15 +41,30 @@ export const AppComponent: React.FC<AppProps> = ({ app, content }) => {
       <h2 className="react-app-header">AI Analysis</h2>
       
       <div className="react-app-container">
-        {content ? (
-          <div className="analysis-content">
-            <div className="analysis-text" dangerouslySetInnerHTML={{ __html: content }} />
-          </div>
-        ) : (
-          <div className="no-analysis">
-            <p>No analysis available. Run an analysis on a note to see results here.</p>
-          </div>
-        )}
+        <div className="react-app-sidebar">
+          <NoteList 
+            notes={analysisHistory.map(item => ({ id: item.noteId, name: item.noteName }))} 
+            selectedNote={selectedNote} 
+            onSelectNote={handleSelectNote} 
+          />
+        </div>
+        
+        <div className="react-app-content">
+          {content ? (
+            <div className="analysis-content">
+              {currentNoteName && (
+                <div className="analysis-header">
+                  <h3>Analysis for: {currentNoteName}</h3>
+                </div>
+              )}
+              <div className="analysis-text" dangerouslySetInnerHTML={{ __html: content }} />
+            </div>
+          ) : (
+            <div className="no-analysis">
+              <p>No analysis available. Run an analysis on a note to see results here.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
