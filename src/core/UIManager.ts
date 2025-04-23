@@ -17,6 +17,9 @@ export class UIManager {
 			"Analyze Daily Journal",
 			async () => {
 				try {
+					if (!this.plugin.serviceManager?.journalAnalysisService) {
+						throw new Error("Service not initialized");
+					}
 					await this.plugin.serviceManager.journalAnalysisService.analyzeDailyJournal();
 				} catch (error) {
 					// Error handling is done in the analyzeDailyJournal method
@@ -46,6 +49,9 @@ export class UIManager {
 			"Analyze Daily Journal",
 			async () => {
 				try {
+					if (!this.plugin.serviceManager?.journalAnalysisService) {
+						throw new Error("Service not initialized");
+					}
 					await this.plugin.serviceManager.journalAnalysisService.analyzeDailyJournal();
 				} catch (error) {
 					const message =

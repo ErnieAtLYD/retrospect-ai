@@ -16,18 +16,18 @@ export class ServiceManager {
 	private plugin: RetrospectAI;
 	private aiService: AIService | undefined;
 	public privacyManager!: PrivacyManager;
-	public analysisManager!: AnalysisManager;
-	public weeklyAnalysisService!: WeeklyAnalysisService;
-	public journalAnalysisService!: JournalAnalysisService;
-	public logger!: LoggingService;
+	public analysisManager!: AnalysisManager | undefined;
+	public weeklyAnalysisService!: WeeklyAnalysisService | undefined;
+	public journalAnalysisService!: JournalAnalysisService | undefined;
+	public logger!: LoggingService | undefined;
 
 	constructor(plugin: RetrospectAI) {
 		this.plugin = plugin;
 		this.aiService = undefined;
-		this.analysisManager = undefined as any;
-		this.weeklyAnalysisService = undefined as any;
-		this.journalAnalysisService = undefined as any;
-		this.logger = undefined as any;
+		this.analysisManager = undefined;
+		this.weeklyAnalysisService = undefined;
+		this.journalAnalysisService = undefined;
+		this.logger = undefined;
 		this.initializeLogger();
 
 		// Create a debounced version of service initialization
@@ -55,14 +55,14 @@ export class ServiceManager {
 		// Initialize AI service based on settings
 		switch (this.plugin.settings.aiProvider) {
 			case "openai":
-				this.logger.debug("Initializing OpenAI service");
+				this.logger?.debug("Initializing OpenAI service");
 				this.aiService = new OpenAIService(
 					this.plugin.settings.apiKey,
 					this.plugin.settings.openaiModel
 				);
 				break;
 			case "ollama":
-				this.logger.debug(
+			this.logger?.debug(
 					"Initializing Ollama service with host: " +
 						this.plugin.settings.ollamaHost
 				);
@@ -72,7 +72,7 @@ export class ServiceManager {
 				);
 				break;
 			case "anthropic":
-				this.logger.debug("Initializing Anthropic service");
+				this.logger?.debug("Initializing Anthropic service");
 				this.aiService = new AnthropicService(
 					this.plugin.settings.anthropicApiKey,
 					this.plugin.settings.anthropicModel,
@@ -81,7 +81,7 @@ export class ServiceManager {
 				break;
 			default:
 				const errorMsg = `Unsupported AI provider: ${this.plugin.settings.aiProvider}`;
-				this.logger.error(errorMsg);
+				this.logger?.error(errorMsg);
 				throw new AIServiceError(errorMsg);
 		}
 
@@ -90,6 +90,17 @@ export class ServiceManager {
 		}
 	}
 
+	/**
+	 * Initialize the analysis manager
+	 * @returns {void}
+	 * @throws {ServiceInitializationError} if the service fails to initialize
+	 * @throws {AIServiceError} if the AI service is not initialized
+	 * @throws {LoggingServiceError} if the logging service is not initialized
+	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
+	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
+	 * @throws {Error} if the service fails to initialize
+	 * 
+	 */
 	private initializeAnalysisManager() {
 		this.analysisManager = new AnalysisManager(
 			this.aiService as AIService,
@@ -98,40 +109,88 @@ export class ServiceManager {
 		);
 	}
 
+	/**
+	 * Initialize the weekly analysis service
+	 * @returns {void}
+	 * @throws {ServiceInitializationError} if the service fails to initialize
+	 * @throws {AIServiceError} if the AI service is not initialized
+	 * @throws {LoggingServiceError} if the logging service is not initialized
+	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
+	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
+	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
+	 * @throws {Error} if the service fails to initialize
+	 * 
+	 */
 	private initializeWeeklyAnalysisService() {
 		this.weeklyAnalysisService = new WeeklyAnalysisService(
 			this.plugin.settings,
 			this.plugin.app,
 			this.privacyManager,
 			this.aiService as AIService,
-			this.logger
+			this.logger as LoggingService
 		);
 	}
 
+	/**
+	 * Initialize the journal analysis service
+	 * @returns {void}
+	 * @throws {ServiceInitializationError} if the service fails to initialize
+	 * @throws {AIServiceError} if the AI service is not initialized
+	 * @throws {LoggingServiceError} if the logging service is not initialized
+	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
+	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
+	 * @throws {Error} if the service fails to initialize
+	 * 
+	 */
 	private initializeJournalAnalysisService() {
 		this.journalAnalysisService = new JournalAnalysisService(
 			this.plugin.app,
 			this.plugin.settings,
-			this.analysisManager,
-			this.logger
+			this.analysisManager as AnalysisManager,
+			this.logger as LoggingService
 		);
 	}
 
+	/**
+	 * Reinitialize the services
+	 * @returns {void}
+	 * @throws {ServiceInitializationError} if the service fails to initialize
+	 * @throws {AIServiceError} if the AI service is not initialized
+	 * @throws {LoggingServiceError} if the logging service is not initialized
+	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
+	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
+	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
+	 * @throws {JournalAnalysisServiceError} if the journal analysis service is not initialized
+	 * @throws {Error} if the service fails to initialize
+	 * 
+	 */
 	reinitializeServices = () => {
 		// This will be replaced with the debounced version in the constructor
 		this.initializeServices();
 	};
 
+	/**
+	 * Initialize the services
+	 * @returns {void}
+	 * @throws {ServiceInitializationError} if the service fails to initialize
+	 * @throws {AIServiceError} if the AI service is not initialized
+	 * @throws {LoggingServiceError} if the logging service is not initialized
+	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
+	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
+	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
+	 * @throws {JournalAnalysisServiceError} if the journal analysis service is not initialized
+	 * @throws {Error} if the service fails to initialize
+	 * 
+	 */
 	private initializeServices() {
-		this.logger.info("Initializing Retrospect AI services");
-
+		this.logger?.info("Initializing Retrospect AI services");
 		try {
 			this.initializePrivacyManager();
 			this.initializeAIService();
 			this.initializeAnalysisManager();
 			this.initializeWeeklyAnalysisService();
 			this.initializeJournalAnalysisService();
-			this.logger.info("Services initialized successfully");
+			this.logger?.info("Services initialized successfully");
 		} catch (error) {
 			console.error("Failed to initialize services:", error);
 			if (error instanceof AIServiceError) {
@@ -144,6 +203,13 @@ export class ServiceManager {
 		}
 	}
 
+
+	/**
+	 * Get the log level
+	 * @param {string} level - The log level
+	 * @returns {LogLevel} The log level
+	 * 
+	 */
 	private getLogLevel(level: string): LogLevel {
 		switch (level) {
 			case "error":
@@ -159,28 +225,45 @@ export class ServiceManager {
 		}
 	}
 
+	/**
+	 * Shutdown the services
+	 * @returns {void}
+	 * @throws {LoggingServiceError} if the logging service is not initialized
+	 * @throws {Error} if the service fails to shutdown
+	 * 
+	 */
 	shutdown() {
-		this.logger.info("Shutting down Retrospect AI services");
+		this.logger?.info("Shutting down Retrospect AI services");
 		
 		// Clean up any resources that need explicit cleanup
 		this.aiService = undefined;
-		this.analysisManager = undefined as any;
-		this.weeklyAnalysisService = undefined as any;
-		this.journalAnalysisService = undefined as any;
+		this.analysisManager = undefined;
+		this.weeklyAnalysisService = undefined;
+		this.journalAnalysisService = undefined;
 		
-		this.logger.info("Services shutdown complete");
-		this.logger = undefined as any;
+		this.logger?.info("Services shutdown complete");
+		this.logger = undefined;
 	}
 
+	/**
+	 * Analyze content
+	 * @param {string} content - The content to analyze
+	 * @returns {Promise<string>} The analyzed content
+	 * @throws {Error} if the analysis manager is not initialized
+	 * 
+	 */
 	async analyzeContent(content: string): Promise<string> {
 		try {
+			if (!this.analysisManager) {
+				throw new Error("Analysis manager is not initialized");
+			}
 			return await this.analysisManager.analyzeContent(
 				content,
 				this.plugin.settings.reflectionTemplate,
 				this.plugin.settings.communicationStyle
 			);
 		} catch (error) {
-			this.logger.error("Error during content analysis:", error);
+			this.logger?.error("Error during content analysis:", error);
 			throw new AnalysisError(error instanceof Error ? error.message : String(error));
 		}
 	}
