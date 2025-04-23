@@ -143,7 +143,7 @@ export class AnalysisManager {
 				);
 			}
 
-			const view = leaves[0].view;
+			const {view} = leaves[0];
 			if (!view || !("updateContent" in view)) {
 				throw new AnalysisError(
 					"Invalid commentary view",
