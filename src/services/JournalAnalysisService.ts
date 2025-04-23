@@ -61,33 +61,61 @@ export class JournalAnalysisService {
         return today.toISOString().split('T')[0];
     }
 
+    /**
+     * Find the daily note
+     * @param date
+     * @returns
+     */
     private async findDailyNote(date: string): Promise<TFile | null> {
         const files = this.app.vault.getMarkdownFiles();
         return files.find(file => file.path.includes(date)) || null;
     }
 
+    /**
+     * Open the daily note
+     * @param note
+     * @returns
+     */
     private async openDailyNote(note: TFile): Promise<MarkdownView | null> {
         const leaf = this.app.workspace.getLeaf(false);
         await leaf.openFile(note);
         return this.app.workspace.getActiveViewOfType(MarkdownView);
     }
 
+    /**
+     * Get the note content
+     * @param note
+     * @returns
+     */
     private async getNoteContent(note: TFile): Promise<string> {
         return await this.app.vault.read(note);
     }
 
+    /**
+     * Handle no journal found
+     * @param date
+     */
     private handleNoJournalFound(date: string): void {
         const message = `No journal entry found for today (${date})`;
         this.logger.warn(message);
         new Notice("No journal entry found for today");
     }
 
+    /**
+     * Handle no editor view
+     */
     private handleNoEditorView(): void {
         const message = "Could not get editor view";
         this.logger.error(message);
         new Notice(message);
     }
 
+    /**
+     * Perform the analysis
+     * @param editor
+     * @param note
+     * @returns
+     */
     private async performAnalysis(editor: Editor, note: TFile): Promise<void> {
         const streamingManager = new StreamingEditorManager(editor);
         new Notice("Analyzing today's journal entry...");

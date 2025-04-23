@@ -1,10 +1,13 @@
 // main.ts
-import { Plugin, Notice } from "obsidian";
+import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
 import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp } from "./types";
 import { RetrospectAISettingTab } from "./settings/settingsTab";
 import { ServiceManager } from "./core/ServiceManager";
 import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
+import { ReactView, REACT_VIEW_TYPE } from "./view";
+
+
 
 export default class RetrospectAI extends Plugin {
     settings!: RetrospectAISettings;
@@ -33,14 +36,11 @@ export default class RetrospectAI extends Plugin {
     }
 
     private initializeUI() {
+        this.addSettingTab(new RetrospectAISettingTab(this.app as ExtendedApp, this));
         this.uiManager = new UIManager(this);
         this.uiManager.setupUI();
     }
 
-    /**
-     * Analyze the current daily journal entry
-     * This method is expected by the tests
-     */
     async analyzeDailyJournal() {
         try {
             // Get the active file
@@ -74,7 +74,31 @@ export default class RetrospectAI extends Plugin {
         }
     }
 
+    async activateView() {
+        const { workspace } = this.app;
+
+        let leaf: WorkspaceLeaf | null = null;
+        const leaves = workspace.getLeavesOfType(REACT_VIEW_TYPE);
+    
+        if (leaves.length > 0) {
+          // A leaf with our view already exists, use that
+          leaf = leaves[0];
+        } else {
+          // Our view could not be found in the workspace, create a new leaf
+          // in the right sidebar for it
+          leaf = workspace.getRightLeaf(false);
+          await leaf?.setViewState({ type: REACT_VIEW_TYPE, active: true });
+        }
+    
+        // "Reveal" the leaf in case it is in a collapsed sidebar
+        if (leaf) {
+            workspace.revealLeaf(leaf);
+        }
+    }
+
     async onload() {
+        this.registerView(REACT_VIEW_TYPE, (leaf) => new ReactView(leaf));
+
         await this.loadSettings();
         
         // Initialize managers
@@ -82,12 +106,13 @@ export default class RetrospectAI extends Plugin {
         this.commandManager = new CommandManager(this);
         
         // Set up the plugin
-        this.addSettingTab(new RetrospectAISettingTab(this.app as ExtendedApp, this));
         this.commandManager.registerCommands();
         this.initializeUI();
+
+        await this.activateView();
     }
 
-    onunload() {
+    async onunload() {
         this.serviceManager.shutdown();
         this.uiManager.cleanup();
     }
