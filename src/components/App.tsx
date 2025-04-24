@@ -18,7 +18,14 @@ interface AppProps {
 
 export const REACT_VIEW_TYPE = "react-view";
 
-export const AppComponent: React.FC<AppProps> = ({ app, content }) => {
+export const AppComponent: React.FC<AppProps> = ({ 
+  app, 
+  content, 
+  currentNoteId, 
+  currentNoteName, 
+  analysisHistory, 
+  onSelectNote 
+}) => {
   const [selectedNote, setSelectedNote] = useState<string | null>(currentNoteId || null);
   
   // Update selected note when currentNoteId changes

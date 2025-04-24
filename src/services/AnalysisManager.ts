@@ -108,7 +108,7 @@ export class AnalysisManager {
 
 			const cachedResult = this.cacheManager.get(cacheKey);
 			if (cachedResult) {
-				await this.updateSidePanel(cachedResult.content);
+				await this.updateSidePanel(cachedResult.content, noteId, noteName);
 				return;
 			}
 
@@ -125,13 +125,15 @@ export class AnalysisManager {
 			};
 
 			this.cacheManager.set(cacheKey, analysisResult);
-			await this.updateSidePanel(result);
+			await this.updateSidePanel(result, noteId, noteName);
 		} catch (error) {
 			if (error instanceof AnalysisError) {
 				new Notice(error.message);
+				this.plugin.logger.error("Analysis error:", error);
 			} else {
 				new Notice("An unexpected error occurred during analysis");
 				console.error("Analysis error:", error);
+				this.plugin.logger.error("Analysis error:", error instanceof Error ? error : new Error(String(error)));
 			}
 		}
 	}
@@ -165,6 +167,7 @@ export class AnalysisManager {
 			} else {
 				new Notice("Failed to update side panel");
 				console.error("Side panel update error:", error);
+				this.plugin.logger.error("Side panel update error:", error instanceof Error ? error : new Error(String(error)));
 			}
 		}
 	}
