@@ -1,5 +1,4 @@
 import { CommandManager } from "./CommandManager";
-import { MockMarkdownView, MockEditor, MockNotice } from "../__tests__/setup";
 
 // src/core/CommandManager.test.ts
 describe("CommandManager", () => {

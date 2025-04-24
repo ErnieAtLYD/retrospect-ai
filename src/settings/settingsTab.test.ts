@@ -9,8 +9,6 @@ import {
 	DataWriteOptions,
 } from "obsidian";
 import { jest } from "@jest/globals";
-
-import { MockPlugin, SettingsTab } from '../__tests__/setup';
 import { RetrospectAISettings } from "../types";
 
 describe("SettingsTab", () => {
