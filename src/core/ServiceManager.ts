@@ -10,7 +10,11 @@ import { JournalAnalysisService } from "../services/JournalAnalysisService";
 import { debounce } from "../utils/debounce";
 import RetrospectAI from "../main";
 import { AnthropicService } from "../services/AnthropicService";
-import { ServiceInitializationError, AIServiceError, AnalysisError } from "../errors/ServiceErrors";
+import {
+	ServiceInitializationError,
+	AIServiceError,
+	AnalysisError,
+} from "../errors/ServiceErrors";
 
 export class ServiceManager {
 	private plugin: RetrospectAI;
@@ -54,17 +58,24 @@ export class ServiceManager {
 	private initializeAIService() {
 		try {
 			this.logger?.debug("Starting AI service initialization");
-			
+
 			if (!this.privacyManager) {
-				throw new Error("Privacy Manager must be initialized before AI Service");
+				throw new Error(
+					"Privacy Manager must be initialized before AI Service"
+				);
 			}
 
 			// Initialize AI service based on settings
 			switch (this.plugin.settings.aiProvider) {
 				case "openai":
-					this.logger?.debug("Initializing OpenAI service with model:", this.plugin.settings.openaiModel);
+					this.logger?.debug(
+						"Initializing OpenAI service with model:",
+						this.plugin.settings.openaiModel
+					);
 					if (!this.plugin.settings.apiKey) {
-						throw new Error("OpenAI API key is required but not set");
+						throw new Error(
+							"OpenAI API key is required but not set"
+						);
 					}
 					this.aiService = new OpenAIService(
 						this.plugin.settings.apiKey,
@@ -72,16 +83,24 @@ export class ServiceManager {
 					);
 					break;
 				case "ollama":
-					this.logger?.debug("Initializing Ollama service with host:", this.plugin.settings.ollamaHost);
+					this.logger?.debug(
+						"Initializing Ollama service with host:",
+						this.plugin.settings.ollamaHost
+					);
 					this.aiService = new OllamaService(
 						this.plugin.settings.ollamaHost,
 						this.plugin.settings.ollamaModel
 					);
 					break;
 				case "anthropic":
-					this.logger?.debug("Initializing Anthropic service with model:", this.plugin.settings.anthropicModel);
+					this.logger?.debug(
+						"Initializing Anthropic service with model:",
+						this.plugin.settings.anthropicModel
+					);
 					if (!this.plugin.settings.anthropicApiKey) {
-						throw new Error("Anthropic API key is required but not set");
+						throw new Error(
+							"Anthropic API key is required but not set"
+						);
 					}
 					this.aiService = new AnthropicService(
 						this.plugin.settings.anthropicApiKey,
@@ -96,12 +115,17 @@ export class ServiceManager {
 			}
 
 			if (!isAIService(this.aiService)) {
-				throw new AIServiceError("Failed to initialize AI service - service is not properly configured");
+				throw new AIServiceError(
+					"Failed to initialize AI service - service is not properly configured"
+				);
 			}
 
 			this.logger?.debug("AI service initialized successfully");
 		} catch (error) {
-			this.logger?.error("Failed to initialize AI service", error instanceof Error ? error : new Error(String(error)));
+			this.logger?.error(
+				"Failed to initialize AI service",
+				error instanceof Error ? error : new Error(String(error))
+			);
 			throw error;
 		}
 	}
@@ -115,18 +139,22 @@ export class ServiceManager {
 	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
 	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 * 
+	 *
 	 */
 	private initializeAnalysisManager() {
 		try {
 			this.logger?.debug("Starting Analysis Manager initialization");
-			
+
 			if (!this.privacyManager) {
-				throw new Error("Privacy Manager must be initialized before Analysis Manager");
+				throw new Error(
+					"Privacy Manager must be initialized before Analysis Manager"
+				);
 			}
-			
+
 			if (!this.aiService) {
-				throw new Error("AI Service must be initialized before Analysis Manager");
+				throw new Error(
+					"AI Service must be initialized before Analysis Manager"
+				);
 			}
 
 			this.analysisManager = new AnalysisManager(
@@ -138,7 +166,10 @@ export class ServiceManager {
 
 			this.logger?.debug("Analysis Manager initialized successfully");
 		} catch (error) {
-			this.logger?.error("Failed to initialize Analysis Manager", error instanceof Error ? error : new Error(String(error)));
+			this.logger?.error(
+				"Failed to initialize Analysis Manager",
+				error instanceof Error ? error : new Error(String(error))
+			);
 			throw error;
 		}
 	}
@@ -153,7 +184,7 @@ export class ServiceManager {
 	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
 	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 * 
+	 *
 	 */
 	private initializeWeeklyAnalysisService() {
 		this.weeklyAnalysisService = new WeeklyAnalysisService(
@@ -174,7 +205,7 @@ export class ServiceManager {
 	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
 	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 * 
+	 *
 	 */
 	private initializeJournalAnalysisService() {
 		this.journalAnalysisService = new JournalAnalysisService(
@@ -196,12 +227,26 @@ export class ServiceManager {
 	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
 	 * @throws {JournalAnalysisServiceError} if the journal analysis service is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 * 
+	 *
 	 */
 	reinitializeServices = () => {
 		// This will be replaced with the debounced version in the constructor
 		this.initializeServices();
 	};
+
+	private initializeService(serviceName: string, initFn: () => void): void {
+		this.logger?.debug(`Initializing ${serviceName}...`);
+		try {
+			initFn();
+			this.logger?.debug(`${serviceName} initialized successfully`);
+		} catch (error) {
+			this.logger?.error(
+				`Failed to initialize ${serviceName}`,
+				error instanceof Error ? error : new Error(String(error))
+			);
+			throw error;
+		}
+	}
 
 	/**
 	 * Initialize the services
@@ -214,38 +259,22 @@ export class ServiceManager {
 	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
 	 * @throws {JournalAnalysisServiceError} if the journal analysis service is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 * 
+	 *
 	 */
 	private initializeServices() {
 		this.logger?.info("Initializing Retrospect AI services");
 		try {
-			this.logger?.debug("Starting service initialization...");
-			
-			// Initialize Privacy Manager
-			this.logger?.debug("Initializing Privacy Manager...");
-			this.initializePrivacyManager();
-			this.logger?.debug("Privacy Manager initialized successfully");
-			
-			// Initialize AI Service
-			this.logger?.debug("Initializing AI Service...");
-			this.initializeAIService();
-			this.logger?.debug("AI Service initialized successfully");
-			
-			// Initialize Analysis Manager
-			this.logger?.debug("Initializing Analysis Manager...");
-			this.initializeAnalysisManager();
-			this.logger?.debug("Analysis Manager initialized successfully");
-			
-			// Initialize Weekly Analysis Service
-			this.logger?.debug("Initializing Weekly Analysis Service...");
-			this.initializeWeeklyAnalysisService();
-			this.logger?.debug("Weekly Analysis Service initialized successfully");
-			
-			// Initialize Journal Analysis Service
-			this.logger?.debug("Initializing Journal Analysis Service...");
-			this.initializeJournalAnalysisService();
-			this.logger?.debug("Journal Analysis Service initialized successfully");
-			
+			this.initializeService("Privacy Manager", () => this.initializePrivacyManager());
+			this.initializeService("AI Service", () => this.initializeAIService());
+			this.initializeService("Analysis Manager", () => this.initializeAnalysisManager());
+			this.initializeService(
+				"Weekly Analysis Service",
+				() => this.initializeWeeklyAnalysisService()
+			);
+			this.initializeService(
+				"Journal Analysis Service",
+				() => this.initializeJournalAnalysisService()
+			);
 			this.logger?.info("All services initialized successfully");
 		} catch (error) {
 			this.logger?.error("Failed to initialize services:", error);
@@ -254,17 +283,20 @@ export class ServiceManager {
 			} else if (error instanceof AnalysisError) {
 				throw new AnalysisError(`Analysis Error: ${error.message}`);
 			} else {
-				throw new ServiceInitializationError(`Failed to initialize services: ${error instanceof Error ? error.message : String(error)}`);
+				throw new ServiceInitializationError(
+					`Failed to initialize services: ${
+						error instanceof Error ? error.message : String(error)
+					}`
+				);
 			}
 		}
 	}
-
 
 	/**
 	 * Get the log level
 	 * @param {string} level - The log level
 	 * @returns {LogLevel} The log level
-	 * 
+	 *
 	 */
 	private getLogLevel(level: string): LogLevel {
 		switch (level) {
@@ -286,17 +318,17 @@ export class ServiceManager {
 	 * @returns {void}
 	 * @throws {LoggingServiceError} if the logging service is not initialized
 	 * @throws {Error} if the service fails to shutdown
-	 * 
+	 *
 	 */
 	shutdown() {
 		this.logger?.info("Shutting down Retrospect AI services");
-		
+
 		// Clean up any resources that need explicit cleanup
 		this.aiService = undefined;
 		this.analysisManager = undefined;
 		this.weeklyAnalysisService = undefined;
 		this.journalAnalysisService = undefined;
-		
+
 		this.logger?.info("Services shutdown complete");
 		this.logger = undefined;
 	}
@@ -306,7 +338,7 @@ export class ServiceManager {
 	 * @param {string} content - The content to analyze
 	 * @returns {Promise<void>} The analyzed content
 	 * @throws {Error} if the analysis manager is not initialized
-	 * 
+	 *
 	 */
 	async analyzeContent(content: string): Promise<void> {
 		try {
@@ -320,7 +352,9 @@ export class ServiceManager {
 			);
 		} catch (error) {
 			this.logger?.error("Error during content analysis:", error);
-			throw new AnalysisError(error instanceof Error ? error.message : String(error));
+			throw new AnalysisError(
+				error instanceof Error ? error.message : String(error)
+			);
 		}
 	}
 }
