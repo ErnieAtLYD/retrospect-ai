@@ -1,43 +1,5 @@
-// Mock the MarkdownView class
-class MockMarkdownView {
-	constructor() {}
-}
-
-// Mock the Notice class
-const MockNotice = jest.fn().mockImplementation((message: string) => ({
-	hide: jest.fn()
-}));
-
-// Mock the Editor class
-class MockEditor {
-	getValue() {}
-	setValue() {}
-}
-
-// Mock the obsidian module
-jest.mock("obsidian", () => ({
-	MarkdownView: MockMarkdownView,
-	Notice: MockNotice,
-	Editor: MockEditor,
-}));
-
-// Mock the StreamingManager module
-jest.mock("../services/StreamingManager", () => {
-  const mockStreamAnalysis = jest.fn().mockImplementation((promise) => {
-    // Handle both resolved and rejected promises
-    return promise.catch((error: Error) => {
-      // Let the error propagate after handling it in the stream
-      throw error;
-    });
-  });
-
-  return {
-    StreamingEditorManager: jest.fn().mockImplementation(() => ({
-      streamAnalysis: mockStreamAnalysis,
-    })),
-  };
-});
 import { CommandManager } from "./CommandManager";
+import { MockMarkdownView, MockEditor, MockNotice } from "../__tests__/setup";
 
 // src/core/CommandManager.test.ts
 describe("CommandManager", () => {
