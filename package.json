@@ -13,6 +13,29 @@
 		"test:coverage": "jest --coverage",
 		"lint": "eslint ."
 	},
+	"jest": {
+		"preset": "ts-jest",
+		"testEnvironment": "jsdom",
+		"setupFilesAfterEnv": [
+			"<rootDir>/src/__tests__/setup.ts"
+		],
+		"moduleNameMapper": {
+			"^src/(.*)$": "<rootDir>/src/$1"
+		},
+		"transform": {
+			"^.+\\.tsx?$": ["ts-jest", {
+				"tsconfig": "tsconfig.json"
+			}]
+		},
+		"testMatch": [
+			"**/__tests__/**/*.test.ts?(x)"
+		],
+		"collectCoverageFrom": [
+			"src/**/*.{ts,tsx}",
+			"!src/**/*.d.ts",
+			"!src/__tests__/**"
+		]
+	},
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
