@@ -42,7 +42,7 @@ describe("Note Analysis Association Integration", () => {
   let commentaryView: CommentaryView;
   let mockLeaf: MockLeaf;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
     
@@ -72,11 +72,8 @@ describe("Note Analysis Association Integration", () => {
       ],
     } as any;
     
-    // Mock the root for React rendering
-    commentaryView.root = {
-      render: jest.fn(),
-      unmount: jest.fn(),
-    } as any;
+    // Initialize the view
+    await commentaryView.onOpen();
     
     // Mock the workspace to return our view
     (mockPlugin.app.workspace.getLeavesOfType as jest.Mock).mockReturnValue([
@@ -120,11 +117,12 @@ describe("Note Analysis Association Integration", () => {
 
   it("should handle errors during analysis", async () => {
     // Make the AI service throw an error
-    (mockAIService.analyze as jest.Mock).mockRejectedValueOnce(new Error("API error"));
+    const error = new Error("API error");
+    (mockAIService.analyze as jest.Mock).mockRejectedValueOnce(error);
     
-    // Attempt to analyze content
+    // Attempt to analyze content with sufficient length to pass validation
     await analysisManager.analyzeContent(
-      "Test content",
+      "This is a test note with sufficient content to pass validation but will fail during analysis.",
       mockPlugin.settings.reflectionTemplate,
       mockPlugin.settings.communicationStyle as any,
       "error-note.md",
@@ -132,13 +130,13 @@ describe("Note Analysis Association Integration", () => {
     );
     
     // Verify error was logged
-    expect(mockPlugin.logger.error).toHaveBeenCalled();
+    expect(mockPlugin.logger.error).toHaveBeenCalledWith("Analysis error:", error);
   });
 
   it("should retrieve a previously analyzed note from history", async () => {
     // Add multiple analyses
     await analysisManager.analyzeContent(
-      "First note content",
+      "First note content with sufficient length for validation.",
       mockPlugin.settings.reflectionTemplate,
       mockPlugin.settings.communicationStyle as any,
       "note-1.md",
@@ -146,17 +144,22 @@ describe("Note Analysis Association Integration", () => {
     );
     
     await analysisManager.analyzeContent(
-      "Second note content",
+      "Second note content with sufficient length for validation.",
       mockPlugin.settings.reflectionTemplate,
       mockPlugin.settings.communicationStyle as any,
       "note-2.md",
       "Note 2"
     );
     
+    // Reset the render mock to clear previous calls
+    if (commentaryView.root?.render) {
+      (commentaryView.root.render as jest.Mock).mockClear();
+    }
+    
     // Select the first note
     commentaryView.selectAnalysis("note-1.md");
     
     // Verify the correct content is displayed
-    expect(commentaryView.root.render).toHaveBeenCalled();
+    expect(commentaryView.root?.render).toHaveBeenCalled();
   });
 });

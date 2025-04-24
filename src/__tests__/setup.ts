@@ -20,21 +20,4 @@ jest.mock('react', () => ({
   StrictMode: ({ children }: { children: any }) => children,
 }));
 
-// Mock Obsidian
-jest.mock('obsidian', () => ({
-  Plugin: class {},
-  MarkdownView: class {},
-  Notice: jest.fn().mockImplementation((message) => ({
-    message,
-    hide: jest.fn(),
-  })),
-  ItemView: class {
-    leaf: any;
-    constructor(leaf: any) {
-      this.leaf = leaf;
-    }
-  },
-  WorkspaceLeaf: class {},
-  Editor: class {},
-  TFile: class {},
-}));
+// Note: Obsidian mock is now in src/__tests__/__mocks__/obsidian.ts

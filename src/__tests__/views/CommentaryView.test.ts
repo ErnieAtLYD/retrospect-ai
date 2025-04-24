@@ -56,7 +56,7 @@ describe("CommentaryView", () => {
       await view.onClose();
       
       // Verify
-      expect(view.root.unmount).toHaveBeenCalled();
+      expect(view.root?.unmount).toHaveBeenCalled();
       expect(view.containerEl.empty).toHaveBeenCalled();
     });
   });
@@ -73,7 +73,7 @@ describe("CommentaryView", () => {
       
       view.updateContent(content, noteId, noteName);
       
-      expect(view.root.render).toHaveBeenCalled();
+      expect(view.root?.render).toHaveBeenCalled();
       
       // Check that the analysis was added to history
       const history = view.getAnalysisHistory();
@@ -97,8 +97,14 @@ describe("CommentaryView", () => {
     });
 
     it("should limit history to 20 items", () => {
-      // Add 25 different notes
+      // Mock Date.now() to return incrementing timestamps
+      const originalDateNow = Date.now;
+      let currentTime = 1000;
+      Date.now = jest.fn(() => currentTime);
+
+      // Add 25 different notes with incrementing timestamps
       for (let i = 0; i < 25; i++) {
+        currentTime += 1000; // Increment by 1 second
         view.updateContent(`Content ${i}`, `note-${i}`, `Note ${i}`);
       }
       
@@ -109,6 +115,9 @@ describe("CommentaryView", () => {
       // The most recent notes should be kept (note-24 to note-5)
       expect(history[0].noteId).toBe("note-24");
       expect(history[19].noteId).toBe("note-5");
+
+      // Restore original Date.now
+      Date.now = originalDateNow;
     });
 
     it("should select an analysis from history", () => {
@@ -120,7 +129,7 @@ describe("CommentaryView", () => {
       view.selectAnalysis("note-1");
       
       // Verify the content was updated
-      expect(view.root.render).toHaveBeenCalled();
+      expect(view.root?.render).toHaveBeenCalled();
     });
   });
 });
