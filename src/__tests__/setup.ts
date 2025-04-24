@@ -23,3 +23,7 @@ jest.mock("react", () => ({
 }));
 
 // Note: Obsidian mock is now in src/__tests__/__mocks__/obsidian.ts
+
+import mockObsidian from '../__mocks__/obsidian';
+
+jest.mock('obsidian', () => mockObsidian);
