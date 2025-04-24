@@ -1,7 +1,6 @@
+import mockObsidian from "../../__mocks__/obsidian";
 import { AnalysisManager } from "../../services/AnalysisManager";
 import { CommentaryView } from "../../views/CommentaryView";
-import { MockApp, MockLeaf, MockTFile, MockNotice } from "../mocks/obsidian.mock";
-
 // Mock the AIService and PrivacyManager
 const mockAIService = {
   analyze: jest.fn().mockResolvedValue("Analyzed content"),
@@ -11,9 +10,9 @@ const mockPrivacyManager = {
   removePrivateSections: jest.fn(content => content),
 };
 
-// Mock the plugin
+// Mock the pluginkn.bbbbbj 
 const mockPlugin = {
-  app: new MockApp(),
+  app: new mockObsidian.App(),
   settings: {
     reflectionTemplate: "Test template",
     communicationStyle: "direct",
@@ -26,21 +25,10 @@ const mockPlugin = {
   },
 };
 
-// Mock the Notice constructor
-jest.mock("obsidian", () => ({
-  Notice: jest.fn().mockImplementation((message) => new MockNotice(message)),
-  ItemView: class {
-    leaf: any;
-    constructor(leaf: any) {
-      this.leaf = leaf;
-    }
-  },
-}));
-
 describe("Note Analysis Association Integration", () => {
   let analysisManager: AnalysisManager;
   let commentaryView: CommentaryView;
-  let mockLeaf: MockLeaf;
+  let mockLeaf: any;
   
   // Mock console.error
   const originalConsoleError = console.error;
@@ -60,8 +48,8 @@ describe("Note Analysis Association Integration", () => {
     );
     
     // Setup CommentaryView
-    mockLeaf = new MockLeaf({});
-    commentaryView = new CommentaryView(mockLeaf as any);
+    mockLeaf = new mockObsidian.Leaf({});
+    commentaryView = new CommentaryView(mockLeaf);
     
     // Mock DOM elements for CommentaryView
     commentaryView.containerEl = {
@@ -94,7 +82,7 @@ describe("Note Analysis Association Integration", () => {
     const noteContent = "This is a test note with sufficient content for analysis.";
     const noteId = "test-note.md";
     const noteName = "Test Note";
-    const testFile = new MockTFile(noteId, noteName, noteContent);
+    const testFile = new mockObsidian.TFile(noteId, noteName, noteContent);
     
     // Perform analysis
     await analysisManager.analyzeContent(

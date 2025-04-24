@@ -1,19 +1,22 @@
 import { CommentaryView } from "../../views/CommentaryView";
-import { MockLeaf, mockCreateRoot } from "../mocks/obsidian.mock";
+import mockObsidian from "../../__mocks__/obsidian";
 import * as React from "react";
 
 // Mock react-dom/client
 jest.mock("react-dom/client", () => ({
-  createRoot: () => mockCreateRoot(),
+  createRoot: () => ({
+    render: jest.fn(),
+    unmount: jest.fn(),
+  }),
 }));
 
 describe("CommentaryView", () => {
   let view: CommentaryView;
-  let mockLeaf: MockLeaf;
+  let mockLeaf: any;
 
   beforeEach(() => {
-    mockLeaf = new MockLeaf({});
-    view = new CommentaryView(mockLeaf as any);
+    mockLeaf = new mockObsidian.Leaf({});
+    view = new CommentaryView(mockLeaf);
     
     // Mock DOM elements
     view.containerEl = {
@@ -50,7 +53,9 @@ describe("CommentaryView", () => {
 
     it("should clean up on close", async () => {
       // Setup
-      view.root = mockCreateRoot() as any;
+      view.root = {
+        unmount: jest.fn(),
+      } as any;
       
       // Execute
       await view.onClose();
@@ -63,7 +68,9 @@ describe("CommentaryView", () => {
 
   describe("Content management", () => {
     beforeEach(() => {
-      view.root = mockCreateRoot() as any;
+      view.root = {
+        render: jest.fn(),
+      } as any;
     });
 
     it("should update content", () => {

@@ -38,14 +38,17 @@
 			"!src/**/*.d.ts",
 			"!src/__tests__/**"
 		],
-		"moduleDirectories": ["node_modules", "src/__tests__/__mocks__"]
+		"moduleDirectories": [
+			"node_modules",
+			"src/__tests__/__mocks__"
+		]
 	},
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
 		"@eslint/js": "latest",
-		"@types/jest": "^29.5.5",
+		"@types/jest": "^29.5.14",
 		"@types/node": "^16.11.6",
 		"@types/react": "^19.1.2",
 		"@types/react-dom": "^19.1.2",

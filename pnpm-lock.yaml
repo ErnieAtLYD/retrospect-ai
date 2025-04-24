@@ -22,7 +22,7 @@ importers:
         specifier: latest
         version: 9.25.1
       '@types/jest':
-        specifier: ^29.5.5
+        specifier: ^29.5.14
         version: 29.5.14
       '@types/node':
         specifier: ^16.11.6

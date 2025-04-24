@@ -44,6 +44,9 @@ export class CommandManager {
 
                     // Get the current file info
                     const currentFile = ctx.file;
+                    if (!currentFile) {
+                        throw new Error("No file found in the current view");
+                    }
                     const noteId = currentFile.path;
                     const noteName = currentFile.basename;
 
