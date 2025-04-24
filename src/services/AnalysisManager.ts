@@ -63,6 +63,15 @@ export class AnalysisManager {
 		);
 	}
 
+	private handleError(error: unknown, fallbackMessage: string): void {
+		if (error instanceof AnalysisError) {
+			new Notice(error.message);
+		} else {
+			new Notice(fallbackMessage);
+			console.error(fallbackMessage, error);
+		}
+	}
+
 	private validateRequest(request: AnalysisRequest): void {
 		if (!request.content?.trim()) {
 			throw new AnalysisError("Content cannot be empty", "EMPTY_CONTENT");
@@ -108,7 +117,11 @@ export class AnalysisManager {
 
 			const cachedResult = this.cacheManager.get(cacheKey);
 			if (cachedResult) {
-				await this.updateSidePanel(cachedResult.content, noteId, noteName);
+				await this.updateSidePanel(
+					cachedResult.content,
+					noteId,
+					noteName
+				);
 				return;
 			}
 
@@ -121,24 +134,21 @@ export class AnalysisManager {
 				content: result,
 				timestamp: Date.now(),
 				noteId,
-				noteName
+				noteName,
 			};
 
 			this.cacheManager.set(cacheKey, analysisResult);
 			await this.updateSidePanel(result, noteId, noteName);
 		} catch (error) {
-			if (error instanceof AnalysisError) {
-				new Notice(error.message);
-				this.plugin.logger.error("Analysis error:", error);
-			} else {
-				new Notice("An unexpected error occurred during analysis");
-				console.error("Analysis error:", error);
-				this.plugin.logger.error("Analysis error:", error instanceof Error ? error : new Error(String(error)));
-			}
+			this.handleError(error, "An unexpected error occurred during analysis");
 		}
 	}
 
-	private async updateSidePanel(content: string, noteId?: string, noteName?: string): Promise<void> {
+	private async updateSidePanel(
+		content: string,
+		noteId?: string,
+		noteName?: string
+	): Promise<void> {
 		try {
 			await this.plugin.uiManager.activateView();
 
@@ -151,7 +161,7 @@ export class AnalysisManager {
 				);
 			}
 
-			const {view} = leaves[0];
+			const { view } = leaves[0];
 			if (!view || !("updateContent" in view)) {
 				throw new AnalysisError(
 					"Invalid commentary view",
@@ -162,13 +172,7 @@ export class AnalysisManager {
 			// @ts-ignore - We know the view has this method
 			view.updateContent(content, noteId, noteName);
 		} catch (error) {
-			if (error instanceof AnalysisError) {
-				new Notice(error.message);
-			} else {
-				new Notice("Failed to update side panel");
-				console.error("Side panel update error:", error);
-				this.plugin.logger.error("Side panel update error:", error instanceof Error ? error : new Error(String(error)));
-			}
+			this.handleError(error, "Failed to update side panel");
 		}
 	}
 
