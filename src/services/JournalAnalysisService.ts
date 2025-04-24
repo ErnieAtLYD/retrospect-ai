@@ -40,9 +40,9 @@ export class JournalAnalysisService {
      * @param content
      * @param noteId
      * @param noteName
-     * @returns
+     * @returns Promise<void>
      */
-    async analyzeContent(content: string, noteId?: string, noteName?: string): Promise<string> {
+    async analyzeContent(content: string, noteId?: string, noteName?: string): Promise<void> {
         try {
             await this.analysisManager.analyzeContent(
                 content,
@@ -51,7 +51,6 @@ export class JournalAnalysisService {
                 noteId,
                 noteName
             );
-            return "Analysis complete"; // Return a string since the method is expected to return Promise<string>
         } catch (error) {
             console.error("Error during content analysis:", error);
             throw error; // Let the streaming manager handle the error
@@ -119,7 +118,7 @@ export class JournalAnalysisService {
      * Perform the analysis
      * @param editor
      * @param note
-     * @returns
+     * @returns Promise<void>
      */
     private async performAnalysis(editor: Editor, note: TFile): Promise<void> {
         const streamingManager = new StreamingEditorManager(editor);

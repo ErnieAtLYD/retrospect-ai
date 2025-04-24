@@ -35,11 +35,11 @@ export class StreamingEditorManager {
 
 	/**
 	 * Stream the analysis result to the editor.
-	 * @param analysisPromise - The promise that resolves to the analysis result.
+	 * @param analysisPromise - The promise that resolves when analysis is complete.
 	 * @param options - The options for the streaming analysis.
 	 */
 	async streamAnalysis(
-		analysisPromise: Promise<string>,
+		analysisPromise: Promise<void>,
 		options: StreamingAnalysisOptions = {}
 	): Promise<void> {
 		const {
@@ -53,19 +53,19 @@ export class StreamingEditorManager {
 			// Start with the loading indicator
 			await this.startLoadingIndicator(loadingIndicatorPosition);
 
-			// Get the analysis result
-			const fullResponse = await analysisPromise;
+			// Wait for analysis to complete
+			await analysisPromise;
 
-			// Stop the loading indicator before adding new content
+			// Stop the loading indicator
 			await this.stopLoadingIndicator();
 
-			// Add header and stream content from the same starting position
+			// Add completion message
 			const startLine = this.analysisStartLine || 0;
-			const headerAndContent = `## AI Reflection\n${fullResponse}`;
+			const completionMessage = "## AI Reflection\nAnalysis complete. Check the side panel for results.";
 
-			// Stream the content
+			// Stream the completion message
 			await this.streamContent(
-				headerAndContent,
+				completionMessage,
 				streamingUpdateInterval,
 				startLine
 			);

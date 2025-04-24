@@ -41,10 +41,14 @@ describe("Note Analysis Association Integration", () => {
   let analysisManager: AnalysisManager;
   let commentaryView: CommentaryView;
   let mockLeaf: MockLeaf;
-
+  
+  // Mock console.error
+  const originalConsoleError = console.error;
   beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
+    // Mock console.error
+    console.error = jest.fn();
     
     // Setup AnalysisManager
     analysisManager = new AnalysisManager(
@@ -81,6 +85,10 @@ describe("Note Analysis Association Integration", () => {
     ]);
   });
 
+  afterEach(() => {
+    // Restore console.error
+    console.error = originalConsoleError;
+  });
   it("should analyze a note and update the commentary view", async () => {
     // Setup test data
     const noteContent = "This is a test note with sufficient content for analysis.";
@@ -130,9 +138,8 @@ describe("Note Analysis Association Integration", () => {
     );
     
     // Verify error was logged
-    expect(mockPlugin.logger.error).toHaveBeenCalledWith("Analysis error:", error);
+    expect(console.error).toHaveBeenCalledWith("An unexpected error occurred during analysis", error);
   });
-
   it("should retrieve a previously analyzed note from history", async () => {
     // Add multiple analyses
     await analysisManager.analyzeContent(
