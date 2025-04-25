@@ -79,7 +79,7 @@ export class UIManager {
 			return null;
 		}
 		let leaf = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE)[0];
-		if (leaf) return leaf;
+		if (leaf) {
 
 		leaf =
 			workspace.getRightLeaf(false) ||
