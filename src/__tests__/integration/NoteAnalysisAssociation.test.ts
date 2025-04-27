@@ -50,10 +50,13 @@ describe("Note Analysis Association Integration", () => {
     // Setup CommentaryView
     mockLeaf = new mockObsidian.Leaf({});
     commentaryView = new CommentaryView(mockLeaf);
-
-    // Use a real DOM element for containerEl to simplify testing
-    const container = document.createElement('div');
-    commentaryView.containerEl = container;
+    commentaryView.containerEl = document.createElement('div');
+    
+    // Add two child elements to match the expected structure
+    const headerElement = document.createElement('div');
+    const contentElement = document.createElement('div');
+    commentaryView.containerEl.appendChild(headerElement);
+    commentaryView.containerEl.appendChild(contentElement);
     
     // Initialize the view
     await commentaryView.onOpen();

@@ -22,7 +22,7 @@ export class UIManager {
 						throw new Error("Service not initialized");
 					}
 					await this.plugin.serviceManager.journalAnalysisService.analyzeDailyJournal();
-				} catch (error) {
+				} catch {
 					// Error handling is done in the analyzeDailyJournal method
 				}
 			}
@@ -39,7 +39,7 @@ export class UIManager {
 				this.statusBarItem = this.plugin.addStatusBarItem();
 				this.statusBarItem.setText("RetrospectAI ready");
 			}
-		} catch (e) {
+		} catch {
 			console.log("Status bar API not available, using Notices instead");
 		}
 	}
@@ -78,18 +78,14 @@ export class UIManager {
 			console.error("Workspace not initialized");
 			return null;
 		}
-		let leaf = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE)[0];
-		if (leaf) {
 
-		leaf =
-			workspace.getRightLeaf(false) ||
-			workspace.getLeaf("split", "vertical");
+		let leaf = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE)[0];
 		if (!leaf) {
-			console.error("Could not create a new leaf");
-			return null;
-		}
-		if (leaf && !workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE).length) {
-			// Set view state when a new leaf is being used
+			leaf = workspace.getRightLeaf(false) || workspace.getLeaf("split", "vertical");
+			if (!leaf) {
+				console.error("Could not create a new leaf");
+				return null;
+			}
 			await leaf.setViewState({
 				type: COMMENTARY_VIEW_TYPE,
 				active: true,
