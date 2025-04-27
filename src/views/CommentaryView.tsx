@@ -27,6 +27,10 @@ export class CommentaryView extends ItemView {
     async onOpen() {
         // Create a container element for our React app
         const container = this.containerEl.children[1];
+        if (!container) {
+            console.warn("Expected container is missing");
+            return;
+        }
         container.empty();
         container.createEl('div', { cls: 'react-view-container' });
         
