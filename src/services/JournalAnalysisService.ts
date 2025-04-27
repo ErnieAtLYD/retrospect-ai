@@ -1,7 +1,6 @@
 import { App, Editor, MarkdownView, Notice, TFile } from "obsidian";
 import { AnalysisManager } from "./AnalysisManager";
 import { LoggingService } from "./LoggingService";
-import { StreamingEditorManager } from "./StreamingManager";
 import { RetrospectAISettings } from "../types";
 
 export class JournalAnalysisService {
