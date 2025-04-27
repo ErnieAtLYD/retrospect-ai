@@ -55,6 +55,7 @@ export interface RetrospectAISettings {
 	loggingEnabled: boolean;
 	commentaryViewEnabled: boolean;
 	logLevel: LogLevel;
+	analysisHistory?: NoteAnalysis[]; // Store analysis history
 }
 
 // Extend the App interface to include statusBar
@@ -86,4 +87,5 @@ export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
 	anthropicModel: "claude-3-haiku-20240307",
 	anthropicApiKey: "",
 	commentaryViewEnabled: true,
+	analysisHistory: [],
 };
