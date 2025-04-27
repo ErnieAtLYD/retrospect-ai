@@ -106,6 +106,8 @@ export default class RetrospectAI extends Plugin {
         
         // Initialize managers
         this.serviceManager = new ServiceManager(this);
+        // Initialize services immediately
+        this.serviceManager.reinitializeServices();
         this.commandManager = new CommandManager(this);
         
         // Set up the plugin
