@@ -31,11 +31,23 @@ export class CommentaryView extends ItemView {
             console.warn("Expected container is missing");
             return;
         }
-        container.empty();
-        container.createEl('div', { cls: 'react-view-container' });
+        
+        // Handle both Obsidian environment and test environment
+        if (typeof container.empty === 'function') {
+            // We're in Obsidian
+            container.empty();
+            container.createEl('div', { cls: 'react-view-container' });
+        } else {
+            // We're in a test environment
+            container.innerHTML = '';
+            const reactContainer = document.createElement('div');
+            reactContainer.className = 'react-view-container';
+            container.appendChild(reactContainer);
+        }
         
         // Mount the React component
-        this.root = createRoot(container.children[0]);
+        const reactContainer = container.children[0];
+        this.root = createRoot(reactContainer);
         this.updateReactComponent();
     }
 
@@ -104,7 +116,13 @@ export class CommentaryView extends ItemView {
         if (this.root) {
             this.root.unmount();
         }
-        this.containerEl.empty();
+        
+        // Handle both Obsidian environment and test environment
+        if (typeof this.containerEl.empty === 'function') {
+            this.containerEl.empty();
+        } else {
+            this.containerEl.innerHTML = '';
+        }
     }
 }
 
