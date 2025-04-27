@@ -1,14 +1,4 @@
 // Jest setup file
-import {
-	App,
-	Plugin,
-	PluginSettingTab,
-	DataAdapter,
-	Vault,
-	WorkspaceSidedock,
-	Workspace,
-	DataWriteOptions,
-} from "obsidian";
 import { jest } from "@jest/globals";
 import { RetrospectAISettings } from "../types";
 
@@ -88,23 +78,6 @@ export class SettingsTab {
 		return this.settings;
 	}
 }
-
-// Mock the StreamingManager module
-jest.mock("../services/StreamingManager", () => {
-  const mockStreamAnalysis = jest.fn().mockImplementation((promise: Promise<any>) => {
-    // Handle both resolved and rejected promises
-    return promise.catch((error: Error) => {
-      // Let the error propagate after handling it in the stream
-      throw error;
-    });
-  });
-
-  return {
-    StreamingEditorManager: jest.fn().mockImplementation(() => ({
-      streamAnalysis: mockStreamAnalysis,
-    })),
-  };
-});
 
 // Mock Obsidian
 jest.mock('obsidian', () => ({
