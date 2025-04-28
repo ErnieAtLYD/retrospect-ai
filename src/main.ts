@@ -7,6 +7,7 @@ import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
 // import { ReactView, REACT_VIEW_TYPE } from "./views/view";
 import { CommentaryView } from "./views/CommentaryView";
+import { ReflectionMemoryManager } from "./services/ReflectionMemoryManager";
 
 
 
@@ -15,6 +16,7 @@ export default class RetrospectAI extends Plugin {
     serviceManager!: ServiceManager;
     commandManager!: CommandManager;
     uiManager!: UIManager;
+    reflectionMemoryManager!: ReflectionMemoryManager;
     
     // Add a logger property that matches what's expected by tests
     logger = {
@@ -110,6 +112,20 @@ export default class RetrospectAI extends Plugin {
         this.serviceManager.reinitializeServices();
         this.commandManager = new CommandManager(this);
         
+        // Initialize the reflection memory manager
+        this.reflectionMemoryManager = new ReflectionMemoryManager(
+            this.app,
+            this.settings,
+            this.serviceManager.logger
+        );
+        
+        try {
+            await this.reflectionMemoryManager.initialize();
+        } catch (error) {
+            console.error("Failed to initialize reflection memory manager:", error);
+            new Notice("Failed to initialize reflection system. Some features may not work properly.");
+        }
+        
         // Set up the plugin
         this.commandManager.registerCommands();
         this.initializeUI();
@@ -128,5 +144,8 @@ export default class RetrospectAI extends Plugin {
     onunload() {
         this.serviceManager.shutdown();
         this.uiManager.cleanup();
+        // No explicit cleanup needed for ReflectionMemoryManager as it doesn't have any
+        // resources that need to be released, but we can log for completeness
+        console.log("Shutting down ReflectionMemoryManager");
     }
 }
