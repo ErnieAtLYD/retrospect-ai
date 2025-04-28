@@ -126,6 +126,11 @@ export default class RetrospectAI extends Plugin {
             new Notice("Failed to initialize reflection system. Some features may not work properly.");
         }
         
+        // Make the reflection memory manager available to other services that need it
+        if (this.serviceManager.analysisManager) {
+            this.serviceManager.analysisManager.setReflectionMemoryManager(this.reflectionMemoryManager);
+        }
+        
         // Set up the plugin
         this.commandManager.registerCommands();
         this.initializeUI();
@@ -144,8 +149,16 @@ export default class RetrospectAI extends Plugin {
     onunload() {
         this.serviceManager.shutdown();
         this.uiManager.cleanup();
-        // No explicit cleanup needed for ReflectionMemoryManager as it doesn't have any
-        // resources that need to be released, but we can log for completeness
-        console.log("Shutting down ReflectionMemoryManager");
+        
+        // Properly clean up the ReflectionMemoryManager
+        if (this.reflectionMemoryManager) {
+            try {
+                // Save any pending changes to ensure data integrity
+                this.reflectionMemoryManager.saveIndex?.();
+                console.log("ReflectionMemoryManager shut down successfully");
+            } catch (error) {
+                console.error("Error shutting down ReflectionMemoryManager:", error);
+            }
+        }
     }
 }
