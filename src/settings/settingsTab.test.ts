@@ -2,7 +2,6 @@
 import {
 	App,
 	Plugin,
-	PluginSettingTab,
 	DataAdapter,
 	Vault,
 	WorkspaceSidedock,
@@ -10,35 +9,7 @@ import {
 	DataWriteOptions,
 } from "obsidian";
 import { jest } from "@jest/globals";
-
-import { MockPlugin } from '../__mocks__/MockPlugin'
 import { RetrospectAISettings } from "../types";
-
-
-
-// Mock SettingsTab class that avoids DOM operations
-class SettingsTab extends PluginSettingTab {
-	settings: RetrospectAISettings;
-	plugin: MockPlugin;
-
-	constructor(app: App, plugin: Plugin, settings: RetrospectAISettings) {
-		super(app, plugin);
-		this.settings = settings;
-		this.plugin = plugin as MockPlugin;
-	}
-
-	display(): void {
-		// Simplified display without DOM operations
-	}
-
-	async saveSettings(): Promise<void> {
-		await this.plugin.saveData(this.settings);
-	}
-
-	loadSettings(): RetrospectAISettings {
-		return this.settings;
-	}
-}
 
 describe("SettingsTab", () => {
 	let mockApp: Partial<App>;

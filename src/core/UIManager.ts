@@ -1,6 +1,7 @@
 // core/UIManager.ts
-import { Notice } from "obsidian";
+import { Notice, WorkspaceLeaf } from "obsidian";
 import RetrospectAI from "../main";
+import { COMMENTARY_VIEW_TYPE } from "../types";
 
 export class UIManager {
 	private plugin: RetrospectAI;
@@ -21,7 +22,7 @@ export class UIManager {
 						throw new Error("Service not initialized");
 					}
 					await this.plugin.serviceManager.journalAnalysisService.analyzeDailyJournal();
-				} catch (error) {
+				} catch {
 					// Error handling is done in the analyzeDailyJournal method
 				}
 			}
@@ -38,7 +39,7 @@ export class UIManager {
 				this.statusBarItem = this.plugin.addStatusBarItem();
 				this.statusBarItem.setText("RetrospectAI ready");
 			}
-		} catch (e) {
+		} catch {
 			console.log("Status bar API not available, using Notices instead");
 		}
 	}
@@ -68,7 +69,49 @@ export class UIManager {
 	}
 
 	/**
-	 * Cleans up the status bar item
+	 * Get or create a commentary view leaf
+	 * @returns {Promise<WorkspaceLeaf | null>} The commentary view leaf
+	 */
+	private async getOrCreateLeaf(): Promise<WorkspaceLeaf | null> {
+		const { workspace } = this.plugin.app;
+		if (!workspace) {
+			console.error("Workspace not initialized");
+			return null;
+		}
+
+		let leaf = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE)[0];
+		if (!leaf) {
+			leaf = workspace.getRightLeaf(false) || workspace.getLeaf("split", "vertical");
+			if (!leaf) {
+				console.error("Could not create a new leaf");
+				return null;
+			}
+			await leaf.setViewState({
+				type: COMMENTARY_VIEW_TYPE,
+				active: true,
+			});
+			workspace.setActiveLeaf(leaf, { focus: false });
+		}
+		return leaf;
+	}
+
+	/**
+	 * Activates the commentary view in the right sidebar
+	 */
+	async activateView(): Promise<void> {
+		const { workspace } = this.plugin.app;
+		try {
+			const leaf = await this.getOrCreateLeaf();
+			if (leaf) {
+				workspace.revealLeaf(leaf);
+			}
+		} catch (error) {
+			console.error("Error creating view:", error);
+		}
+	}
+
+	/**
+	 * Cleans up the status bar item and view
 	 */
 	cleanup() {
 		if (this.statusBarItem) {

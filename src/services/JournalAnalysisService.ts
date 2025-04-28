@@ -1,7 +1,6 @@
 import { App, Editor, MarkdownView, Notice, TFile } from "obsidian";
 import { AnalysisManager } from "./AnalysisManager";
 import { LoggingService } from "./LoggingService";
-import { StreamingEditorManager } from "./StreamingManager";
 import { RetrospectAISettings } from "../types";
 
 export class JournalAnalysisService {
@@ -38,14 +37,18 @@ export class JournalAnalysisService {
     /**
      * Analyzes the content.
      * @param content
-     * @returns
+     * @param noteId
+     * @param noteName
+     * @returns Promise<void>
      */
-    async analyzeContent(content: string): Promise<string> {
+    async analyzeContent(content: string, noteId?: string, noteName?: string): Promise<void> {
         try {
-            return await this.analysisManager.analyzeContent(
+            await this.analysisManager.analyzeContent(
                 content,
                 this.settings.reflectionTemplate,
-                this.settings.communicationStyle
+                this.settings.communicationStyle,
+                noteId,
+                noteName
             );
         } catch (error) {
             console.error("Error during content analysis:", error);
@@ -61,40 +64,68 @@ export class JournalAnalysisService {
         return today.toISOString().split('T')[0];
     }
 
+    /**
+     * Find the daily note
+     * @param date
+     * @returns
+     */
     private async findDailyNote(date: string): Promise<TFile | null> {
         const files = this.app.vault.getMarkdownFiles();
         return files.find(file => file.path.includes(date)) || null;
     }
 
+    /**
+     * Open the daily note
+     * @param note
+     * @returns
+     */
     private async openDailyNote(note: TFile): Promise<MarkdownView | null> {
         const leaf = this.app.workspace.getLeaf(false);
         await leaf.openFile(note);
         return this.app.workspace.getActiveViewOfType(MarkdownView);
     }
 
+    /**
+     * Get the note content
+     * @param note
+     * @returns
+     */
     private async getNoteContent(note: TFile): Promise<string> {
         return await this.app.vault.read(note);
     }
 
+    /**
+     * Handle no journal found
+     * @param date
+     */
     private handleNoJournalFound(date: string): void {
         const message = `No journal entry found for today (${date})`;
         this.logger.warn(message);
         new Notice("No journal entry found for today");
     }
 
+    /**
+     * Handle no editor view
+     */
     private handleNoEditorView(): void {
         const message = "Could not get editor view";
         this.logger.error(message);
         new Notice(message);
     }
 
+    /**
+     * Perform the analysis
+     * @param editor
+     * @param note
+     * @returns Promise<void>
+     */
     private async performAnalysis(editor: Editor, note: TFile): Promise<void> {
         const streamingManager = new StreamingEditorManager(editor);
         new Notice("Analyzing today's journal entry...");
 
         const content = await this.getNoteContent(note);
         await streamingManager.streamAnalysis(
-            this.analyzeContent(content),
+            this.analyzeContent(content, note.path, note.basename),
             {
                 loadingIndicatorPosition: "bottom",
                 streamingUpdateInterval: 50,
