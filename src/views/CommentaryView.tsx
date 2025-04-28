@@ -1,3 +1,5 @@
+// src/views/CommentaryView.ts
+
 import { WorkspaceLeaf } from "obsidian";
 import { ItemView } from "obsidian";
 import * as React from 'react';

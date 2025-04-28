@@ -2,6 +2,7 @@ import { CommentaryView } from "../../views/CommentaryView";
 import mockObsidian from "../../__mocks__/obsidian";
 import * as React from "react";
 
+
 // Mock react-dom/client
 jest.mock("react-dom/client", () => ({
   createRoot: () => ({
