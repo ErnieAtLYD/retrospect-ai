@@ -55,6 +55,16 @@ export class ServiceManager {
 		);
 	}
 
+	/**
+	 * Initialize the AI service
+	 * @returns {void}
+	 * @throws {ServiceInitializationError} if the service fails to initialize
+	 * @throws {Error} if the service fails to initialize
+	 * @description Initialize the AI service
+	 * @example
+	 * await this.initializeAIService();
+	 * // The AI service is now initialized
+	 */
 	private initializeAIService() {
 		try {
 			this.logger?.debug("Starting AI service initialization");
@@ -139,7 +149,10 @@ export class ServiceManager {
 	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
 	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 *
+	 * @description Initialize the analysis manager
+	 * @example
+	 * await this.initializeAnalysisManager();
+	 * // The analysis manager is now initialized
 	 */
 	private initializeAnalysisManager() {
 		try {
@@ -184,7 +197,10 @@ export class ServiceManager {
 	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
 	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 *
+	 * @description Initialize the weekly analysis service
+	 * @example
+	 * await this.initializeWeeklyAnalysisService();
+	 * // The weekly analysis service is now initialized
 	 */
 	private initializeWeeklyAnalysisService() {
 		this.weeklyAnalysisService = new WeeklyAnalysisService(
@@ -205,7 +221,10 @@ export class ServiceManager {
 	 * @throws {PrivacyManagerError} if the privacy manager is not initialized
 	 * @throws {AnalysisManagerError} if the analysis manager is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 *
+	 * @description Initialize the journal analysis service
+	 * @example
+	 * await this.initializeJournalAnalysisService();
+	 * // The journal analysis service is now initialized
 	 */
 	private initializeJournalAnalysisService() {
 		this.journalAnalysisService = new JournalAnalysisService(
@@ -228,7 +247,10 @@ export class ServiceManager {
 	 * @throws {WeeklyAnalysisServiceError} if the weekly analysis service is not initialized
 	 * @throws {JournalAnalysisServiceError} if the journal analysis service is not initialized
 	 * @throws {Error} if the service fails to initialize
-	 *
+	 * @description Reinitialize the services
+	 * @example
+	 * await this.reinitializeServices();
+	 * // The services are now reinitialized
 	 */
 	reinitializeServices = () => {
 		// This will be replaced with the debounced version in the constructor
@@ -265,16 +287,20 @@ export class ServiceManager {
 	private initializeServices() {
 		this.logger?.info("Initializing Retrospect AI services");
 		try {
-			this.initializeService("Privacy Manager", () => this.initializePrivacyManager());
-			this.initializeService("AI Service", () => this.initializeAIService());
-			this.initializeService("Analysis Manager", () => this.initializeAnalysisManager());
-			this.initializeService(
-				"Weekly Analysis Service",
-				() => this.initializeWeeklyAnalysisService()
+			this.initializeService("Privacy Manager", () =>
+				this.initializePrivacyManager()
 			);
-			this.initializeService(
-				"Journal Analysis Service",
-				() => this.initializeJournalAnalysisService()
+			this.initializeService("AI Service", () =>
+				this.initializeAIService()
+			);
+			this.initializeService("Analysis Manager", () =>
+				this.initializeAnalysisManager()
+			);
+			this.initializeService("Weekly Analysis Service", () =>
+				this.initializeWeeklyAnalysisService()
+			);
+			this.initializeService("Journal Analysis Service", () =>
+				this.initializeJournalAnalysisService()
 			);
 			this.logger?.info("All services initialized successfully");
 		} catch (error) {
@@ -297,7 +323,10 @@ export class ServiceManager {
 	 * Get the log level
 	 * @param {string} level - The log level
 	 * @returns {LogLevel} The log level
-	 *
+	 * @description Get the log level
+	 * @example
+	 * const logLevel = this.getLogLevel("error");
+	 * // The log level is now set to ERROR
 	 */
 	private getLogLevel(level: string): LogLevel {
 		switch (level) {
@@ -319,7 +348,10 @@ export class ServiceManager {
 	 * @returns {void}
 	 * @throws {LoggingServiceError} if the logging service is not initialized
 	 * @throws {Error} if the service fails to shutdown
-	 *
+	 * @description Shutdown the services
+	 * @example
+	 * await this.shutdown();
+	 * // The services are now shutdown
 	 */
 	shutdown() {
 		this.logger?.info("Shutting down Retrospect AI services");
@@ -339,7 +371,10 @@ export class ServiceManager {
 	 * @param {string} content - The content to analyze
 	 * @returns {Promise<void>} The analyzed content
 	 * @throws {Error} if the analysis manager is not initialized
-	 *
+	 * @description Analyze content
+	 * @example
+	 * await this.analyzeContent("This is a test");
+	 * // The content is now analyzed
 	 */
 	async analyzeContent(content: string): Promise<void> {
 		try {
