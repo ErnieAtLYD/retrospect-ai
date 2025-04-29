@@ -56,11 +56,25 @@ export class Notice {
   close = jest.fn();
 }
 
+export class Plugin {
+  constructor(app: any, manifest: any) {}
+  loadData() { return Promise.resolve({}); }
+  saveData() { return Promise.resolve(); }
+  addSettingTab() {}
+  registerView() {}
+  addRibbonIcon() {}
+  addStatusBarItem() {}
+}
+
+export class PluginSettingTab {
+  constructor(app: any, plugin: any) {}
+}
+
 // Mock Obsidian API
 const mockObsidian = {
-  Plugin: jest.fn(),
+  Plugin: jest.fn().mockImplementation((app: any, manifest: any) => new Plugin(app, manifest)),
   Notice: jest.fn().mockImplementation((message: unknown) => new Notice(message as string)),
-  PluginSettingTab: jest.fn(),
+  PluginSettingTab: jest.fn().mockImplementation((app: any, plugin: any) => new PluginSettingTab(app, plugin)),
   Setting: jest.fn(),
   TFile: jest.fn(),
   App: jest.fn().mockReturnValue({
