@@ -84,7 +84,12 @@ const mockObsidian = {
       create: jest.fn().mockImplementation(() => Promise.resolve()),
       createFolder: jest.fn().mockImplementation(() => Promise.resolve()),
       getAbstractFileByPath: jest.fn().mockReturnValue(null),
-      adapter: jest.fn(),
+      adapter: {
+        exists: jest.fn().mockResolvedValue(true),
+        createFolder: jest.fn().mockResolvedValue(undefined),
+        read: jest.fn().mockResolvedValue("{}"),
+        write: jest.fn().mockResolvedValue(undefined),
+      },
       configDir: jest.fn(),
       getName: jest.fn().mockReturnValue('MockVault'),
       getFileByPath: jest.fn().mockReturnValue(null),
