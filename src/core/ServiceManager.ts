@@ -7,6 +7,7 @@ import { AnalysisManager } from "../services/AnalysisManager";
 import { WeeklyAnalysisService } from "../services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "../services/LoggingService";
 import { JournalAnalysisService } from "../services/JournalAnalysisService";
+import { ReflectionMemoryManager } from "../services/ReflectionMemoryManager";
 import { debounce } from "../utils/debounce";
 import RetrospectAI from "../main";
 import { AnthropicService } from "../services/AnthropicService";
@@ -212,7 +213,8 @@ export class ServiceManager {
 			this.plugin.app,
 			this.plugin.settings,
 			this.analysisManager as AnalysisManager,
-			this.logger as LoggingService
+			this.logger as LoggingService,
+			this.plugin.reflectionMemoryManager
 		);
 	}
 
