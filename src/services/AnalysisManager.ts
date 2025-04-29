@@ -5,7 +5,7 @@ import { AIService } from "./AIService";
 import { PrivacyManager } from "./PrivacyManager";
 import { CacheManager } from "./CacheManager";
 import RetrospectAI from "../main";
-
+import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
 export type AnalysisStyle = "direct" | "gentle";
 
 export interface AnalysisResult {
@@ -28,12 +28,15 @@ export class AnalysisError extends Error {
 	}
 }
 
+/**
+ * Manages the analysis of content using AI services
+ */
 export class AnalysisManager {
 	private readonly cacheManager: CacheManager<AnalysisResult>;
 	private readonly plugin: RetrospectAI;
 	private readonly aiService: AIService;
 	private readonly privacyManager: PrivacyManager;
-
+	private reflectionMemoryManager: ReflectionMemoryManager | null = null;
 	constructor(
 		plugin: RetrospectAI,
 		aiService: AIService,
@@ -63,6 +66,11 @@ export class AnalysisManager {
 		);
 	}
 
+	/**
+	 * Handle an error by displaying a notice and logging the error
+	 * @param error {unknown} The error to handle
+	 * @param fallbackMessage {string} The fallback message to display if the error is not an AnalysisError
+	 */
 	private handleError(error: unknown, fallbackMessage: string): void {
 		if (error instanceof AnalysisError) {
 			new Notice(error.message);
@@ -72,6 +80,11 @@ export class AnalysisManager {
 		}
 	}
 
+	/**
+	 * Validate the analysis request
+	 * @param request {AnalysisRequest} The analysis request
+	 * @throws {AnalysisError} If the request is invalid
+	 */
 	private validateRequest(request: AnalysisRequest): void {
 		if (!request.content?.trim()) {
 			throw new AnalysisError("Content cannot be empty", "EMPTY_CONTENT");
@@ -96,6 +109,15 @@ export class AnalysisManager {
 		}
 	}
 
+	/**
+	 * Analyze the content of a note to generate a commentary
+	 * @param content {string} The content of the note
+	 * @param template {string} The template to use for the analysis
+	 * @param style {AnalysisStyle} The style of the analysis
+	 * @param noteId {string} The id of the note via CommandManager
+	 * @param noteName {string} The name of the note via CommandManager
+	 * @returns {Promise<void>}
+	 */
 	async analyzeContent(
 		content: string,
 		template: string,
@@ -140,10 +162,20 @@ export class AnalysisManager {
 			this.cacheManager.set(cacheKey, analysisResult);
 			await this.updateSidePanel(result, noteId, noteName);
 		} catch (error) {
-			this.handleError(error, "An unexpected error occurred during analysis");
+			this.handleError(
+				error,
+				"An unexpected error occurred during analysis"
+			);
 		}
 	}
 
+	/**
+	 * Update the side panel with the analysis result
+	 * @param content {string} The content of the note
+	 * @param noteId {string} The id of the note
+	 * @param noteName {string} The name of the note
+	 * @returns {Promise<void>}
+	 */
 	private async updateSidePanel(
 		content: string,
 		noteId?: string,
@@ -176,10 +208,28 @@ export class AnalysisManager {
 		}
 	}
 
+	/**
+	 * Set the reflection memory manager
+	 * @param reflectionMemoryManager {ReflectionMemoryManager} The reflection memory manager
+	 * @returns {void}
+	 */
+	setReflectionMemoryManager(
+		reflectionMemoryManager: ReflectionMemoryManager
+	): void {
+		this.reflectionMemoryManager = reflectionMemoryManager;
+	}
+
+	/**
+	 * Clear the cache
+	 */
 	clearCache(): void {
 		this.cacheManager.clear();
 	}
 
+	/**
+	 *
+	 * @returns
+	 */
 	getCacheStats(): { size: number; ttl: number } {
 		return {
 			size: this.cacheManager.getSize(),
