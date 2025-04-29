@@ -62,8 +62,8 @@ export class Plugin {
   saveData() { return Promise.resolve(); }
   addSettingTab() {}
   registerView() {}
-  addRibbonIcon() {}
-  addStatusBarItem() {}
+  addRibbonIcon() { return { setTooltip: jest.fn(), addClass: jest.fn() }; }
+  addStatusBarItem() { return { setText: jest.fn(), remove: jest.fn() }; }
 }
 
 export class PluginSettingTab {
@@ -101,6 +101,7 @@ const mockObsidian = {
         if (typeof callback === 'function') {
           callback();
         }
+        return { unsubscribe: jest.fn() };
       }),
       getLeaf: jest.fn().mockReturnValue({
         openFile: jest.fn(),
