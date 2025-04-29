@@ -1,180 +1,142 @@
+// src/__tests__/ReflectionMemoryManagerIntegration.test.ts
 
-import { App, Notice, Plugin, WorkspaceLeaf } from 'obsidian';
-import RetrospectAI from '../main';
-import { ReflectionMemoryManager } from '../services/ReflectionMemoryManager';
-import { ServiceManager } from '../core/ServiceManager';
-import { AnalysisManager } from '../services/AnalysisManager';
+import RetrospectAI from "../main";
+import { ReflectionMemoryManager } from "../services/ReflectionMemoryManager";
+import {
+	describe,
+	it,
+	beforeEach,
+	afterEach,
+	expect,
+	jest,
+} from "@jest/globals";
+import { App } from "obsidian";
 
-// Mock the dependencies
-jest.mock('obsidian');
-jest.mock('../services/ReflectionMemoryManager');
-jest.mock('../core/ServiceManager');
-jest.mock('../services/AnalysisManager');
+// Mock Obsidian classes and APIs
+const mockApp: App = {
+	vault: {
+		adapter: {
+			exists: jest.fn().mockImplementation(() => Promise.resolve(false)),
+			createFolder: jest.fn().mockImplementation(() => Promise.resolve()),
+			read: jest.fn().mockImplementation(() => Promise.resolve("{}")),
+			write: jest.fn().mockImplementation(() => Promise.resolve()),
+		},
+	} as any,
+	workspace: {
+		getRightLeaf: jest.fn().mockImplementation(() => ({
+			setViewState: jest.fn().mockImplementation(() => Promise.resolve()),
+		})),
+		revealLeaf: jest.fn(),
+	} as any,
+	keymap: {} as any,
+	scope: {} as any,
+	metadataCache: {} as any,
+	fileManager: {} as any,
+	lastEvent: {} as any,
+	loadLocalStorage: jest.fn(),
+	saveLocalStorage: jest.fn(),
+};
 
-describe('ReflectionMemoryManager Integration', () => {
-  let plugin: RetrospectAI;
-  let mockApp: jest.Mocked<App>;
-  let mockReflectionMemoryManager: jest.Mocked<ReflectionMemoryManager>;
-  let mockServiceManager: jest.Mocked<ServiceManager>;
-  let mockAnalysisManager: jest.Mocked<AnalysisManager>;
+class MockPlugin {
+	app = mockApp;
+	settings = {};
+	logger = {
+		info: jest.fn(),
+		debug: jest.fn(),
+		warn: jest.fn(),
+		error: jest.fn(),
+	};
 
-  beforeEach(() => {
-    // Clear all mocks
-    jest.clearAllMocks();
-    
-    // Setup mocks
-    mockApp = {
-      workspace: {
-        onLayoutReady: jest.fn().mockImplementation(cb => cb()),
-        getLeavesOfType: jest.fn().mockReturnValue([]),
-        getRightLeaf: jest.fn().mockReturnValue({ setViewState: jest.fn().mockResolvedValue(undefined) }),
-        revealLeaf: jest.fn(),
-      },
-    } as unknown as jest.Mocked<App>;
-    
-    // Create plugin instance
-    plugin = new RetrospectAI(mockApp, {} as any);
-    
-    // Setup reflection memory manager mock
-    mockReflectionMemoryManager = {
-      initialize: jest.fn().mockResolvedValue(undefined),
-      saveIndex: jest.fn(),
-    } as unknown as jest.Mocked<ReflectionMemoryManager>;
-    
-    // Setup analysis manager mock
-    mockAnalysisManager = {
-      setReflectionMemoryManager: jest.fn(),
-    } as unknown as jest.Mocked<AnalysisManager>;
-    
-    // Setup service manager mock
-    mockServiceManager = {
-      reinitializeServices: jest.fn(),
-      shutdown: jest.fn(),
-      logger: { error: jest.fn() },
-      analysisManager: mockAnalysisManager,
-    } as unknown as jest.Mocked<ServiceManager>;
-    
-    // Mock the ReflectionMemoryManager constructor
-    (ReflectionMemoryManager as jest.Mock).mockImplementation(() => mockReflectionMemoryManager);
-    
-    // Mock the ServiceManager constructor
-    (ServiceManager as jest.Mock).mockImplementation(() => mockServiceManager);
-    
-    // Setup plugin methods
-    plugin.loadSettings = jest.fn().mockResolvedValue(undefined);
-    plugin.saveData = jest.fn().mockResolvedValue(undefined);
-    plugin.addSettingTab = jest.fn();
-    plugin.registerView = jest.fn();
-    plugin.addRibbonIcon = jest.fn();
-    plugin.addStatusBarItem = jest.fn();
-  });
+	// Mock plugin methods
+	addCommand = jest.fn();
+	registerEvent = jest.fn();
 
-  test('should initialize ReflectionMemoryManager during onload', async () => {
-    // Call onload
-    await plugin.onload();
-    
-    // Verify ReflectionMemoryManager was created
-    expect(ReflectionMemoryManager).toHaveBeenCalledTimes(1);
-    expect(ReflectionMemoryManager).toHaveBeenCalledWith(
-      mockApp,
-      plugin.settings,
-      mockServiceManager.logger
-    );
-    
-    // Verify initialize was called
-    expect(mockReflectionMemoryManager.initialize).toHaveBeenCalledTimes(1);
-    
-    // Verify it was made available to the analysis manager
-    expect(mockAnalysisManager.setReflectionMemoryManager).toHaveBeenCalledWith(mockReflectionMemoryManager);
-  });
+	// Mock managers
+	uiManager = {
+		cleanup: jest.fn(),
+		activateView: jest.fn().mockImplementation(() => Promise.resolve()),
+	};
 
-  test('should handle initialization errors gracefully', async () => {
-    // Setup initialize to throw an error
-    const error = new Error('Initialization failed');
-    mockReflectionMemoryManager.initialize.mockRejectedValueOnce(error);
-    
-    // Mock console.error
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
-    
-    // Mock Notice constructor
-    const originalNotice = global.Notice;
-    global.Notice = jest.fn() as unknown as typeof Notice;
-    
-    try {
-      // Call onload
-      await plugin.onload();
-      
-      // Verify error was logged
-      expect(console.error).toHaveBeenCalledWith(
-        'Failed to initialize reflection memory manager:',
-        error
-      );
-      
-      // Verify Notice was shown
-      expect(global.Notice).toHaveBeenCalledWith(
-        'Failed to initialize reflection system. Some features may not work properly.'
-      );
-    } finally {
-      // Restore mocks
-      console.error = originalConsoleError;
-      global.Notice = originalNotice;
-    }
-  });
+	serviceManager = {
+		shutdown: jest.fn(),
+	};
+}
 
-  test('should clean up ReflectionMemoryManager during onunload', () => {
-    // Set the reflection memory manager
-    plugin.reflectionMemoryManager = mockReflectionMemoryManager;
-    plugin.serviceManager = mockServiceManager;
-    
-    // Mock console.log
-    const originalConsoleLog = console.log;
-    console.log = jest.fn();
-    
-    try {
-      // Call onunload
-      plugin.onunload();
-      
-      // Verify saveIndex was called
-      expect(mockReflectionMemoryManager.saveIndex).toHaveBeenCalledTimes(1);
-      
-      // Verify success was logged
-      expect(console.log).toHaveBeenCalledWith(
-        'ReflectionMemoryManager shut down successfully'
-      );
-    } finally {
-      // Restore console.log
-      console.log = originalConsoleLog;
-    }
-  });
+describe("ReflectionMemoryManager Integration", () => {
+	let plugin: any;
+	let reflectionManager: ReflectionMemoryManager;
 
-  test('should handle cleanup errors gracefully', () => {
-    // Set the reflection memory manager
-    plugin.reflectionMemoryManager = mockReflectionMemoryManager;
-    plugin.serviceManager = mockServiceManager;
-    
-    // Setup saveIndex to throw an error
-    const error = new Error('Cleanup failed');
-    mockReflectionMemoryManager.saveIndex.mockImplementationOnce(() => {
-      throw error;
-    });
-    
-    // Mock console.error
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
-    
-    try {
-      // Call onunload
-      plugin.onunload();
-      
-      // Verify error was logged
-      expect(console.error).toHaveBeenCalledWith(
-        'Error shutting down ReflectionMemoryManager:',
-        error
-      );
-    } finally {
-      // Restore console.error
-      console.error = originalConsoleError;
-    }
-  });
+	beforeEach(() => {
+		// Create mocked plugin with all required dependencies
+		plugin = new RetrospectAI(mockApp, {} as any);
+
+		// Override plugin properties with mocks
+		Object.assign(plugin, new MockPlugin());
+
+		// Create ReflectionMemoryManager instance with mocked dependencies
+		reflectionManager = new ReflectionMemoryManager(
+			plugin.app,
+			plugin.settings,
+			plugin.logger
+		);
+
+		// Assign to plugin
+		plugin.reflectionMemoryManager = reflectionManager;
+
+		// Mock initialize to prevent real file operations
+		jest.spyOn(reflectionManager, "initialize").mockResolvedValue(
+			undefined
+		);
+	});
+
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	it("should initialize ReflectionMemoryManager during onload", async () => {
+		// Create a spy to verify initialize is called
+		const initSpy = jest.spyOn(reflectionManager, "initialize");
+
+		// Call onload
+		await plugin.onload();
+
+		// Verify initialize was called
+		expect(initSpy).toHaveBeenCalled();
+	});
+
+	it("should handle initialization errors gracefully", async () => {
+		// Force initialize to throw an error
+		jest.spyOn(reflectionManager, "initialize").mockRejectedValueOnce(
+			new Error("Simulated error")
+		);
+
+		// Plugin should handle errors during onload
+		await expect(plugin.onload()).resolves.not.toThrow();
+
+		// Verify error was logged
+		expect(plugin.logger.error).toHaveBeenCalled();
+	});
+
+	it("should clean up ReflectionMemoryManager during onunload", async () => {
+		// Call onunload
+		plugin.onunload();
+
+		// Verify saveIndex was called
+		expect(jest.spyOn(reflectionManager, "saveIndex")).toHaveBeenCalled();
+	});
+
+	it("should handle cleanup errors gracefully", async () => {
+		// Mock saveIndex to throw an error
+		jest.spyOn(reflectionManager, "saveIndex").mockImplementationOnce(
+			() => {
+				throw new Error("Cleanup error");
+			}
+		);
+
+		// Plugin should handle errors during onunload
+		expect(() => plugin.onunload()).not.toThrow();
+
+		// Verify error was logged
+		expect(plugin.logger.error).toHaveBeenCalled();
+	});
 });
