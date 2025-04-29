@@ -97,7 +97,11 @@ const mockObsidian = {
         setViewState: jest.fn().mockImplementation(() => Promise.resolve()),
       }),
       revealLeaf: jest.fn(),
-      onLayoutReady: jest.fn().mockImplementation((callback: unknown) => callback()),
+      onLayoutReady: jest.fn().mockImplementation((callback: unknown) => {
+        if (typeof callback === 'function') {
+          callback();
+        }
+      }),
       getLeaf: jest.fn().mockReturnValue({
         openFile: jest.fn(),
       }),

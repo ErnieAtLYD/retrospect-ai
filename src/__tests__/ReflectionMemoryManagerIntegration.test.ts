@@ -1,7 +1,7 @@
 // src/__tests__/ReflectionMemoryManagerIntegration.test.ts
 
 import RetrospectAI from "../main";
-import { ReflectionMemoryManager } from "../services/ReflectionMemoryManager";
+import { ReflectionMemoryManager, ReflectionMemoryError } from "../services/ReflectionMemoryManager";
 import {
 	describe,
 	it,
@@ -55,6 +55,12 @@ class MockPlugin {
 	uiManager = {
 		cleanup: jest.fn(),
 		activateView: jest.fn().mockImplementation(() => Promise.resolve()),
+		setupRibbonIcons: jest.fn().mockImplementation(() => {
+			return {
+				addClass: jest.fn(),
+				removeClass: jest.fn(),
+			};
+		}),
 	};
 
 	serviceManager = {
@@ -107,14 +113,17 @@ describe("ReflectionMemoryManager Integration", () => {
 	it("should handle initialization errors gracefully", async () => {
 		// Force initialize to throw an error
 		jest.spyOn(reflectionManager, "initialize").mockRejectedValueOnce(
-			new Error("Simulated error")
+			new ReflectionMemoryError("Simulated error")
 		);
 
 		// Plugin should handle errors during onload
 		await expect(plugin.onload()).resolves.not.toThrow();
 
 		// Verify error was logged
-		expect(plugin.logger.error).toHaveBeenCalled();
+		expect(plugin.logger.error).toHaveBeenCalledWith(
+			"Failed to initialize reflection memory manager:",
+			expect.any(ReflectionMemoryError)
+		);
 	});
 
 	it("should clean up ReflectionMemoryManager during onunload", async () => {
@@ -125,18 +134,30 @@ describe("ReflectionMemoryManager Integration", () => {
 		expect(jest.spyOn(reflectionManager, "saveIndex")).toHaveBeenCalled();
 	});
 
+	it("should save index during cleanup", async () => {
+		// Create a spy to verify saveIndex is called
+		const saveIndexSpy = jest.spyOn(reflectionManager, "saveIndex");
+
+		// Call onunload
+		plugin.onunload();
+
+		// Verify saveIndex was called
+		expect(saveIndexSpy).toHaveBeenCalled();
+	});
+
 	it("should handle cleanup errors gracefully", async () => {
-		// Mock saveIndex to throw an error
-		jest.spyOn(reflectionManager, "saveIndex").mockImplementationOnce(
-			() => {
-				throw new Error("Cleanup error");
-			}
+		// Force saveIndex to throw an error
+		jest.spyOn(reflectionManager, "saveIndex").mockRejectedValueOnce(
+			new ReflectionMemoryError("Simulated cleanup error")
 		);
 
 		// Plugin should handle errors during onunload
 		expect(() => plugin.onunload()).not.toThrow();
 
 		// Verify error was logged
-		expect(plugin.logger.error).toHaveBeenCalled();
+		expect(plugin.logger.error).toHaveBeenCalledWith(
+			"Error shutting down ReflectionMemoryManager:",
+			expect.any(ReflectionMemoryError)
+		);
 	});
 });
