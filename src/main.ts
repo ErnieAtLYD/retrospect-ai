@@ -5,7 +5,6 @@ import { RetrospectAISettingTab } from "./settings/settingsTab";
 import { ServiceManager } from "./core/ServiceManager";
 import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
-// import { ReactView, REACT_VIEW_TYPE } from "./views/view";
 import { CommentaryView } from "./views/CommentaryView";
 import { ReflectionMemoryManager } from "./services/ReflectionMemoryManager";
 
@@ -146,18 +145,19 @@ export default class RetrospectAI extends Plugin {
         });
     }
 
-    onunload() {
-        this.serviceManager.shutdown();
-        this.uiManager.cleanup();
+    async onunload(): Promise<void> {
+        // this.serviceManager.shutdown();
+        // this.uiManager.cleanup();
         
         // Properly clean up the ReflectionMemoryManager
         if (this.reflectionMemoryManager) {
             try {
                 // Save any pending changes to ensure data integrity
-                this.reflectionMemoryManager.saveIndex?.();
+                await this.reflectionMemoryManager.saveIndex?.();
+                await this.reflectionMemoryManager.shutdown();
                 console.log("ReflectionMemoryManager shut down successfully");
             } catch (error) {
-                console.error("Error shutting down ReflectionMemoryManager:", error);
+                this.logger.error("Error shutting down ReflectionMemoryManager:", error as Error);
             }
         }
     }
