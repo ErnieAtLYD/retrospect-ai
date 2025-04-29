@@ -1,14 +1,16 @@
 import { App, Editor, MarkdownView, Notice, TFile } from "obsidian";
 import { AnalysisManager } from "./AnalysisManager";
 import { LoggingService } from "./LoggingService";
-import { RetrospectAISettings } from "../types";
+import { RetrospectAISettings, COMMENTARY_VIEW_TYPE } from "../types";
+import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
 
 export class JournalAnalysisService {
     constructor(
         private app: App,
         private settings: RetrospectAISettings,
         private analysisManager: AnalysisManager,
-        private logger: LoggingService
+        private logger: LoggingService,
+        private reflectionMemoryManager?: ReflectionMemoryManager // Make it optional to maintain backward compatibility
     ) {}
 
     async analyzeDailyJournal(): Promise<void> {
@@ -124,13 +126,93 @@ export class JournalAnalysisService {
         new Notice("Analyzing today's journal entry...");
 
         const content = await this.getNoteContent(note);
-        await streamingManager.streamAnalysis(
-            this.analyzeContent(content, note.path, note.basename),
-            {
-                loadingIndicatorPosition: "bottom",
-                streamingUpdateInterval: 50,
+        const notePath = note.path;
+        const noteName = note.basename;
+        
+        try {
+            // Perform the analysis
+            await streamingManager.streamAnalysis(
+                this.analyzeContent(content, notePath, noteName),
+                {
+                    loadingIndicatorPosition: "bottom",
+                    streamingUpdateInterval: 50,
+                }
+            );
+            
+            // After successful analysis, store the reflection if ReflectionMemoryManager is available
+            if (this.reflectionMemoryManager) {
+                // Get the latest analysis from the CommentaryView
+                const workspace = this.app.workspace;
+                const commentaryLeaves = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
+                
+                if (commentaryLeaves.length > 0) {
+                    const commentaryView = commentaryLeaves[0].view as any; // Using any since we don't have the type
+                    if (commentaryView && typeof commentaryView.getAnalysisHistory === 'function') {
+                        const analysisHistory = commentaryView.getAnalysisHistory();
+                        
+                        // Find the analysis for this note
+                        const analysis = analysisHistory.find((item: any) => item.noteId === notePath);
+                        
+                        if (analysis && analysis.content) {
+                            // Extract keywords and tags
+                            const keywords = this.extractKeywords(analysis.content);
+                            const tags = this.extractTags(content);
+                            
+                            // Store the reflection
+                            await this.reflectionMemoryManager.addReflection({
+                                id: this.generateReflectionId(),
+                                date: this.getTodayFormattedDate(),
+                                sourceNotePath: notePath,
+                                reflectionText: analysis.content,
+                                tags: tags,
+                                keywords: keywords,
+                                timestamp: Date.now()
+                            });
+                            
+                            this.logger.info(`Stored reflection for note: ${noteName}`);
+                        }
+                    }
+                }
             }
-        );
+        } catch (error) {
+            this.handleAnalysisError(error);
+        }
+    }
+    
+    // Helper method to generate a unique ID for reflections
+    private generateReflectionId(): string {
+        return Date.now().toString() + Math.random().toString(36).substring(2, 9);
+    }
+
+    // Helper method to extract keywords from reflection text
+    private extractKeywords(reflectionText: string): string[] {
+        // Simple implementation - extract important words as keywords
+        // In a real implementation, you might use NLP or other techniques
+        const words = reflectionText.split(/\s+/);
+        const keywords = words
+            .filter(word => word.length > 3)
+            .map(word => word.replace(/[^\w]/g, ''))
+            .filter(Boolean);
+        
+        // Return unique keywords (up to 10)
+        return [...new Set(keywords)].slice(0, 10);
+    }
+
+    // Helper method to extract tags from note content
+    private extractTags(noteContent: string): string[] {
+        // Extract #tags from the note content
+        const tagRegex = /#([a-zA-Z0-9_-]+)/g;
+        const tags: string[] = [];
+        let match;
+        
+        while ((match = tagRegex.exec(noteContent)) !== null) {
+            if (match[1]) {
+                tags.push(match[1]);
+            }
+        }
+        
+        // Return unique tags
+        return [...new Set(tags)];
     }
 
     private handleAnalysisError(error: unknown): void {

@@ -212,7 +212,8 @@ export class ServiceManager {
 			this.plugin.app,
 			this.plugin.settings,
 			this.analysisManager as AnalysisManager,
-			this.logger as LoggingService
+			this.logger as LoggingService,
+			this.plugin.reflectionMemoryManager // Add the ReflectionMemoryManager
 		);
 	}
 
