@@ -17,12 +17,20 @@ export default class RetrospectAI extends Plugin {
     uiManager!: UIManager;
     reflectionMemoryManager!: ReflectionMemoryManager;
     
-    // Add a logger property that matches what's expected by tests
+    // Add an early logger for use before serviceManager is initialized
+    private earlyLogger = new LoggingService(DEFAULT_RETROSPECT_AI_SETTINGS, LogLevel.INFO, true);
+    
+    // Logger property that matches what's expected by tests
     logger = {
         error: (message: string, error: Error) => {
-            console.error(message, error);
+            this.getLogger().error(message, error);
         }
     };
+    
+    // Helper to get the appropriate logger
+    private getLogger() {
+        return this.serviceManager?.logger || this.earlyLogger;
+    }
 
     async loadSettings() {
         this.settings = Object.assign(
@@ -70,7 +78,7 @@ export default class RetrospectAI extends Plugin {
             return true;
         } catch (error) {
             // Log the error
-            this.logger.error("Error analyzing daily journal", error as Error);
+            this.getLogger().error("Error analyzing daily journal", error as Error);
             new Notice(`Analysis failed: ${(error as Error).message}`);
             throw error; // Rethrow to propagate to caller
         }
@@ -81,7 +89,7 @@ export default class RetrospectAI extends Plugin {
 
         let leaf: WorkspaceLeaf | null = null;
         const leaves = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
-        console.log("leaves", leaves);
+        this.getLogger().debug("Found view leaves", leaves);
     
         if (leaves.length > 0) {
           // A leaf with our view already exists, use that
@@ -121,7 +129,7 @@ export default class RetrospectAI extends Plugin {
         try {
             await this.reflectionMemoryManager.initialize();
         } catch (error) {
-            console.error("Failed to initialize reflection memory manager:", error);
+            this.getLogger().error("Failed to initialize reflection memory manager", error);
             new Notice("Failed to initialize reflection system. Some features may not work properly.");
         }
         
@@ -140,7 +148,7 @@ export default class RetrospectAI extends Plugin {
                 // Activate the view after workspace is ready
                 await this.uiManager.activateView();
             } catch (error) {
-                console.error("Failed to activate view:", error);
+                this.getLogger().error("Failed to activate view", error);
             }
         });
     }
@@ -155,9 +163,9 @@ export default class RetrospectAI extends Plugin {
                 // Save any pending changes to ensure data integrity
                 await this.reflectionMemoryManager.saveIndex?.();
                 await this.reflectionMemoryManager.shutdown();
-                console.log("ReflectionMemoryManager shut down successfully");
+                this.getLogger().info("ReflectionMemoryManager shut down successfully");
             } catch (error) {
-                this.logger.error("Error shutting down ReflectionMemoryManager:", error as Error);
+                this.getLogger().error("Error shutting down ReflectionMemoryManager", error as Error);
             }
         }
     }
