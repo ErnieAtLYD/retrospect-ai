@@ -194,15 +194,16 @@ export class AnalysisManager {
 			}
 
 			const { view } = leaves[0];
-			if (!view || !("updateContent" in view)) {
+			// Check if the view is a CommentaryView with updateContent method
+			if (!view || typeof (view as any).updateContent !== 'function') {
 				throw new AnalysisError(
 					"Invalid commentary view",
 					"INVALID_VIEW"
 				);
 			}
 
-			// @ts-ignore - We know the view has this method
-			view.updateContent(content, noteId, noteName);
+			// Cast the view to the correct type
+			(view as import("../views/CommentaryView").CommentaryView).updateContent(content, noteId, noteName);
 		} catch (error) {
 			this.handleError(error, "Failed to update side panel");
 		}
