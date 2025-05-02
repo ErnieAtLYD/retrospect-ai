@@ -26,3 +26,4 @@ data.json
 coverage/
 
 tsconfig.tsbuildinfo
+**/.claude/settings.local.json
