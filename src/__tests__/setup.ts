@@ -2,7 +2,9 @@
 import { jest } from "@jest/globals";
 import { RetrospectAISettings } from "../types";
 import type { ReflectionMemoryManager } from '../services/ReflectionMemoryManager'
+import { App, Editor, MarkdownView, Notice, TFile, View, Workspace, Vault, StatusBar } from "obsidian"
 import { Plugin } from "obsidian"
+import { LogLevel } from '../services/LoggingService'
 
 
 export function createMockReflectionMemoryManager(): jest.Mocked<ReflectionMemoryManager> {
@@ -66,13 +68,16 @@ jest.mock("react", () => {
 });
 
 // Mock the MarkdownView class
-export class MockMarkdownView {
-	editor: any;
-	file: any;
-	constructor(options: any = {}) {
-		this.editor = { getValue: jest.fn(), setValue: jest.fn() };
-		// If options.file is provided, use it directly as the file property
-		this.file = options.file || null;
+export class MockMarkdownView implements MarkdownView {
+    editor: Partial<Editor>;
+    file: TFile | null;
+
+	constructor(options: {file?: TFile, editor?: Partial<Editor>} = {}) {
+		this.editor = options.editor || {
+			getValue: jest.fn().mockReturnValue(""),
+			setValue: jest.fn()
+		  };
+		this.file = options.file || null; 
 	}
 }
 
@@ -81,12 +86,15 @@ export class MockMarkdownView {
  * This is a mock implementation of the Notice class.
  * It provides basic mock functions for the hide property.
  */
-export const MockNotice = jest.fn().mockImplementation(() => ({
-	hide: jest.fn(),
-	message: "",
-	setMessage: jest.fn(),
-	noticeEl: document.createElement('div')
-}));
+// Improve MockNotice to ensure it has hide method during tests
+export const MockNotice = jest.fn().mockImplementation((message, timeout) => {
+	return {
+		hide: jest.fn(),
+		message: message || "",
+		setMessage: jest.fn(),
+		noticeEl: document.createElement('div')
+	};
+});
 
 /**
  * Mock Editor class
@@ -143,7 +151,8 @@ export class MockPlugin {
 		this.uiManager = {
 			statusBarItem: {
 				setText: jest.fn()
-			}
+			},
+			activateView: jest.fn().mockResolvedValue(undefined)
 		};
 		this.addCommand = jest.fn();
 	}
@@ -154,7 +163,7 @@ export class MockPlugin {
 
 	async onload() {
 		try {
-			if (this.reflectionMemoryManager) {
+			if (this.reflectionMemoryManager && typeof this.reflectionMemoryManager.initialize === 'function') {
 				await this.reflectionMemoryManager.initialize();
 			}
 		} catch (error) {
@@ -164,7 +173,7 @@ export class MockPlugin {
 
 	async onunload() {
 		try {
-			if (this.reflectionMemoryManager) {
+			if (this.reflectionMemoryManager && typeof this.reflectionMemoryManager.saveIndex === 'function') {
 				await this.reflectionMemoryManager.saveIndex();
 			}
 		} catch (error) {
@@ -233,7 +242,14 @@ jest.mock("obsidian", () => {
 		 * This is a mock implementation of the Notice class.
 		 * It provides basic mock functions for the message and hide properties.
 		 */
-		Notice: MockNotice,
+		Notice: jest.fn().mockImplementation((message, timeout) => {
+			return {
+				hide: jest.fn(),
+				message: message || "",
+				setMessage: jest.fn(),
+				noticeEl: document.createElement('div')
+			};
+		}),
 		/**
 		 * Mock App class
 		 * This is a mock implementation of the App class.
@@ -317,6 +333,13 @@ jest.mock("obsidian", () => {
 			display() {}
 			hide() {}
 		},
+		// Mock for the missing LogLevel enum
+        LogLevel: {
+            NONE: 0,
+            ERROR: 1,
+            WARN: 2,
+            INFO: 3,
+            DEBUG: 4
+        },
 	};
 });
-

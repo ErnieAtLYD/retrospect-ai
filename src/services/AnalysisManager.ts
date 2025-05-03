@@ -6,6 +6,8 @@ import { PrivacyManager } from "./PrivacyManager";
 import { CacheManager } from "./CacheManager";
 import RetrospectAI from "../main";
 import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
+import { CommentaryView } from "../views/CommentaryView";
+
 export type AnalysisStyle = "direct" | "gentle";
 
 export interface AnalysisResult {
@@ -110,13 +112,16 @@ export class AnalysisManager {
 	}
 
 	/**
-	 * Analyze the content of a note to generate a commentary
-	 * @param content {string} The content of the note
-	 * @param template {string} The template to use for the analysis
-	 * @param style {AnalysisStyle} The style of the analysis
-	 * @param noteId {string} The id of the note via CommandManager
-	 * @param noteName {string} The name of the note via CommandManager
-	 * @returns {Promise<void>}
+	 * Analyzes the content of a note using the AI service.
+	 * Calls updateSidePanel to update the side panel with the analysis.
+	 * Caches the result of the analysis.
+	 * 
+	 * @param content - The content of the note to analyze.
+	 * @param template - The template to use for the analysis.
+	 * @param style - The style of the analysis.
+	 * @param noteId - The ID of the note to analyze.
+	 * @param noteName - The name of the note to analyze.
+	 * @returns A promise that resolves when the analysis is complete.
 	 */
 	async analyzeContent(
 		content: string,
@@ -195,7 +200,7 @@ export class AnalysisManager {
 
 			const { view } = leaves[0];
 			// Check if the view is a CommentaryView with updateContent method
-			if (!view || typeof (view as any).updateContent !== 'function') {
+			if (!view || !(view instanceof CommentaryView)) {
 				throw new AnalysisError(
 					"Invalid commentary view",
 					"INVALID_VIEW"
@@ -203,7 +208,7 @@ export class AnalysisManager {
 			}
 
 			// Cast the view to the correct type
-			(view as import("../views/CommentaryView").CommentaryView).updateContent(content, noteId, noteName);
+			view.updateContent(content, noteId, noteName);
 		} catch (error) {
 			this.handleError(error, "Failed to update side panel");
 		}

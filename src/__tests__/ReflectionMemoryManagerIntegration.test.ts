@@ -84,6 +84,27 @@ class MockPlugin {
 		shutdown: jest.fn().mockResolvedValue(undefined),
 		addReflection: jest.fn().mockResolvedValue(undefined),
 	};
+
+	// Implement onload and onunload methods
+	async onload() {
+		try {
+			if (this.reflectionMemoryManager) {
+				await this.reflectionMemoryManager.initialize();
+			}
+		} catch (error) {
+			this.logger.error("Failed to initialize reflection memory manager:", error);
+		}
+	}
+
+	async onunload() {
+		try {
+			if (this.reflectionMemoryManager) {
+				await this.reflectionMemoryManager.saveIndex();
+			}
+		} catch (error) {
+			this.logger.error("Error shutting down ReflectionMemoryManager:", error);
+		}
+	}
 }
 
 describe("ReflectionMemoryManager Integration", () => {
@@ -166,7 +187,7 @@ describe("ReflectionMemoryManager Integration", () => {
 		);
 
 		// Plugin should handle errors during onunload
-		expect(() => plugin.onunload?.()).not.toThrow();
+		await expect(plugin.onunload?.()).resolves.not.toThrow();
 
 		// Verify error was logged
 		expect(plugin.logger.error).toHaveBeenCalledWith(
