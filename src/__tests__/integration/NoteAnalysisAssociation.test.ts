@@ -232,6 +232,39 @@ describe("Note Analysis Association Integration", () => {
 		// Verify the correct content is displayed - the render function should have been called
 		expect(mockRender).toHaveBeenCalled();
 	});
+	
+	it("should gracefully handle selecting a non-existent note", async () => {
+		// First add some content to the view
+		await analysisManager.analyzeContent(
+			"Content for initial note with sufficient length for validation.",
+			mockPlugin.settings.reflectionTemplate,
+			mockPlugin.settings.communicationStyle as any,
+			"existing-note.md",
+			"Existing Note"
+		);
+		
+		// Add a spy on the getAnalysisForNote method
+		const spy = jest.spyOn(analysisManager, 'getAnalysisForNote');
+		
+		// Reset the render mock to clear previous calls
+		mockRender.mockClear();
+		
+		// Try to select a non-existent note
+		commentaryView.selectAnalysis("non-existent-note.md");
+		
+		// Check that the method was called with the correct ID
+		expect(spy).toHaveBeenCalledWith("non-existent-note.md");
+		
+		// Verify the render function was not called since no content was found
+		expect(mockRender).not.toHaveBeenCalled();
+		
+		// Now select an existing note to make sure the view still works
+		mockRender.mockClear();
+		commentaryView.selectAnalysis("existing-note.md");
+		
+		// Verify the correct content is displayed for the existing note
+		expect(mockRender).toHaveBeenCalled();
+	});
 });
 
 describe("Note Analysis Association Integration", () => {
