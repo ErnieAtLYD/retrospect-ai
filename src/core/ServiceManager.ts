@@ -175,6 +175,7 @@ export class ServiceManager {
 				this.plugin,
 				this.aiService as AIService,
 				this.privacyManager,
+				this.plugin.reflectionMemoryManager, // Pass the ReflectionMemoryManager from the plugin
 				this.plugin.settings.cacheTTLMinutes
 			);
 

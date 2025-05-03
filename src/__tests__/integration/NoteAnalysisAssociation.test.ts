@@ -58,6 +58,7 @@ describe("Note Analysis Association Integration", () => {
 			mockPlugin as any,
 			mockAIService as any,
 			mockPrivacyManager as any,
+			null, // No ReflectionMemoryManager for this test
 			60,
 			100
 		);

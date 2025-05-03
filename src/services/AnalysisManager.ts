@@ -39,6 +39,7 @@ export class AnalysisError extends Error {
  * @param plugin {RetrospectAI} The main plugin instance
  * @param aiService {AIService} The AI service to use
  * @param privacyManager {PrivacyManager} The privacy manager to use
+ * @param reflectionMemoryManager {ReflectionMemoryManager | null} Optional reflection memory manager for storing analysis
  * @param cacheTTLMinutes {number} The time to live for the cache
  * @param cacheMaxSize {number} The maximum size of the cache
  */
@@ -47,12 +48,13 @@ export class AnalysisManager {
 	private readonly plugin: RetrospectAI;
 	private readonly aiService: AIService;
 	private readonly privacyManager: PrivacyManager;
-	private reflectionMemoryManager: ReflectionMemoryManager | null = null;
+	private readonly reflectionMemoryManager: ReflectionMemoryManager | null;
 	private analysisHistory: AnalysisResult[] = [];
 	constructor(
 		plugin: RetrospectAI,
 		aiService: AIService,
 		privacyManager: PrivacyManager,
+		reflectionMemoryManager: ReflectionMemoryManager | null = null,
 		cacheTTLMinutes = 60,
 		cacheMaxSize = 100
 	) {
@@ -72,6 +74,7 @@ export class AnalysisManager {
 		this.plugin = plugin;
 		this.aiService = aiService;
 		this.privacyManager = privacyManager;
+		this.reflectionMemoryManager = reflectionMemoryManager;
 		this.cacheManager = new CacheManager<AnalysisResult>(
 			cacheTTLMinutes,
 			cacheMaxSize
@@ -297,16 +300,7 @@ export class AnalysisManager {
 		}
 	}
 
-	/**
-	 * Set the reflection memory manager
-	 * @param reflectionMemoryManager {ReflectionMemoryManager} The reflection memory manager
-	 * @returns {void}
-	 */
-	setReflectionMemoryManager(
-		reflectionMemoryManager: ReflectionMemoryManager
-	): void {
-		this.reflectionMemoryManager = reflectionMemoryManager;
-	}
+	// The setReflectionMemoryManager method has been removed in favor of constructor injection
 
 	/**
 	 * Clear the cache

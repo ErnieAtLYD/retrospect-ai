@@ -115,10 +115,7 @@ export default class RetrospectAI extends Plugin {
             new Notice("Failed to initialize reflection system. Some features may not work properly.");
         }
         
-        // Make the reflection memory manager available to other services that need it
-        if (this.serviceManager.analysisManager) {
-            this.serviceManager.analysisManager.setReflectionMemoryManager(this.reflectionMemoryManager);
-        }
+        // The reflection memory manager is now passed directly to the AnalysisManager via constructor
         
         // Set up the plugin
         this.commandManager.registerCommands();

@@ -48,7 +48,8 @@ describe("CommentaryView", () => {
     mockAnalysisManager = new AnalysisManager(
       mockPlugin as any,
       mockAIService,
-      mockPrivacyManager
+      mockPrivacyManager,
+      null // No ReflectionMemoryManager for this test
     );
     
     // Set the analysis manager on the view
