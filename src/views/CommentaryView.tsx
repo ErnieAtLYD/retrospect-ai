@@ -1,19 +1,30 @@
+// src/views/CommentaryView.ts
+
 import { WorkspaceLeaf } from "obsidian";
 import { ItemView } from "obsidian";
 import * as React from 'react';
 import { createRoot, Root } from "react-dom/client";
 import { AppComponent } from "../components/App";
-import { COMMENTARY_VIEW_TYPE, NoteAnalysis } from "../types";
+import { COMMENTARY_VIEW_TYPE } from "../types";
+import { AnalysisManager, AnalysisResult, NoteAnalysis } from "../services/AnalysisManager";
 
 export class CommentaryView extends ItemView {
     root: Root | null = null;
     private content: string = "";
     private currentNoteId: string | undefined;
     private currentNoteName: string | undefined;
-    private analysisHistory: NoteAnalysis[] = [];
+    private analysisManager: AnalysisManager | null = null;
 
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
+    }
+    
+    /**
+     * Set the analysis manager reference
+     * @param analysisManager The analysis manager instance
+     */
+    setAnalysisManager(analysisManager: AnalysisManager): void {
+        this.analysisManager = analysisManager;
     }
     
     getViewType(): string {
@@ -56,37 +67,32 @@ export class CommentaryView extends ItemView {
         this.currentNoteId = noteId;
         this.currentNoteName = noteName;
         
-        // Add to history if we have note information
-        if (noteId && noteName) {
-            // Remove any existing analysis for this note
-            this.analysisHistory = this.analysisHistory.filter(item => item.noteId !== noteId);
-            
-            // Add the new analysis
-            this.analysisHistory.push({
+        // Add to analysis manager history if we have note information
+        if (noteId && noteName && this.analysisManager) {
+            // Create a new analysis result and add it to the history
+            const analysisResult: AnalysisResult = {
+                content,
                 noteId,
                 noteName,
-                content,
                 timestamp: Date.now()
-            });
+            };
             
-            // Sort by most recent first
-            this.analysisHistory.sort((a, b) => b.timestamp - a.timestamp);
-            
-            // Limit history to 20 items
-            if (this.analysisHistory.length > 20) {
-                this.analysisHistory = this.analysisHistory.slice(0, 20);
-            }
+            // Store in the analysis manager
+            this.analysisManager.addToHistory(analysisResult);
         }
         
         this.updateReactComponent();
     }
     
     getAnalysisHistory(): NoteAnalysis[] {
-        return this.analysisHistory;
+        // Get analysis history from analysis manager if available, otherwise return empty array
+        return this.analysisManager ? this.analysisManager.getAnalysisHistory() : [];
     }
     
     selectAnalysis(noteId: string): void {
-        const analysis = this.analysisHistory.find(item => item.noteId === noteId);
+        if (!this.analysisManager) return;
+        
+        const analysis = this.analysisManager.getAnalysisForNote(noteId);
         if (analysis) {
             this.content = analysis.content;
             this.currentNoteId = analysis.noteId;
@@ -104,7 +110,7 @@ export class CommentaryView extends ItemView {
                         content={this.content} 
                         currentNoteId={this.currentNoteId}
                         currentNoteName={this.currentNoteName}
-                        analysisHistory={this.analysisHistory}
+                        analysisHistory={this.getAnalysisHistory()}
                         onSelectNote={(noteId) => this.selectAnalysis(noteId)}
                     />
                 </React.StrictMode>

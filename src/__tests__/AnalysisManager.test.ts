@@ -1,11 +1,13 @@
 import { AnalysisManager } from '../services/AnalysisManager';
 import { AIService } from '../services/AIService';
 import { PrivacyManager } from '../services/PrivacyManager';
+import { ReflectionMemoryManager } from '../services/ReflectionMemoryManager';
 
 describe('AnalysisManager', () => {
     let analysisManager: AnalysisManager;
     let mockAIService: jest.Mocked<AIService>;
     let mockPrivacyManager: jest.Mocked<PrivacyManager>;
+    let mockReflectionMemoryManager: jest.Mocked<ReflectionMemoryManager>;
 
     beforeEach(() => {
         // Create mock implementations
@@ -16,6 +18,11 @@ describe('AnalysisManager', () => {
         mockPrivacyManager = {
             removePrivateSections: jest.fn().mockImplementation(content => content)
         } as any;
+        
+        mockReflectionMemoryManager = {
+            addReflection: jest.fn().mockResolvedValue({ id: '123', timestamp: Date.now() }),
+            initialize: jest.fn().mockResolvedValue(undefined)
+        } as any;
 
         // Create the analysis manager with mocks
         const mockPlugin = {
@@ -23,31 +30,36 @@ describe('AnalysisManager', () => {
             serviceManager: {},
             commandManager: {},
             uiManager: {
-                activateView: jest.fn(),
-                statusBarItem: {
-                    setText: jest.fn()
-                }
+                activateView: jest.fn()
             },
-            app: {}
+            app: {
+                workspace: {
+                    getLeavesOfType: jest.fn().mockReturnValue([])
+                }
+            }
         } as any;
 
         analysisManager = new AnalysisManager(
             mockPlugin,
             mockAIService,
             mockPrivacyManager,
+            mockReflectionMemoryManager,
             60, // cacheTTLMinutes
             100 // cacheMaxSize
         );
     });
 
     describe('analyzeContent', () => {
-        it('should handle empty content gracefully', async () => {
-            // Test with empty string
-            await analysisManager.analyzeContent('', 'template', 'direct');
-            expect(mockAIService.analyze).not.toHaveBeenCalled();
-            
+        it('should validate content is not empty', async () => {
+            // Since we've improved validation, empty content should now throw an error
+            await expect(analysisManager.analyzeContent('', 'template', 'direct'))
+                .rejects.toThrow('Content cannot be empty');
+                
             // Test with whitespace only
-            await analysisManager.analyzeContent('   \n\t   ', 'template', 'direct');
+            await expect(analysisManager.analyzeContent('   \n\t   ', 'template', 'direct'))
+                .rejects.toThrow('Content cannot be empty');
+            
+            // Verify AI service was not called
             expect(mockAIService.analyze).not.toHaveBeenCalled();
         });
 

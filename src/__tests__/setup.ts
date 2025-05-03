@@ -2,6 +2,7 @@
 import { jest } from "@jest/globals";
 import { RetrospectAISettings } from "../types";
 import type { ReflectionMemoryManager } from '../services/ReflectionMemoryManager'
+import { App, Editor, MarkdownView, Notice, TFile, View, Workspace, Vault } from "obsidian"
 import { Plugin } from "obsidian"
 
 
@@ -66,13 +67,16 @@ jest.mock("react", () => {
 });
 
 // Mock the MarkdownView class
-export class MockMarkdownView {
-	editor: any;
-	file: any;
-	constructor(options: any = {}) {
-		this.editor = { getValue: jest.fn(), setValue: jest.fn() };
-		// If options.file is provided, use it directly as the file property
-		this.file = options.file || null;
+export class MockMarkdownView implements MarkdownView {
+    editor: Partial<Editor>;
+    file: TFile | null;
+
+	constructor(options: {file?: TFile, editor?: Partial<Editor>} = {}) {
+		this.editor = options.editor || {
+			getValue: jest.fn().mockReturnValue(""),
+			setValue: jest.fn()
+		  };
+		this.file = options.file || null; 
 	}
 }
 
@@ -210,7 +214,7 @@ jest.mock("obsidian", () => {
 	const MarkdownViewMock = MockMarkdownView;
 	
 	return {
-		ItemView: class {
+		ItemView: class implements ItemView {
 			leaf: any;
 			constructor(leaf: any) {
 				this.leaf = leaf;
@@ -269,12 +273,6 @@ jest.mock("obsidian", () => {
 				rightSplit: jest.fn(),
 				leftRibbon: jest.fn(),
 				rightRibbon: jest.fn(),
-			};
-			statusBar = {
-				addStatusBarItem: jest.fn().mockReturnValue({
-					setText: jest.fn(),
-					remove: jest.fn(),
-				}),
 			};
 		},
 		/**

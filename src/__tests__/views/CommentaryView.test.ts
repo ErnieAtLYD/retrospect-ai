@@ -1,6 +1,10 @@
 import { CommentaryView } from "../../views/CommentaryView";
 import mockObsidian from "../../__mocks__/obsidian";
 import * as React from "react";
+import { AnalysisManager } from "../../services/AnalysisManager";
+import { AIService } from "../../services/AIService";
+import { PrivacyManager } from "../../services/PrivacyManager";
+
 
 // Mock react-dom/client
 jest.mock("react-dom/client", () => ({
@@ -13,6 +17,10 @@ jest.mock("react-dom/client", () => ({
 describe("CommentaryView", () => {
   let view: CommentaryView;
   let mockLeaf: any;
+  let mockAnalysisManager: AnalysisManager;
+  let mockAIService: AIService;
+  let mockPrivacyManager: PrivacyManager;
+  let mockPlugin: any;
 
   beforeEach(() => {
     mockLeaf = new mockObsidian.Leaf({});
@@ -30,6 +38,22 @@ describe("CommentaryView", () => {
         },
       ],
     } as any;
+    
+    // Mock dependencies
+    mockAIService = { analyze: jest.fn() } as unknown as AIService;
+    mockPrivacyManager = { removePrivateSections: jest.fn(text => text) } as unknown as PrivacyManager;
+    mockPlugin = { uiManager: { activateView: jest.fn() } };
+    
+    // Create analysis manager
+    mockAnalysisManager = new AnalysisManager(
+      mockPlugin as any,
+      mockAIService,
+      mockPrivacyManager,
+      null // No ReflectionMemoryManager for this test
+    );
+    
+    // Set the analysis manager on the view
+    view.setAnalysisManager(mockAnalysisManager);
   });
 
   describe("View lifecycle", () => {
@@ -82,8 +106,8 @@ describe("CommentaryView", () => {
       
       expect(view.root?.render).toHaveBeenCalled();
       
-      // Check that the analysis was added to history
-      const history = view.getAnalysisHistory();
+      // Check that the analysis was added to history in the analysis manager
+      const history = mockAnalysisManager.getAnalysisHistory();
       expect(history.length).toBe(1);
       expect(history[0].noteId).toBe(noteId);
       expect(history[0].noteName).toBe(noteName);
@@ -98,7 +122,7 @@ describe("CommentaryView", () => {
       view.updateContent("Updated content", "note-1", "Note 1");
       
       // Check history
-      const history = view.getAnalysisHistory();
+      const history = mockAnalysisManager.getAnalysisHistory();
       expect(history.length).toBe(1);
       expect(history[0].content).toBe("Updated content");
     });
@@ -116,7 +140,7 @@ describe("CommentaryView", () => {
       }
       
       // Check history length
-      const history = view.getAnalysisHistory();
+      const history = mockAnalysisManager.getAnalysisHistory();
       expect(history.length).toBe(20);
       
       // The most recent notes should be kept (note-24 to note-5)
@@ -132,11 +156,15 @@ describe("CommentaryView", () => {
       view.updateContent("Content 1", "note-1", "Note 1");
       view.updateContent("Content 2", "note-2", "Note 2");
       
+      // Add a spy on the getAnalysisForNote method
+      const spy = jest.spyOn(mockAnalysisManager, 'getAnalysisForNote');
+      
       // Select the first note
       view.selectAnalysis("note-1");
       
       // Verify the content was updated
       expect(view.root?.render).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith("note-1");
     });
   });
 });

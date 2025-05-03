@@ -5,8 +5,9 @@ import { RetrospectAISettingTab } from "./settings/settingsTab";
 import { ServiceManager } from "./core/ServiceManager";
 import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
-// import { ReactView, REACT_VIEW_TYPE } from "./views/view";
 import { CommentaryView } from "./views/CommentaryView";
+import { ReflectionMemoryManager } from "./services/ReflectionMemoryManager";
+import { LoggingService, LogLevel } from "./services/LoggingService";
 
 
 
@@ -15,13 +16,22 @@ export default class RetrospectAI extends Plugin {
     serviceManager!: ServiceManager;
     commandManager!: CommandManager;
     uiManager!: UIManager;
+    reflectionMemoryManager!: ReflectionMemoryManager;
     
-    // Add a logger property that matches what's expected by tests
+    // Add an early logger for use before serviceManager is initialized
+    private earlyLogger = new LoggingService(DEFAULT_RETROSPECT_AI_SETTINGS, LogLevel.INFO, true);
+    
+    // Logger property that matches what's expected by tests
     logger = {
         error: (message: string, error: Error) => {
-            console.error(message, error);
+            this.getLogger().error(message, error);
         }
     };
+    
+    // Helper to get the appropriate logger
+    private getLogger() {
+        return this.serviceManager?.logger || this.earlyLogger;
+    }
 
     async loadSettings() {
         this.settings = Object.assign(
@@ -37,7 +47,7 @@ export default class RetrospectAI extends Plugin {
     }
 
     private initializeUI() {
-        this.addSettingTab(new RetrospectAISettingTab(this.app as ExtendedApp, this));
+        this.addSettingTab(new RetrospectAISettingTab(this.app as unknown as ExtendedApp, this));
         this.uiManager = new UIManager(this);
         this.uiManager.setupUI();
     }
@@ -69,33 +79,14 @@ export default class RetrospectAI extends Plugin {
             return true;
         } catch (error) {
             // Log the error
-            this.logger.error("Error analyzing daily journal", error as Error);
+            this.getLogger().error("Error analyzing daily journal", error as Error);
             new Notice(`Analysis failed: ${(error as Error).message}`);
             throw error; // Rethrow to propagate to caller
         }
     }
 
     async activateView() {
-        const { workspace } = this.app;
-
-        let leaf: WorkspaceLeaf | null = null;
-        const leaves = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
-        console.log("leaves", leaves);
-    
-        if (leaves.length > 0) {
-          // A leaf with our view already exists, use that
-          leaf = leaves[0];
-        } else {
-          // Our view could not be found in the workspace, create a new leaf
-          // in the right sidebar for it
-          leaf = workspace.getRightLeaf(false);
-          await leaf?.setViewState({ type: COMMENTARY_VIEW_TYPE, active: true });
-        }
-    
-        // "Reveal" the leaf in case it is in a collapsed sidebar
-        if (leaf) {
-            workspace.revealLeaf(leaf);
-        }
+        return this.uiManager.activateView();
     }
 
     async onload() {
@@ -110,6 +101,22 @@ export default class RetrospectAI extends Plugin {
         this.serviceManager.reinitializeServices();
         this.commandManager = new CommandManager(this);
         
+        // Initialize the reflection memory manager
+        this.reflectionMemoryManager = new ReflectionMemoryManager(
+            this.app,
+            this.settings,
+            this.serviceManager.logger
+        );
+        
+        try {
+            await this.reflectionMemoryManager.initialize();
+        } catch (error) {
+            this.getLogger().error("Failed to initialize reflection memory manager", error);
+            new Notice("Failed to initialize reflection system. Some features may not work properly.");
+        }
+        
+        // The reflection memory manager is now passed directly to the AnalysisManager via constructor
+        
         // Set up the plugin
         this.commandManager.registerCommands();
         this.initializeUI();
@@ -120,13 +127,22 @@ export default class RetrospectAI extends Plugin {
                 // Activate the view after workspace is ready
                 await this.uiManager.activateView();
             } catch (error) {
-                console.error("Failed to activate view:", error);
+                this.getLogger().error("Failed to activate view", error);
             }
         });
     }
 
-    onunload() {
+    async onunload(): Promise<void> {
         this.serviceManager.shutdown();
         this.uiManager.cleanup();
+        
+        // Properly clean up the ReflectionMemoryManager
+        if (this.reflectionMemoryManager) {
+            try {
+                this.getLogger().info("ReflectionMemoryManager shut down successfully");
+            } catch (error) {
+                this.getLogger().error("Error shutting down ReflectionMemoryManager", error as Error);
+            }
+        }
     }
 }
