@@ -1,21 +1,51 @@
 // src/__tests__/integration/NoteAnalysisAssociation.test.ts
 
-import mockObsidian from "../../__mocks__/obsidian";
 import { AnalysisManager } from "../../services/AnalysisManager";
 import { CommentaryView } from "../../views/CommentaryView";
+import { ReflectionMemoryManager } from "../../services/ReflectionMemoryManager";
+import { PrivacyManager } from "../../services/PrivacyManager";
+import { AIService } from "../../services/AIService";
+import { App, Plugin, TFile } from "obsidian";
 import { createRoot } from "react-dom/client";
 
-// Mock the AIService and PrivacyManager
-const mockAIService = {
-	analyze: jest.fn().mockResolvedValue("Analyzed content"),
+// Mock Obsidian App
+const mockObsidian = {
+	App: jest.fn().mockImplementation(() => ({
+		vault: {
+			adapter: {
+				exists: jest.fn().mockResolvedValue(false),
+				read: jest.fn().mockResolvedValue(""),
+				write: jest.fn().mockResolvedValue(undefined),
+				createFolder: jest.fn().mockResolvedValue(undefined),
+			},
+		},
+	})),
+	TFile: jest.fn().mockImplementation(() => ({
+		path: "test.md",
+		basename: "test",
+		extension: "md",
+	})),
 };
 
-const mockPrivacyManager = {
+// Mock AIService
+const mockAIService: AIService = {
+	analyze: jest.fn().mockResolvedValue("Analyzed content"),
+} as any;
+
+// Mock PrivacyManager
+const mockPrivacyManager: PrivacyManager = {
 	removePrivateSections: jest.fn((content) => content),
-};
+	privateMarker: "PRIVATE",
+} as any;
 
 // Mock the plugin
-const mockPlugin = {
+const mockPlugin: Plugin & {
+	app: App;
+	settings: any;
+	uiManager: any;
+	logger: any;
+	reflectionMemoryManager: ReflectionMemoryManager;
+} = {
 	app: new mockObsidian.App(),
 	settings: {
 		reflectionTemplate: "Test template",
@@ -26,15 +56,28 @@ const mockPlugin = {
 	},
 	logger: {
 		error: jest.fn(),
+		debug: jest.fn(),
+		info: jest.fn(),
+		warn: jest.fn(),
 	},
-};
+	reflectionMemoryManager: new ReflectionMemoryManager(
+		new mockObsidian.App() as any,
+		{} as any,
+		{
+			error: jest.fn(),
+			debug: jest.fn(),
+			info: jest.fn(),
+			warn: jest.fn(),
+		} as any
+	),
+} as any;
 
 // Mock react-dom/client
 jest.mock("react-dom/client", () => ({
-  createRoot: jest.fn().mockReturnValue({
-    render: jest.fn(),
-    unmount: jest.fn()
-  })
+	createRoot: jest.fn().mockReturnValue({
+		render: jest.fn(),
+		unmount: jest.fn(),
+	}),
 }));
 
 describe("Note Analysis Association Integration", () => {
@@ -53,20 +96,27 @@ describe("Note Analysis Association Integration", () => {
 		// Mock console.error
 		console.error = jest.fn();
 
-		// Setup AnalysisManager
+		// Initialize the ReflectionMemoryManager
+		await mockPlugin.reflectionMemoryManager.initialize();
+		
+		// Create a new instance of AnalysisManager with the initialized ReflectionMemoryManager
 		analysisManager = new AnalysisManager(
 			mockPlugin as any,
-			mockAIService as any,
-			mockPrivacyManager as any,
-			null, // No ReflectionMemoryManager for this test
-			60,
-			100
+			mockAIService,
+			mockPrivacyManager,
+			mockPlugin.reflectionMemoryManager
 		);
-
-		// Setup CommentaryView
-		mockLeaf = new mockObsidian.Leaf({});
-		commentaryView = new CommentaryView(mockLeaf);
 		
+		// Create a new instance of CommentaryView
+		commentaryView = new CommentaryView(mockPlugin as any);
+		
+		// Mock leaf and render function
+		mockLeaf = {
+			view: null,
+			containerEl: document.createElement("div"),
+		};
+		mockRender = jest.fn();
+
 		// Connect CommentaryView to AnalysisManager
 		commentaryView.setAnalysisManager(analysisManager);
 
@@ -86,7 +136,7 @@ describe("Note Analysis Association Integration", () => {
 		await commentaryView.onOpen();
 
 		// Mock the workspace to return our view
-		(mockPlugin.app.workspace.getLeavesOfType as jest.Mock).mockReturnValue(
+		((mockPlugin.app as any).workspace.getLeavesOfType as jest.Mock).mockReturnValue(
 			[{ view: commentaryView }]
 		);
 	});
@@ -183,3 +233,36 @@ describe("Note Analysis Association Integration", () => {
 		expect(mockRender).toHaveBeenCalled();
 	});
 });
+
+describe("Note Analysis Association Integration", () => {
+	it("should store new reflection entry after analyzing content", async () => {
+	  // Arrange: instantiate or acquire the analysis and reflection managers
+	  const analysisManager = new AnalysisManager(
+		mockPlugin as any,
+		mockAIService,
+		mockPrivacyManager,
+		mockPlugin.reflectionMemoryManager
+	  );
+	  const reflectionMemoryManager = new ReflectionMemoryManager(
+		mockPlugin.app as any,
+		mockPlugin.settings as any,
+		mockPlugin.logger as any
+	  );
+  
+	  // Arrange: sample content to analyze
+	  const content = "Test content for reflection";
+  
+	  // Act: perform the content analysis
+	  await analysisManager.analyzeContent(
+		content,
+		mockPlugin.settings.reflectionTemplate,
+		mockPlugin.settings.communicationStyle as any,
+		"test-note.md",
+		"Test Note"
+	  );
+  
+	  // Assert: check that ReflectionMemoryManager now contains at least one reflection entry
+	  const reflections = await reflectionMemoryManager.getAllReflections();
+	  expect(reflections.length).toBeGreaterThan(0);
+	});
+});  

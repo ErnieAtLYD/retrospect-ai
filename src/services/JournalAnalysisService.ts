@@ -121,11 +121,14 @@ export class JournalAnalysisService {
 		new Notice(message);
 	}
 
+
 	/**
-	 * Perform the analysis
-	 * @param editor
-	 * @param note
-	 * @returns Promise<void>
+	 * Performs the analysis of the daily journal entry
+	 * 
+	 * @param editor {Editor} The editor instance
+	 * @param note {TFile} The daily note file
+	 * @returns {Promise<void>}
+	 * @throws {JournalAnalysisError} If the daily note is not found
 	 */
 	private async performAnalysis(editor: Editor, note: TFile): Promise<void> {
 		new Notice("Analyzing today's journal entry...");
@@ -144,7 +147,7 @@ export class JournalAnalysisService {
 				notePath,
 				noteName
 			);
-			
+
 			this.logger.info(`Analysis complete for note: ${noteName}`);
 		} catch (error) {
 			this.handleAnalysisError(error);

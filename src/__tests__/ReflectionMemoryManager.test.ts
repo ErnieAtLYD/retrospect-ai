@@ -405,6 +405,28 @@ describe("ReflectionMemoryManager", () => {
           // Restore original method
           app.vault.adapter.read = originalRead;
         });
+
+		// Add a new test case to verify fallback to default index when JSON.parse fails from invalid JSON
+		it('should fallback to default index when index file contains invalid JSON', async () => {
+			// First, create the folder and write invalid JSON to the index file
+			await app.vault.adapter.createFolder('.retrospect-ai');
+			await app.vault.adapter.write('.retrospect-ai/reflection-index.json', 'INVALID_JSON');
+		
+			let error: any = null;
+		
+			try {
+			await manager.initialize();
+			} catch (e) {
+			error = e;
+			}
+		
+			// Verify that no ReflectionMemoryError is thrown (i.e. the error is caught) 
+			// and that the manager falls back to a default index (assumed to be an empty object)
+			expect(error).toBeNull();
+			const reflections = await manager.getAllReflections();
+			expect(reflections).toEqual([]);
+		});
+  
       
         it('should handle errors during index saving', async () => {
           // Mock a failure in the adapter's write method

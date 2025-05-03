@@ -140,7 +140,25 @@ export class ReflectionMemoryManager {
 					`Loading reflection index from: ${indexPath}`
 				);
 				const content = await this.app.vault.adapter.read(indexPath);
-				this.index = JSON.parse(content);
+				try {
+					this.index = JSON.parse(content);
+					// Ensure the index has the required structure
+					if (!this.index.entries) {
+						this.index.entries = [];
+					}
+					if (!this.index.version) {
+						this.index.version = this.DEFAULT_INDEX.version;
+					}
+					if (!this.index.lastUpdated) {
+						this.index.lastUpdated = Date.now();
+					}
+				} catch (parseError) {
+					this.logger?.warn(
+						`Failed to parse reflection index, falling back to default index: ${parseError}`
+					);
+					this.index = { ...this.DEFAULT_INDEX };
+					await this.saveIndex();
+				}
 				this.logger?.info(
 					`Loaded ${this.index.entries.length} reflection entries`
 				);
