@@ -151,20 +151,69 @@ describe("CommentaryView", () => {
       Date.now = originalDateNow;
     });
 
-    it("should select an analysis from history", () => {
+    it("should select an analysis from history and return true", () => {
       // Add multiple analyses
       view.updateContent("Content 1", "note-1", "Note 1");
       view.updateContent("Content 2", "note-2", "Note 2");
       
-      // Add a spy on the getAnalysisForNote method
-      const spy = jest.spyOn(mockAnalysisManager, 'getAnalysisForNote');
+      // Add a spy on the getAnalysisForNote method to return the note
+      const mockAnalysis = { 
+        content: "Content 1", 
+        noteId: "note-1", 
+        noteName: "Note 1", 
+        timestamp: Date.now() 
+      };
+      const spy = jest.spyOn(mockAnalysisManager, 'getAnalysisForNote').mockReturnValue(mockAnalysis);
+      
+      // Reset the render mock
+      if (view.root?.render) {
+        (view.root.render as jest.Mock).mockClear();
+      }
       
       // Select the first note
-      view.selectAnalysis("note-1");
+      const result = view.selectAnalysis("note-1");
       
-      // Verify the content was updated
+      // Verify the method returned true for found note
+      expect(result).toBe(true);
+      
+      // Verify the content was updated (render was called)
       expect(view.root?.render).toHaveBeenCalled();
       expect(spy).toHaveBeenCalledWith("note-1");
+      
+      // Clean up the spy
+      spy.mockRestore();
+    });
+    
+    it("should gracefully handle selecting a non-existent note and return false", () => {
+      // Setup initial content
+      view.updateContent("Initial Content", "initial-note", "Initial Note");
+      
+      // Mock the getAnalysisForNote to return undefined for non-existent note
+      const spy = jest.spyOn(mockAnalysisManager, 'getAnalysisForNote').mockReturnValue(undefined);
+      
+      // Clear the render mock to verify it's not called
+      if (view.root?.render) {
+        (view.root.render as jest.Mock).mockClear();
+      }
+      
+      // Select a non-existent note
+      const result = view.selectAnalysis("non-existent-note");
+      
+      // Verify the method returned false for not-found note
+      expect(result).toBe(false);
+      
+      // Verify the render function was not called
+      expect(view.root?.render).not.toHaveBeenCalled();
+      
+      // Verify the getAnalysisForNote was called with the correct ID
+      expect(spy).toHaveBeenCalledWith("non-existent-note");
+      
+      // Verify the component still works after attempting to select non-existent note
+      view.updateContent("New Content", "new-note", "New Note");
+      expect(view.root?.render).toHaveBeenCalled();
+      
+      // Clean up
+      spy.mockRestore();
     });
   });
 });

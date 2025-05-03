@@ -89,8 +89,13 @@ export class CommentaryView extends ItemView {
         return this.analysisManager ? this.analysisManager.getAnalysisHistory() : [];
     }
     
-    selectAnalysis(noteId: string): void {
-        if (!this.analysisManager) return;
+    /**
+     * Select an analysis from history by noteId
+     * @param noteId The ID of the note to select
+     * @returns boolean Whether the selection was successful
+     */
+    selectAnalysis(noteId: string): boolean {
+        if (!this.analysisManager) return false;
         
         const analysis = this.analysisManager.getAnalysisForNote(noteId);
         if (analysis) {
@@ -98,7 +103,10 @@ export class CommentaryView extends ItemView {
             this.currentNoteId = analysis.noteId;
             this.currentNoteName = analysis.noteName;
             this.updateReactComponent();
+            return true;
         }
+        
+        return false;
     }
 
     private updateReactComponent(): void {
