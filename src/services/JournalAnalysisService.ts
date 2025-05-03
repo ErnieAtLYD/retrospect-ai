@@ -156,7 +156,7 @@ export class JournalAnalysisService {
 			// After successful analysis, store the reflection if ReflectionMemoryManager is available
 			if (this.reflectionMemoryManager) {
 				// Get the latest analysis from the CommentaryView
-				const workspace = this.app.workspace;
+				const {workspace} = this.app;
 				const commentaryLeaves =
 					workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
 
