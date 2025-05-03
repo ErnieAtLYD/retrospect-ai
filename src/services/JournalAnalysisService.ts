@@ -1,17 +1,8 @@
 import { App, Editor, MarkdownView, Notice, TFile } from "obsidian";
-import { AnalysisManager } from "./AnalysisManager";
+import { AnalysisManager, AnalysisResult } from "./AnalysisManager";
 import { LoggingService } from "./LoggingService";
-import { RetrospectAISettings, COMMENTARY_VIEW_TYPE } from "../types";
+import { RetrospectAISettings } from "../types";
 import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
-
-interface CommentaryView {
-	getAnalysisHistory: () => AnalysisHistoryItem[];
-}
-
-interface AnalysisHistoryItem {
-	noteId: string;
-	content: string;
-}
 
 export class JournalAnalysisService {
 	constructor(
@@ -52,15 +43,15 @@ export class JournalAnalysisService {
 	 * @param content
 	 * @param noteId
 	 * @param noteName
-	 * @returns Promise<void>
+	 * @returns Promise<AnalysisResult>
 	 */
 	async analyzeContent(
 		content: string,
 		noteId?: string,
 		noteName?: string
-	): Promise<void> {
+	): Promise<AnalysisResult> {
 		try {
-			await this.analysisManager.analyzeContent(
+			return await this.analysisManager.analyzeContent(
 				content,
 				this.settings.reflectionTemplate,
 				this.settings.communicationStyle,
@@ -144,7 +135,8 @@ export class JournalAnalysisService {
 		const noteName = note.basename;
 
 		try {
-			// Perform the analysis
+			// Perform the analysis - the AnalysisManager now handles storing the reflection
+			// in the ReflectionMemoryManager automatically, so we don't need to do it here
 			await this.analysisManager.analyzeContent(
 				content,
 				this.settings.reflectionTemplate,
@@ -152,87 +144,11 @@ export class JournalAnalysisService {
 				notePath,
 				noteName
 			);
-
-			// After successful analysis, store the reflection if ReflectionMemoryManager is available
-			if (this.reflectionMemoryManager) {
-				// Get the latest analysis from the CommentaryView
-				const workspace = this.app.workspace;
-				const commentaryLeaves =
-					workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
-
-				if (commentaryLeaves.length > 0) {
-					const commentaryView = commentaryLeaves[0]
-						.view as unknown as CommentaryView;
-					if (
-						commentaryView &&
-						typeof commentaryView.getAnalysisHistory === "function"
-					) {
-						const analysisHistory =
-							commentaryView.getAnalysisHistory();
-
-						// Find the analysis for this note
-						const analysis = analysisHistory.find(
-							(item: AnalysisHistoryItem) =>
-								item.noteId === notePath
-						);
-
-						if (analysis && analysis.content) {
-							// Extract keywords and tags
-							const keywords = this.extractKeywords(
-								analysis.content
-							);
-							const tags = this.extractTags(content);
-
-							// Store the reflection
-							await this.reflectionMemoryManager.addReflection({
-								date: this.getTodayFormattedDate(),
-								sourceNotePath: notePath,
-								reflectionText: analysis.content,
-								tags: tags,
-								keywords: keywords,
-							});
-
-							this.logger.info(
-								`Stored reflection for note: ${noteName}`
-							);
-						}
-					}
-				}
-			}
+			
+			this.logger.info(`Analysis complete for note: ${noteName}`);
 		} catch (error) {
 			this.handleAnalysisError(error);
 		}
-	}
-
-	// Helper method to extract keywords from reflection text
-	private extractKeywords(reflectionText: string): string[] {
-		// Simple implementation - extract important words as keywords
-		// In a real implementation, you might use NLP or other techniques
-		const words = reflectionText.split(/\s+/);
-		const keywords = words
-			.filter((word) => word.length > 3)
-			.map((word) => word.replace(/[^\w]/g, ""))
-			.filter(Boolean);
-
-		// Return unique keywords (up to 10)
-		return [...new Set(keywords)].slice(0, 10);
-	}
-
-	// Helper method to extract tags from note content
-	private extractTags(noteContent: string): string[] {
-		// Extract #tags from the note content
-		const tagRegex = /#([a-zA-Z0-9_-]+)/g;
-		const tags: string[] = [];
-		let match;
-
-		while ((match = tagRegex.exec(noteContent)) !== null) {
-			if (match[1]) {
-				tags.push(match[1]);
-			}
-		}
-
-		// Return unique tags
-		return [...new Set(tags)];
 	}
 
 	private handleAnalysisError(error: unknown): void {

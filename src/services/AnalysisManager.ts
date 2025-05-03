@@ -17,6 +17,9 @@ export interface AnalysisResult {
 	noteName?: string;
 }
 
+// Alias for NoteAnalysis to maintain compatibility with CommentaryView
+export type NoteAnalysis = AnalysisResult;
+
 export interface AnalysisRequest {
 	content: string;
 	template: string;
@@ -31,7 +34,13 @@ export class AnalysisError extends Error {
 }
 
 /**
- * Manages the analysis of content using AI services
+ * Manages the analysis of content using AI services and caching
+ * 
+ * @param plugin {RetrospectAI} The main plugin instance
+ * @param aiService {AIService} The AI service to use
+ * @param privacyManager {PrivacyManager} The privacy manager to use
+ * @param cacheTTLMinutes {number} The time to live for the cache
+ * @param cacheMaxSize {number} The maximum size of the cache
  */
 export class AnalysisManager {
 	private readonly cacheManager: CacheManager<AnalysisResult>;
@@ -39,6 +48,7 @@ export class AnalysisManager {
 	private readonly aiService: AIService;
 	private readonly privacyManager: PrivacyManager;
 	private reflectionMemoryManager: ReflectionMemoryManager | null = null;
+	private analysisHistory: AnalysisResult[] = [];
 	constructor(
 		plugin: RetrospectAI,
 		aiService: AIService,
@@ -113,6 +123,7 @@ export class AnalysisManager {
 
 	/**
 	 * Analyzes the content of a note using the AI service.
+	 * Stores the analysis in ReflectionMemoryManager if available.
 	 * Calls updateSidePanel to update the side panel with the analysis.
 	 * Caches the result of the analysis.
 	 * 
@@ -121,7 +132,7 @@ export class AnalysisManager {
 	 * @param style - The style of the analysis.
 	 * @param noteId - The ID of the note to analyze.
 	 * @param noteName - The name of the note to analyze.
-	 * @returns A promise that resolves when the analysis is complete.
+	 * @returns A promise that resolves to the analysis result when complete.
 	 */
 	async analyzeContent(
 		content: string,
@@ -129,7 +140,7 @@ export class AnalysisManager {
 		style: AnalysisStyle,
 		noteId?: string,
 		noteName?: string
-	): Promise<void> {
+	): Promise<AnalysisResult> {
 		try {
 			const request: AnalysisRequest = { content, template, style };
 			this.validateRequest(request);
@@ -144,12 +155,14 @@ export class AnalysisManager {
 
 			const cachedResult = this.cacheManager.get(cacheKey);
 			if (cachedResult) {
+				// Add cached result to history in case it's not there
+				this.addToHistory(cachedResult);
 				await this.updateSidePanel(
 					cachedResult.content,
 					noteId,
 					noteName
 				);
-				return;
+				return cachedResult;
 			}
 
 			const result = await this.aiService.analyze(
@@ -165,13 +178,83 @@ export class AnalysisManager {
 			};
 
 			this.cacheManager.set(cacheKey, analysisResult);
+			
+			// Add to analysis history
+			this.addToHistory(analysisResult);
+			
+			// Store in ReflectionMemoryManager if available
+			if (this.reflectionMemoryManager && noteId) {
+				try {
+					// Extract tags and keywords
+					const tags = this.extractTags(content);
+					const keywords = this.extractKeywords(result);
+					
+					// Get today's date in YYYY-MM-DD format
+					const today = new Date();
+					const formattedDate = today.toISOString().split("T")[0];
+					
+					// Store the reflection
+					await this.reflectionMemoryManager.addReflection({
+						date: formattedDate,
+						sourceNotePath: noteId,
+						reflectionText: result,
+						tags: tags,
+						keywords: keywords,
+					});
+				} catch (error) {
+					console.error("Failed to store reflection in memory manager:", error);
+					// Don't block the analysis flow if reflection storage fails
+				}
+			}
+			
 			await this.updateSidePanel(result, noteId, noteName);
+			return analysisResult;
 		} catch (error) {
 			this.handleError(
 				error,
 				"An unexpected error occurred during analysis"
 			);
+			throw error; // Rethrow to allow proper error handling
 		}
+	}
+	
+	/**
+	 * Extract tags from note content
+	 * @param noteContent The content to extract tags from
+	 * @returns Array of extracted tags
+	 */
+	private extractTags(noteContent: string): string[] {
+		// Extract #tags from the note content
+		const tagRegex = /#([a-zA-Z0-9_-]+)/g;
+		const tags: string[] = [];
+		let match;
+
+		while ((match = tagRegex.exec(noteContent)) !== null) {
+			if (match[1]) {
+				tags.push(match[1]);
+			}
+		}
+
+		// Return unique tags
+		return [...new Set(tags)];
+	}
+	
+	/**
+	 * Extract keywords from reflection text
+	 * @param reflectionText The text to extract keywords from
+	 * @returns Array of extracted keywords
+	 */
+	private extractKeywords(reflectionText: string): string[] {
+		// Simple implementation - extract important words as keywords
+		// In a real implementation, you might use NLP or other techniques
+		const words = reflectionText.split(/\s+/);
+		const keywords = words
+			.filter((word) => word.length > 3)
+			.map((word) => word.replace(/[^\w]/g, ""))
+			.filter(Boolean);
+
+		// Return unique keywords (up to 10)
+		return [...new Set(keywords)].slice(0, 10);
 	}
 
 	/**
@@ -241,5 +324,46 @@ export class AnalysisManager {
 			size: this.cacheManager.getSize(),
 			ttl: this.cacheManager.getTTL(),
 		};
+	}
+	
+	/**
+	 * Get the analysis history
+	 * @returns {AnalysisResult[]} The analysis history
+	 */
+	getAnalysisHistory(): AnalysisResult[] {
+		return this.analysisHistory;
+	}
+	
+	/**
+	 * Add an analysis result to the history
+	 * @param result The analysis result to add
+	 */
+	addToHistory(result: AnalysisResult): void {
+		if (!result.noteId) return;
+		
+		// Remove any existing analysis for this note
+		this.analysisHistory = this.analysisHistory.filter(item => 
+			item.noteId !== result.noteId
+		);
+		
+		// Add the new analysis
+		this.analysisHistory.push(result);
+		
+		// Sort by most recent first
+		this.analysisHistory.sort((a, b) => b.timestamp - a.timestamp);
+		
+		// Limit history to 20 items
+		if (this.analysisHistory.length > 20) {
+			this.analysisHistory = this.analysisHistory.slice(0, 20);
+		}
+	}
+	
+	/**
+	 * Get an analysis result by note ID
+	 * @param noteId The ID of the note
+	 * @returns The analysis result or undefined if not found
+	 */
+	getAnalysisForNote(noteId: string): AnalysisResult | undefined {
+		return this.analysisHistory.find(item => item.noteId === noteId);
 	}
 }

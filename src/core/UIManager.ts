@@ -104,6 +104,14 @@ export class UIManager {
 			const leaf = await this.getOrCreateLeaf();
 			if (leaf) {
 				workspace.revealLeaf(leaf);
+				
+				// Connect the view to the analysis manager
+				if (this.plugin.serviceManager?.analysisManager) {
+					const view = leaf.view;
+					if (view && 'setAnalysisManager' in view && typeof view.setAnalysisManager === 'function') {
+						view.setAnalysisManager(this.plugin.serviceManager.analysisManager);
+					}
+				}
 			}
 		} catch (error) {
 			console.error("Error creating view:", error);

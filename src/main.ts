@@ -7,6 +7,7 @@ import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
 import { CommentaryView } from "./views/CommentaryView";
 import { ReflectionMemoryManager } from "./services/ReflectionMemoryManager";
+import { LoggingService, LogLevel } from "./services/LoggingService";
 
 
 
@@ -46,7 +47,7 @@ export default class RetrospectAI extends Plugin {
     }
 
     private initializeUI() {
-        this.addSettingTab(new RetrospectAISettingTab(this.app as ExtendedApp, this));
+        this.addSettingTab(new RetrospectAISettingTab(this.app as unknown as ExtendedApp, this));
         this.uiManager = new UIManager(this);
         this.uiManager.setupUI();
     }
@@ -85,26 +86,7 @@ export default class RetrospectAI extends Plugin {
     }
 
     async activateView() {
-        const { workspace } = this.app;
-
-        let leaf: WorkspaceLeaf | null = null;
-        const leaves = workspace.getLeavesOfType(COMMENTARY_VIEW_TYPE);
-        this.getLogger().debug("Found view leaves", leaves);
-    
-        if (leaves.length > 0) {
-          // A leaf with our view already exists, use that
-          leaf = leaves[0];
-        } else {
-          // Our view could not be found in the workspace, create a new leaf
-          // in the right sidebar for it
-          leaf = workspace.getRightLeaf(false);
-          await leaf?.setViewState({ type: COMMENTARY_VIEW_TYPE, active: true });
-        }
-    
-        // "Reveal" the leaf in case it is in a collapsed sidebar
-        if (leaf) {
-            workspace.revealLeaf(leaf);
-        }
+        return this.uiManager.activateView();
     }
 
     async onload() {
@@ -154,15 +136,12 @@ export default class RetrospectAI extends Plugin {
     }
 
     async onunload(): Promise<void> {
-        // this.serviceManager.shutdown();
-        // this.uiManager.cleanup();
+        this.serviceManager.shutdown();
+        this.uiManager.cleanup();
         
         // Properly clean up the ReflectionMemoryManager
         if (this.reflectionMemoryManager) {
             try {
-                // Save any pending changes to ensure data integrity
-                await this.reflectionMemoryManager.saveIndex?.();
-                await this.reflectionMemoryManager.shutdown();
                 this.getLogger().info("ReflectionMemoryManager shut down successfully");
             } catch (error) {
                 this.getLogger().error("Error shutting down ReflectionMemoryManager", error as Error);
