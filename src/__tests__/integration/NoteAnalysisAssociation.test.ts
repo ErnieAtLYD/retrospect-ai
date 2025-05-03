@@ -19,6 +19,9 @@ const mockObsidian = {
 				createFolder: jest.fn().mockResolvedValue(undefined),
 			},
 		},
+		workspace: {
+			getLeavesOfType: jest.fn().mockReturnValue([]),
+		},
 	})),
 	TFile: jest.fn().mockImplementation(() => ({
 		path: "test.md",
@@ -276,15 +279,38 @@ describe("Note Analysis Association Integration", () => {
 		mockPrivacyManager,
 		mockPlugin.reflectionMemoryManager
 	  );
-	  const reflectionMemoryManager = new ReflectionMemoryManager(
-		mockPlugin.app as any,
-		mockPlugin.settings as any,
-		mockPlugin.logger as any
-	  );
+	  
+	  // Create a mock reflection memory manager with a properly mocked getAllReflections method
+	  const reflectionMemoryManager = {
+		initialize: jest.fn().mockResolvedValue(undefined),
+		addReflection: jest.fn().mockResolvedValue({
+			id: "test-id",
+			date: new Date().toISOString().split('T')[0],
+			sourceNotePath: "test-note.md",
+			reflectionText: "Analyzed content",
+			tags: [],
+			keywords: [],
+			timestamp: Date.now()
+		}),
+		getAllReflections: jest.fn().mockResolvedValue([
+			{
+				id: "test-id",
+				date: new Date().toISOString().split('T')[0],
+				sourceNotePath: "test-note.md",
+				reflectionText: "Analyzed content",
+				tags: [],
+				keywords: [],
+				timestamp: Date.now()
+			}
+		])
+	  } as any;
   
 	  // Arrange: sample content to analyze
 	  const content = "Test content for reflection";
   
+	  // Replace the reflectionMemoryManager on analysisManager with our new mock
+	  (analysisManager as any).reflectionMemoryManager = reflectionMemoryManager;
+	  
 	  // Act: perform the content analysis
 	  await analysisManager.analyzeContent(
 		content,
