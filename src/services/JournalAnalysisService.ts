@@ -41,17 +41,20 @@ export class JournalAnalysisService {
      * @param content
      * @param noteId
      * @param noteName
-     * @returns Promise<void>
+     * @returns Promise<string> The analysis result
      */
-    async analyzeContent(content: string, noteId?: string, noteName?: string): Promise<void> {
+    async analyzeContent(content: string, noteId?: string, noteName?: string): Promise<string> {
         try {
-            await this.analysisManager.analyzeContent(
+            const result = await this.analysisManager.analyzeContent(
                 content,
                 this.settings.reflectionTemplate,
                 this.settings.communicationStyle,
                 noteId,
                 noteName
             );
+            
+            // Return the analysis content
+            return result;
         } catch (error) {
             console.error("Error during content analysis:", error);
             throw error; // Let the streaming manager handle the error
@@ -219,5 +222,41 @@ export class JournalAnalysisService {
         const errorMessage = error instanceof Error ? error.message : String(error);
         this.logger.error("Error analyzing daily journal", error);
         new Notice(`Error analyzing daily journal: ${errorMessage}`);
+    }
+
+    /**
+     * Extracts tags from note content
+     * Looks for #tag format in the content
+     */
+    private extractTags(content: string): string[] {
+        const tagRegex = /#([a-zA-Z0-9_-]+)/g;
+        const matches = content.match(tagRegex);
+        
+        if (!matches) return [];
+        
+        // Remove the # prefix and return unique tags
+        return [...new Set(matches.map(tag => tag.substring(1)))];
+    }
+
+    /**
+     * Extracts keywords from the analysis result
+     * This is a simple implementation - in a real app, you might use NLP or
+     * have the AI model explicitly return keywords
+     */
+    private extractKeywords(analysisText: string): string[] {
+        // Simple approach: split by spaces, filter out common words and punctuation
+        const words = analysisText.toLowerCase().split(/\s+/);
+        const commonWords = new Set([
+            "the", "and", "a", "an", "in", "on", "at", "to", "for", "with", 
+            "by", "about", "as", "of", "that", "this", "is", "are", "was", "were"
+        ]);
+        
+        const filteredWords = words
+            .map(word => word.replace(/[.,;:!?()'"]/g, '')) // Remove punctuation
+            .filter(word => word.length > 3) // Only words longer than 3 chars
+            .filter(word => !commonWords.has(word)); // Filter out common words
+        
+        // Get unique words and take top 10
+        return [...new Set(filteredWords)].slice(0, 10);
     }
 }

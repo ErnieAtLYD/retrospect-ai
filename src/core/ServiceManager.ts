@@ -7,6 +7,7 @@ import { AnalysisManager } from "../services/AnalysisManager";
 import { WeeklyAnalysisService } from "../services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "../services/LoggingService";
 import { JournalAnalysisService } from "../services/JournalAnalysisService";
+import { ReflectionMemoryManager } from "../services/ReflectionMemoryManager";
 import { debounce } from "../utils/debounce";
 import RetrospectAI from "../main";
 import { AnthropicService } from "../services/AnthropicService";
