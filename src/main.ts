@@ -1,5 +1,5 @@
 // main.ts
-import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
+import { Plugin, Notice } from "obsidian";
 import { RetrospectAISettings, DEFAULT_RETROSPECT_AI_SETTINGS, ExtendedApp, COMMENTARY_VIEW_TYPE } from "./types";
 import { RetrospectAISettingTab } from "./settings/settingsTab";
 import { ServiceManager } from "./core/ServiceManager";
@@ -7,9 +7,6 @@ import { CommandManager } from "./core/CommandManager";
 import { UIManager } from "./core/UIManager";
 import { CommentaryView } from "./views/CommentaryView";
 import { ReflectionMemoryManager } from "./services/ReflectionMemoryManager";
-import { LoggingService, LogLevel } from "./services/LoggingService";
-
-
 
 export default class RetrospectAI extends Plugin {
     settings!: RetrospectAISettings;
@@ -18,21 +15,24 @@ export default class RetrospectAI extends Plugin {
     uiManager!: UIManager;
     reflectionMemoryManager!: ReflectionMemoryManager;
     
-    // Add an early logger for use before serviceManager is initialized
-    private earlyLogger = new LoggingService(DEFAULT_RETROSPECT_AI_SETTINGS, LogLevel.INFO, true);
-    
     // Logger property that matches what's expected by tests
     logger = {
-        error: (message: string, error: Error) => {
-            this.getLogger().error(message, error);
+        error: (message: string, error: unknown) => {
+            if (this.serviceManager?.logger) {
+                this.serviceManager.logger.error(message, error instanceof Error ? error : new Error(String(error)));
+            } else {
+                console.error(message, error);
+            }
+        },
+        info: (message: string) => {
+            if (this.serviceManager?.logger) {
+                this.serviceManager.logger.info(message);
+            } else {
+                console.info(message);
+            }
         }
     };
     
-    // Helper to get the appropriate logger
-    private getLogger() {
-        return this.serviceManager?.logger || this.earlyLogger;
-    }
-
     async loadSettings() {
         this.settings = Object.assign(
             {},
@@ -79,7 +79,7 @@ export default class RetrospectAI extends Plugin {
             return true;
         } catch (error) {
             // Log the error
-            this.getLogger().error("Error analyzing daily journal", error as Error);
+            this.logger.error("Error analyzing daily journal", error as Error);
             new Notice(`Analysis failed: ${(error as Error).message}`);
             throw error; // Rethrow to propagate to caller
         }
@@ -111,7 +111,7 @@ export default class RetrospectAI extends Plugin {
         try {
             await this.reflectionMemoryManager.initialize();
         } catch (error) {
-            this.getLogger().error("Failed to initialize reflection memory manager", error);
+            this.logger.error("Failed to initialize reflection memory manager", error);
             new Notice("Failed to initialize reflection system. Some features may not work properly.");
         }
         
@@ -127,7 +127,7 @@ export default class RetrospectAI extends Plugin {
                 // Activate the view after workspace is ready
                 await this.uiManager.activateView();
             } catch (error) {
-                this.getLogger().error("Failed to activate view", error);
+                this.logger.error("Failed to activate view", error);
             }
         });
     }
@@ -139,9 +139,9 @@ export default class RetrospectAI extends Plugin {
         // Properly clean up the ReflectionMemoryManager
         if (this.reflectionMemoryManager) {
             try {
-                this.getLogger().info("ReflectionMemoryManager shut down successfully");
+                this.logger.info("ReflectionMemoryManager shut down successfully");
             } catch (error) {
-                this.getLogger().error("Error shutting down ReflectionMemoryManager", error as Error);
+                this.logger.error("Error shutting down ReflectionMemoryManager", error as Error);
             }
         }
     }
