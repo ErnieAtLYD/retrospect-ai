@@ -1,6 +1,13 @@
+// src/services/Providers.ts
+
 import { Setting } from "obsidian";
 import { RetrospectAISettings, AIProvider } from "types";
 
+/**
+ * Interface for provider configurations.
+ * Each provider has a name, and a function to create
+ * connection settings and model settings.
+ */
 interface ProviderConfig {
 	name: string;
 	createConnectionSettings: (

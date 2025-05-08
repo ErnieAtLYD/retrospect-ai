@@ -1,4 +1,4 @@
-import { PrivacyManager } from './PrivacyManager';
+import { PrivacyManager } from '../services/PrivacyManager';
 
 // src/services/PrivacyManager.test.ts                                                                                                    
 describe('PrivacyManager', () => {                                                                                                        

@@ -172,4 +172,4 @@ export class WeeklyAnalysisService {
 			throw error;
 		}
 	}
-}
+} 

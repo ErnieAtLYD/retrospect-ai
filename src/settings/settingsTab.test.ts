@@ -2,48 +2,42 @@
 import {
 	App,
 	Plugin,
-	PluginSettingTab,
 	DataAdapter,
 	Vault,
 	WorkspaceSidedock,
 	Workspace,
 	DataWriteOptions,
+	StatusBar,
 } from "obsidian";
 import { jest } from "@jest/globals";
-
-import { MockPlugin } from '../__mocks__/MockPlugin'
 import { RetrospectAISettings } from "../types";
+import { RetrospectAISettingTab } from "./settingsTab";
 
+interface ExtendedApp extends App {
+	statusBar: StatusBar & {
+		addStatusBarItem: () => {
+			setText: (text: string) => void;
+			remove: () => void;
+		};
+	};
+}
 
-
-// Mock SettingsTab class that avoids DOM operations
-class SettingsTab extends PluginSettingTab {
+class MockPlugin extends Plugin {
 	settings: RetrospectAISettings;
-	plugin: MockPlugin;
-
-	constructor(app: App, plugin: Plugin, settings: RetrospectAISettings) {
-		super(app, plugin);
-		this.settings = settings;
-		this.plugin = plugin as MockPlugin;
+	constructor(app: App, manifest: any) {
+		super(app, manifest);
+		this.settings = {} as RetrospectAISettings;
 	}
-
-	display(): void {
-		// Simplified display without DOM operations
-	}
-
-	async saveSettings(): Promise<void> {
-		await this.plugin.saveData(this.settings);
-	}
-
-	loadSettings(): RetrospectAISettings {
-		return this.settings;
+	async saveData(data: any) {}
+	async loadData() {
+		return {};
 	}
 }
 
 describe("SettingsTab", () => {
-	let mockApp: Partial<App>;
+	let mockApp: Partial<ExtendedApp>;
 	let mockPlugin: MockPlugin;
-	let settingsTab: SettingsTab;
+	let settingsTab: RetrospectAISettingTab;
 
 	beforeEach(() => {
 		// Create mock DataAdapter with proper function signatures
@@ -89,10 +83,16 @@ describe("SettingsTab", () => {
 			vault: {
 				adapter: mockDataAdapter as DataAdapter,
 			} as Vault,
+			statusBar: {
+				addStatusBarItem: () => ({
+					setText: jest.fn(),
+					remove: jest.fn()
+				})
+			} as ExtendedApp['statusBar']
 		};
 
 		// Create mock plugin
-		mockPlugin = new MockPlugin(mockApp as App);
+		mockPlugin = new MockPlugin(mockApp as App, {});
 
 		// Setup spy on plugin methods
 		jest.spyOn(mockPlugin, "saveData").mockImplementation(async () => {});
@@ -116,26 +116,26 @@ describe("SettingsTab", () => {
 			loggingEnabled: false,
 			logLevel: "info",
 			anthropicModel: "claude-3-haiku-20240307",
-			anthropicApiKey: ""
+			anthropicApiKey: "",
+			commentaryViewEnabled: true
 		};
 
 		// Create settings tab instance
-		settingsTab = new SettingsTab(
+		settingsTab = new RetrospectAISettingTab(
 			mockApp as App,
-			mockPlugin as Plugin,
-			initialSettings
+			mockPlugin as Plugin
 		);
 	});
 
 	test("should initialize with default settings", () => {
-		expect(settingsTab.settings.aiProvider).toBe("openai");
-		expect(settingsTab.settings.analysisSchedule).toBe("daily");
-		expect(settingsTab.settings.communicationStyle).toBe("direct");
+		expect(settingsTab.plugin.settings.aiProvider).toBe("openai");
+		expect(settingsTab.plugin.settings.analysisSchedule).toBe("daily");
+		expect(settingsTab.plugin.settings.communicationStyle).toBe("direct");
 	});
 
 	test("should save settings when updated", async () => {
-		settingsTab.settings.aiProvider = "ollama";
-		await settingsTab.saveSettings();
+		settingsTab.plugin.settings.aiProvider = "ollama";
+		await settingsTab.plugin.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -146,8 +146,8 @@ describe("SettingsTab", () => {
 
 	test("should handle API key updates", async () => {
 		const newApiKey = "test-api-key";
-		settingsTab.settings.apiKey = newApiKey;
-		await settingsTab.saveSettings();
+		settingsTab.plugin.settings.apiKey = newApiKey;
+		await settingsTab.plugin.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -157,9 +157,9 @@ describe("SettingsTab", () => {
 	});
 
 	test("should maintain all settings when updating single value", async () => {
-		const originalSettings = { ...settingsTab.settings };
-		settingsTab.settings.aiProvider = "ollama";
-		await settingsTab.saveSettings();
+		const originalSettings = { ...settingsTab.plugin.settings };
+		settingsTab.plugin.settings.aiProvider = "ollama";
+		await settingsTab.plugin.saveSettings();
 
 		expect(mockPlugin.saveData).toHaveBeenCalledWith({
 			...originalSettings,
@@ -186,19 +186,19 @@ describe("SettingsTab", () => {
 			loggingEnabled: false,
 			logLevel: "info",
 			anthropicModel: "claude-3-haiku-20240307",
-			anthropicApiKey: ""
+			anthropicApiKey: "",
+			commentaryViewEnabled: true
 		};
 
 		// Create settings tab instance with these settings
-		const testSettingsTab = new SettingsTab(
+		const testSettingsTab = new RetrospectAISettingTab(
 			mockApp as App,
-			mockPlugin as Plugin,
-			initialSettings
+			mockPlugin as Plugin
 		);
 
 		// Change the model to gpt-4
-		testSettingsTab.settings.openaiModel = "gpt-4";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.openaiModel = "gpt-4";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the model was saved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -208,8 +208,8 @@ describe("SettingsTab", () => {
 		);
 
 		// Change to gpt-4o
-		testSettingsTab.settings.openaiModel = "gpt-4o";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.openaiModel = "gpt-4o";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the new model was saved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -238,19 +238,19 @@ describe("SettingsTab", () => {
 			loggingEnabled: false,
 			logLevel: "info",
 			anthropicModel: "claude-3-haiku-20240307",
-			anthropicApiKey: ""
+			anthropicApiKey: "",
+			commentaryViewEnabled: true
 		};
 
 		// Create settings tab instance
-		const testSettingsTab = new SettingsTab(
+		const testSettingsTab = new RetrospectAISettingTab(
 			mockApp as App,
-			mockPlugin as Plugin,
-			initialSettings
+			mockPlugin as Plugin
 		);
 
 		// Switch to ollama provider
-		testSettingsTab.settings.aiProvider = "ollama";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.aiProvider = "ollama";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the provider was changed but openaiModel is preserved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -262,8 +262,8 @@ describe("SettingsTab", () => {
 		);
 
 		// Switch back to openai
-		testSettingsTab.settings.aiProvider = "openai";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.aiProvider = "openai";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify we switched back to openai and the model is still there
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -293,19 +293,19 @@ describe("SettingsTab", () => {
 			loggingEnabled: false,
 			logLevel: "info",
 			anthropicModel: "claude-3-haiku-20240307",
-			anthropicApiKey: ""
+			anthropicApiKey: "",
+			commentaryViewEnabled: true
 		};
 
 		// Create settings tab instance with these settings
-		const testSettingsTab = new SettingsTab(
+		const testSettingsTab = new RetrospectAISettingTab(
 			mockApp as App,
-			mockPlugin as Plugin,
-			initialSettings
+			mockPlugin as Plugin
 		);
 
 		// Change the model to llama3
-		testSettingsTab.settings.ollamaModel = "llama3.1:8b";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.ollamaModel = "llama3.1:8b";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the model was saved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -315,8 +315,8 @@ describe("SettingsTab", () => {
 		);
 
 		// Change to another model
-		testSettingsTab.settings.ollamaModel = "mistral:7b";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.ollamaModel = "mistral:7b";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the new model was saved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -345,19 +345,19 @@ describe("SettingsTab", () => {
 			loggingEnabled: false,
 			logLevel: "info",
 			anthropicModel: "claude-3-haiku-20240307", // Start with haiku
-			anthropicApiKey: "test-key"
+			anthropicApiKey: "test-key",
+			commentaryViewEnabled: true
 		};
 
 		// Create settings tab instance with these settings
-		const testSettingsTab = new SettingsTab(
+		const testSettingsTab = new RetrospectAISettingTab(
 			mockApp as App,
-			mockPlugin as Plugin,
-			initialSettings
+			mockPlugin as Plugin
 		);
 
 		// Change the model to opus
-		testSettingsTab.settings.anthropicModel = "claude-3-opus-20240229";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.anthropicModel = "claude-3-opus-20240229";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the model was saved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(
@@ -367,8 +367,8 @@ describe("SettingsTab", () => {
 		);
 
 		// Change to sonnet
-		testSettingsTab.settings.anthropicModel = "claude-3-sonnet-20240229";
-		await testSettingsTab.saveSettings();
+		testSettingsTab.plugin.settings.anthropicModel = "claude-3-sonnet-20240229";
+		await testSettingsTab.plugin.saveSettings();
 
 		// Verify the new model was saved
 		expect(mockPlugin.saveData).toHaveBeenCalledWith(

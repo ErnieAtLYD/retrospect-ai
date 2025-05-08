@@ -24,3 +24,6 @@ data.json
 
 # Test coverage
 coverage/
+
+tsconfig.tsbuildinfo
+**/.claude/settings.local.json

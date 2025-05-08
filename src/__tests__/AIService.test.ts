@@ -1,4 +1,4 @@
-import { AIService, isAIService } from './AIService';
+import { AIService, isAIService } from '../services/AIService';
 
 describe('AIService', () => {
     describe('isAIService', () => {

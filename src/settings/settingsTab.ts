@@ -14,7 +14,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 
 	/**
 	 * Saves the settings with feedback.
-	 * @param callback
+	 * @param callback {Function} The callback to save the settings
 	 */
 	private async saveSettingsWithFeedback(callback: () => Promise<void>) {
 		const statusBar = this.plugin.addStatusBarItem();
@@ -32,7 +32,8 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Creates the AI provider selection settings
+	 * Creates the provider settings
+	 * @param containerEl {HTMLElement} The container element
 	 */
 	private createProviderSettings(containerEl: HTMLElement): void {
 		// Create provider selection dropdown
@@ -84,7 +85,8 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Creates the analysis behavior settings
+	 * Creates the analysis settings
+	 * @param containerEl {HTMLElement} The container element
 	 */
 	private createAnalysisSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
@@ -139,6 +141,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 
 	/**
 	 * Creates the cache settings
+	 * @param containerEl {HTMLElement} The container element
 	 */
 	private createCacheSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
@@ -213,6 +216,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 
 	/**
 	 * Creates the template settings
+	 * @param containerEl {HTMLElement} The container element
 	 */
 	private createTemplateSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
@@ -257,8 +261,8 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 
 	/**
 	 * Adds custom styles for the settings
-	 * @param containerEl
-	 * @returns void
+	 * @param containerEl {HTMLElement} The container element
+	 * @returns {void}
 	 */
 	private addCustomStyles(containerEl: HTMLElement): void {
 		const styleEl = document.createElement("style");
@@ -276,6 +280,7 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 
 	/**
 	 * Displays the settings UI.
+	 * @returns {void}
 	 */
 	display(): void {
 		const { containerEl } = this;

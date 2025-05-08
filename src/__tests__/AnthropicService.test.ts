@@ -1,5 +1,5 @@
-import { AnthropicService, setRequestFunction } from './AnthropicService';
-import { LoggingService, LogLevel } from './LoggingService';
+import { AnthropicService, setRequestFunction } from '../services/AnthropicService';
+import { LoggingService, LogLevel } from '../services/LoggingService';
 
 // Mock the fetch function
 global.fetch = jest.fn();

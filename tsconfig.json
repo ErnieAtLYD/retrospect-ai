@@ -12,9 +12,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "types": ["jest"],
+    "types": ["jest", "obsidian-typings"],
     "plugins": [
       {
         "name": "next"
@@ -24,6 +24,15 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "jest.config.js", "eslint.config.js"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "jest.config.ts",
+    "jest.setup.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/__tests__/**/*.ts",
+    "src/__tests__/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

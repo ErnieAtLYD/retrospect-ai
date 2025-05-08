@@ -4,6 +4,16 @@ import { App } from "obsidian";
 import { DEFAULT_REFLECTION_TEMPLATE } from "./prompts/reflectionPrompt";
 import { DEFAULT_WEEKLY_REFLECTION_TEMPLATE } from "./prompts/weeklyReflectionPrompt";
 
+export const COMMENTARY_VIEW_TYPE = "commentary-view";
+
+// Interface for storing note analysis data
+export interface NoteAnalysis {
+  noteId?: string;
+  noteName?: string;
+  content: string;
+  timestamp: number;
+}
+
 // Define union types
 export type LoadingIndicatorPosition = "top" | "bottom" | "cursor";
 export type LogLevel = "error" | "warn" | "info" | "debug";
@@ -43,7 +53,9 @@ export interface RetrospectAISettings {
 	cacheTTLMinutes: number;
 	cacheMaxSize: number;
 	loggingEnabled: boolean;
+	commentaryViewEnabled: boolean;
 	logLevel: LogLevel;
+	analysisHistory?: NoteAnalysis[]; // Store analysis history
 }
 
 // Extend the App interface to include statusBar
@@ -53,7 +65,7 @@ export interface ExtendedApp extends App {
 			setText: (text: string) => void;
 			remove: () => void;
 		};
-	};
+	} & App["statusBar"];
 }
 
 export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
@@ -74,4 +86,6 @@ export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
 	logLevel: "info",
 	anthropicModel: "claude-3-haiku-20240307",
 	anthropicApiKey: "",
+	commentaryViewEnabled: true,
+	analysisHistory: [],
 };

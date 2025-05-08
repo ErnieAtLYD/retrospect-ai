@@ -1,6 +1,6 @@
-import { PrivacyManager } from "./PrivacyManager";
-import { WeeklyAnalysisService } from "./WeeklyAnalysisService";
-import { AIService } from "./AIService";
+import { PrivacyManager } from "../services/PrivacyManager";
+import { WeeklyAnalysisService } from "../services/WeeklyAnalysisService";
+import { AIService } from "../services/AIService";
 import { RetrospectAISettings } from "../types";
 import { App } from "obsidian";
 
