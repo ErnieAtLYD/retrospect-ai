@@ -4,10 +4,8 @@ import { OpenAIService } from "../services/OpenAIService";
 import { OllamaService } from "../services/OllamaService";
 import { PrivacyManager } from "../services/PrivacyManager";
 import { AnalysisManager } from "../services/AnalysisManager";
-import { WeeklyAnalysisService } from "../services/WeeklyAnalysisService";
 import { LoggingService, LogLevel } from "../services/LoggingService";
 import { JournalAnalysisService } from "../services/JournalAnalysisService";
-import { ReflectionMemoryManager } from "../services/ReflectionMemoryManager";
 import { debounce } from "../utils/debounce";
 import RetrospectAI from "../main";
 import { AnthropicService } from "../services/AnthropicService";
@@ -16,6 +14,7 @@ import {
 	AIServiceError,
 	AnalysisError,
 } from "../errors/ServiceErrors";
+import { WeeklyAnalysisService } from "../services/WeeklyAnalysisService";
 
 export class ServiceManager {
 	private plugin: RetrospectAI;

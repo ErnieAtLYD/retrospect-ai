@@ -86,7 +86,9 @@ export class CommentaryView extends ItemView {
     
     getAnalysisHistory(): NoteAnalysis[] {
         // Get analysis history from analysis manager if available, otherwise return empty array
-        return this.analysisManager ? this.analysisManager.getAnalysisHistory() : [];
+        const history = this.analysisManager ? this.analysisManager.getAnalysisHistory() : [];
+        // Filter out any results without noteId and noteName to match NoteAnalysis type
+        return history.filter(item => item.noteId && item.noteName) as NoteAnalysis[];
     }
     
     selectAnalysis(noteId: string): void {

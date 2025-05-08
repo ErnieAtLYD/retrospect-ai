@@ -8,8 +8,8 @@ export const COMMENTARY_VIEW_TYPE = "commentary-view";
 
 // Interface for storing note analysis data
 export interface NoteAnalysis {
-  noteId: string;
-  noteName: string;
+  noteId?: string;
+  noteName?: string;
   content: string;
   timestamp: number;
 }
@@ -65,7 +65,7 @@ export interface ExtendedApp extends App {
 			setText: (text: string) => void;
 			remove: () => void;
 		};
-	};
+	} & App["statusBar"];
 }
 
 export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {

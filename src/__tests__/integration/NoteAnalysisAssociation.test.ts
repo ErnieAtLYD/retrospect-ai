@@ -18,9 +18,17 @@ const mockObsidian = {
 				write: jest.fn().mockResolvedValue(undefined),
 				createFolder: jest.fn().mockResolvedValue(undefined),
 			},
+			createFolder: jest.fn().mockResolvedValue(undefined),
+			getMarkdownFiles: jest.fn().mockReturnValue([]),
+			read: jest.fn().mockResolvedValue(""),
+			create: jest.fn().mockResolvedValue(undefined),
+			getAbstractFileByPath: jest.fn().mockReturnValue(null),
 		},
 		workspace: {
 			getLeavesOfType: jest.fn().mockReturnValue([]),
+			getLeaf: jest.fn().mockReturnValue({
+				openFile: jest.fn().mockResolvedValue(undefined),
+			}),
 		},
 	})),
 	TFile: jest.fn().mockImplementation(() => ({

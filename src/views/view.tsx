@@ -31,7 +31,11 @@ export class ReactView extends ItemView {
     this.root = createRoot(container.children[0]);
     this.root.render(
       <React.StrictMode>
-        <AppComponent app={this.app} />
+        <AppComponent 
+          app={this.app} 
+          analysisHistory={[]}
+          onSelectNote={() => {}}
+        />
       </React.StrictMode>
     );
   }

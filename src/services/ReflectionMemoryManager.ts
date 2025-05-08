@@ -106,8 +106,8 @@ export class ReflectionMemoryManager {
 				this.logger?.debug(
 					`Creating storage folder: ${this.STORAGE_FOLDER}`
 				);
-				// Use adapter.createFolder instead of vault.createFolder
-				await this.app.vault.adapter.createFolder(this.STORAGE_FOLDER);
+				// Create folder using vault API
+				await this.app.vault.createFolder(this.STORAGE_FOLDER);
 			}
 		} catch (error) {
 			this.logger?.error(

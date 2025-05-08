@@ -4,19 +4,31 @@ import { LoggingService } from "./LoggingService";
 import { RetrospectAISettings } from "../types";
 import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
 
+/**
+ * Service for analyzing the daily journal
+ */
 export class JournalAnalysisService {
 	constructor(
 		private app: App,
 		private settings: RetrospectAISettings,
 		private analysisManager: AnalysisManager,
-		private logger: LoggingService,
+		private logger?: LoggingService,
 		private reflectionMemoryManager?: ReflectionMemoryManager // Make it optional to maintain backward compatibility
 	) {}
 
+	/**
+	 * Analyzes the daily journal
+	 * @returns {Promise<void>}
+	 */
 	async analyzeDailyJournal(): Promise<void> {
 		try {
+			this.logger?.debug("Logger initialized:", {
+				enabled: this.logger["enabled"],
+				level: this.logger["level"]
+			});
+			
 			const formattedDate = this.getTodayFormattedDate();
-			this.logger.debug(
+			this.logger?.debug(
 				`Starting daily journal analysis for date: ${formattedDate}`
 			);
 
@@ -74,8 +86,8 @@ export class JournalAnalysisService {
 
 	/**
 	 * Find the daily note
-	 * @param date
-	 * @returns
+	 * @param date {string} The date to find the daily note for
+	 * @returns {Promise<TFile | null>} The daily note file or null if not found
 	 */
 	private async findDailyNote(date: string): Promise<TFile | null> {
 		const files = this.app.vault.getMarkdownFiles();
@@ -84,8 +96,8 @@ export class JournalAnalysisService {
 
 	/**
 	 * Open the daily note
-	 * @param note
-	 * @returns
+	 * @param note {TFile} The daily note file
+	 * @returns {Promise<MarkdownView | null>} The markdown view of the daily note
 	 */
 	private async openDailyNote(note: TFile): Promise<MarkdownView | null> {
 		const leaf = this.app.workspace.getLeaf(false);
@@ -95,8 +107,8 @@ export class JournalAnalysisService {
 
 	/**
 	 * Get the note content
-	 * @param note
-	 * @returns
+	 * @param note {TFile} The daily note file
+	 * @returns {Promise<string>} The content of the note
 	 */
 	private async getNoteContent(note: TFile): Promise<string> {
 		return await this.app.vault.read(note);
@@ -108,7 +120,7 @@ export class JournalAnalysisService {
 	 */
 	private handleNoJournalFound(date: string): void {
 		const message = `No journal entry found for today (${date})`;
-		this.logger.warn(message);
+		this.logger?.warn(message);
 		new Notice("No journal entry found for today");
 	}
 
@@ -117,7 +129,7 @@ export class JournalAnalysisService {
 	 */
 	private handleNoEditorView(): void {
 		const message = "Could not get editor view";
-		this.logger.error(message);
+		this.logger?.error(message);
 		new Notice(message);
 	}
 
@@ -136,7 +148,9 @@ export class JournalAnalysisService {
 		const content = await this.getNoteContent(note);
 		const notePath = note.path;
 		const noteName = note.basename;
-
+		this.logger?.info(`performAnalysis: ${noteName}`);
+		this.logger?.info(`performAnalysis: ${notePath}`);
+		this.logger?.info(`performAnalysis: ${content}`);
 		try {
 			// Perform the analysis - the AnalysisManager now handles storing the reflection
 			// in the ReflectionMemoryManager automatically, so we don't need to do it here
@@ -148,7 +162,7 @@ export class JournalAnalysisService {
 				noteName
 			);
 
-			this.logger.info(`Analysis complete for note: ${noteName}`);
+			this.logger?.info(`Analysis complete for note: ${noteName}`);
 		} catch (error) {
 			this.handleAnalysisError(error);
 		}
@@ -157,7 +171,7 @@ export class JournalAnalysisService {
 	private handleAnalysisError(error: unknown): void {
 		const errorMessage =
 			error instanceof Error ? error.message : String(error);
-		this.logger.error("Error analyzing daily journal", error);
+		this.logger?.error("Error analyzing daily journal", error);
 		new Notice(`Error analyzing daily journal: ${errorMessage}`);
 	}
 }
