@@ -4,19 +4,59 @@ on:
   push:
     branches:
       - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
 
 jobs:
   build:
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: 'npm'
       - uses: actions/cache@v3
         with:
-          path: node_modules
+          path: |
+            node_modules
+            ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-      - run: npm install
-      - run: npm run build
-      - run: npm run test
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install Dependencies
+        run: npm install
+      - name: Type Check
+        run: npx tsc --noEmit --skipLibCheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
+
+  notify:
+    needs: build
+    if: always() && (failure() || cancelled())
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on Failure
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const run_id = context.runId;
+            const run_url = `https://github.com/${owner}/${repo}/actions/runs/${run_id}`;
+            
+            // Create an issue for the failure
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `CI/CD Pipeline Failed - Run #${run_id}`,
+              body: `The CI/CD pipeline has failed. Please check the [workflow run](${run_url}) for details.`
+            });
+
