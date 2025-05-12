@@ -16,28 +16,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: 'pnpm'
+      
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      
       - uses: actions/cache@v3
+        name: Setup pnpm cache
         with:
-          path: |
-            node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-pnpm-store-
+      
       - name: Install Dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
+      
       - name: Type Check
-        run: npx tsc --noEmit --skipLibCheck
+        run: pnpm type-check
+      
       - name: Lint
-        run: npm run lint
+        run: |
+          pnpm eslint . --ext .ts,.tsx --max-warnings 0
+      
       - name: Build
-        run: npm run build
+        run: pnpm build
+      
       - name: Test
-        run: npm run test
+        run: pnpm test
 
   notify:
     needs: build
