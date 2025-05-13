@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Type Check
+        run: pnpm type-check
+      
+      - name: Lint
+        run: |
+          pnpm eslint . --ext .ts,.tsx --max-warnings 0
+      
+      - name: Build
+        run: pnpm build
+      
+      - name: Test
+        run: pnpm test
+
+  notify:
+    needs: build
+    if: always() && (failure() || cancelled())
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on Failure
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const run_id = context.runId;
+            const run_url = `https://github.com/${owner}/${repo}/actions/runs/${run_id}`;
+            
+            // Create an issue for the failure
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `CI/CD Pipeline Failed - Run #${run_id}`,
+              body: `The CI/CD pipeline has failed. Please check the [workflow run](${run_url}) for details.`
+            });
+

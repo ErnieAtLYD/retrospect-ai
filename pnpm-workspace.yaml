@@ -2,3 +2,5 @@ ignoredBuiltDependencies:
   - electron
   - esbuild
   - obsidian-typings
+packages:
+  - '.'

@@ -5,6 +5,9 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ErnieAtLYD/retrospect-ai?style=flat-square)](https://github.com/ErnieAtLYD/retrospect-ai/releases/latest)
 [![GitHub all releases](https://img.shields.io/github/downloads/ErnieAtLYD/retrospect-ai/total?style=flat-square)](https://github.com/ErnieAtLYD/retrospect-ai/releases)
 [![License](https://img.shields.io/github/license/ErnieAtLYD/retrospect-ai?style=flat-square)](LICENSE)
+[![CI](https://github.com/ErnieAtLYD/retrospect-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/ErnieAtLYD/retrospect-ai/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
 
 ## Overview
 
