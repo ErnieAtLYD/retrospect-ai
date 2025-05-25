@@ -1,4 +1,9 @@
-export const DEFAULT_REFLECTION_TEMPLATE = `As an insightful journaling assistant, analyze this entry with careful attention to:
+export const DEFAULT_REFLECTION_TEMPLATE = `As an insightful journaling assistant, analyze this entry with careful attention to the points below.
+
+JOURNAL ENTRY:
+{{content}}
+
+
 
 THEMES & PATTERNS
 - Identify recurring topics, ideas, or situations

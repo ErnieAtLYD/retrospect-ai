@@ -175,7 +175,9 @@ export class ServiceManager {
 				this.aiService as AIService,
 				this.privacyManager,
 				this.plugin.reflectionMemoryManager, // Pass the ReflectionMemoryManager from the plugin
-				this.plugin.settings.cacheTTLMinutes
+				this.plugin.settings.cacheTTLMinutes,
+				100,
+				this.logger
 			);
 
 			this.logger?.debug("Analysis Manager initialized successfully");
