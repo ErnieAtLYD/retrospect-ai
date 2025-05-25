@@ -7,6 +7,7 @@ import { CacheManager } from "./CacheManager";
 import RetrospectAI from "../main";
 import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
 import { CommentaryView } from "../views/CommentaryView";
+import { LoggingService } from "./LoggingService";
 
 export type AnalysisStyle = "direct" | "gentle";
 
@@ -50,14 +51,22 @@ export class AnalysisManager {
 	private readonly privacyManager: PrivacyManager;
 	private readonly reflectionMemoryManager: ReflectionMemoryManager | null;
 	private analysisHistory: AnalysisResult[] = [];
+	private readonly logger?: LoggingService;
+
+	
 	constructor(
 		plugin: RetrospectAI,
 		aiService: AIService,
 		privacyManager: PrivacyManager,
 		reflectionMemoryManager: ReflectionMemoryManager | null = null,
 		cacheTTLMinutes = 60,
-		cacheMaxSize = 100
+		cacheMaxSize = 100,
+		logger?: LoggingService
 	) {
+		this.logger = logger;
+		console.log("Logger in AnalysisManager", logger);
+		this.logger?.debug("AnalysisManager logger is active!");
+
 		if (!aiService) {
 			throw new AnalysisError(
 				"AI Service must be provided to AnalysisManager",
@@ -145,34 +154,52 @@ export class AnalysisManager {
 		noteName?: string
 	): Promise<AnalysisResult> {
 		try {
+			console.log("ANALYSIS MANAGER: analyzeContent...");
 			const request: AnalysisRequest = { content, template, style };
 			this.validateRequest(request);
+			this.logger?.debug(`analyzeContent request: ${JSON.stringify(request)}`);
 
 			const sanitizedContent =
 				this.privacyManager.removePrivateSections(content);
+			this.logger?.debug(`analyzeContent sanitizedContent: ${sanitizedContent}`);
 			const cacheKey = this.cacheManager.generateKey(
 				sanitizedContent,
 				template,
 				style
 			);
 
-			const cachedResult = this.cacheManager.get(cacheKey);
-			if (cachedResult) {
-				// Add cached result to history in case it's not there
-				this.addToHistory(cachedResult);
-				await this.updateSidePanel(
-					cachedResult.content,
-					noteId,
-					noteName
-				);
-				return cachedResult;
+			// Check cache if enabled
+			if (this.plugin.settings.cacheEnabled) {
+				const cachedResult = this.cacheManager.get(cacheKey);
+				if (cachedResult) {
+					// Add cached result to history in case it's not there
+					this.addToHistory(cachedResult);
+					await this.updateSidePanel(
+						cachedResult.content,
+						noteId,
+						noteName
+					);
+					return cachedResult;
+				}
 			}
 
+			// Check if the template is empty
+			if (!template) {
+				throw new AnalysisError("Template cannot be empty", "EMPTY_TEMPLATE");
+			}
+
+			console.log("ANALYSIS MANAGER: template", template);
+			this.logger?.debug(`analyzeContent TEMPLATE!~: ${template}`);
+
+			const interpolatedTemplate = template.replace(/{{content}}/g, sanitizedContent);
+			this.logger?.debug(`analyzeContent interpolatedTemplate: ${interpolatedTemplate}`);
+
 			const result = await this.aiService.analyze(
-				sanitizedContent,
-				template,
+				sanitizedContent, // (FIXME: can be omitted or left for compatibility, but not used in the prompt)
+				interpolatedTemplate,
 				style
 			);
+			this.logger?.debug(`analyzeContent result: ${result}`);
 			const analysisResult: AnalysisResult = {
 				content: result,
 				timestamp: Date.now(),
@@ -180,7 +207,10 @@ export class AnalysisManager {
 				noteName,
 			};
 
-			this.cacheManager.set(cacheKey, analysisResult);
+			// Cache result if enabled
+			if (this.plugin.settings.cacheEnabled) {
+				this.cacheManager.set(cacheKey, analysisResult);
+			}
 			
 			// Add to analysis history
 			this.addToHistory(analysisResult);
@@ -217,7 +247,8 @@ export class AnalysisManager {
 				error,
 				"An unexpected error occurred during analysis"
 			);
-			throw error; // Rethrow to allow proper error handling
+			throw error; // Rethrow to allow pro
+			//  error handling
 		}
 	}
 	
@@ -307,6 +338,13 @@ export class AnalysisManager {
 	 */
 	clearCache(): void {
 		this.cacheManager.clear();
+	}
+
+	/**
+	 * Toggle cache enabled/disabled
+	 */
+	toggleCache(enabled: boolean): void {
+		this.plugin.settings.cacheEnabled = enabled;
 	}
 
 	/**
