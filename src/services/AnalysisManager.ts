@@ -154,7 +154,6 @@ export class AnalysisManager {
 		noteName?: string
 	): Promise<AnalysisResult> {
 		try {
-			console.log("ANALYSIS MANAGER: analyzeContent...");
 			const request: AnalysisRequest = { content, template, style };
 			this.validateRequest(request);
 			this.logger?.debug(`analyzeContent request: ${JSON.stringify(request)}`);
