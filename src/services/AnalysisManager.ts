@@ -64,7 +64,6 @@ export class AnalysisManager {
 		logger?: LoggingService
 	) {
 		this.logger = logger;
-		console.log("Logger in AnalysisManager", logger);
 		this.logger?.debug("AnalysisManager logger is active!");
 
 		if (!aiService) {
