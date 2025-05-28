@@ -40,7 +40,7 @@ export class UIManager {
 				this.statusBarItem.setText("RetrospectAI ready");
 			}
 		} catch {
-			console.log("Status bar API not available, using Notices instead");
+			// console.log("Status bar API not available, using Notices instead");
 		}
 	}
 

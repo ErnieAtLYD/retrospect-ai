@@ -43,6 +43,44 @@ export class CommandManager {
 		}
 	  }
 
+	  private ensureAnalysisManager() {
+		if (!this.plugin.serviceManager?.analysisManager) {
+		  const details = {
+			service: !!this.plugin.serviceManager,
+			manager: !!this.plugin.serviceManager?.analysisManager,
+			settings: this.plugin.settings,
+		  };
+		  this.plugin.logger?.error('Analysis init state', new Error(JSON.stringify(details)));
+		  throw new Error('Analysis service not initialized. See logs for details.');
+		}
+	  }
+
+
+	/**
+	 * Get the file from the context or show a notice if the context is not a Markdown view or the file is not found
+	 * @param ctx The context of the command
+	 * @returns The file or null if the context is not a Markdown view or the file is not found
+	 */
+	private getFileOrNotice(ctx: MarkdownView | MarkdownFileInfo) {
+		if (!(ctx instanceof MarkdownView)) {
+			new Notice('This command can only be used in a Markdown view.', 3000);
+			return null;
+		}
+		const file = ctx.file;
+		if (!file) {
+			new Notice('No file found in the current view.', 3000);
+			return null;
+		}
+		return file;
+	}
+
+
+	private handleError(base: string, error: unknown) {
+		const msg = error instanceof Error ? error.message : String(error);
+		new Notice(`${base}: ${msg}`, 5000);
+		this.plugin.logger?.error(base, error instanceof Error ? error : new Error(msg));
+	}
+	
 	private registerWeeklyAnalysisCommand() {
 		this.plugin.addCommand({
 			id: "analyze-past-week",
