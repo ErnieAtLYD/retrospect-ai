@@ -52,6 +52,7 @@ export interface RetrospectAISettings {
 	ollamaHost: string;
 	cacheTTLMinutes: number;
 	cacheMaxSize: number;
+	cacheEnabled: boolean;
 	loggingEnabled: boolean;
 	commentaryViewEnabled: boolean;
 	logLevel: LogLevel;
@@ -80,6 +81,7 @@ export const DEFAULT_RETROSPECT_AI_SETTINGS: RetrospectAISettings = {
 	ollamaHost: "http://localhost:11434",
 	cacheTTLMinutes: 60,
 	cacheMaxSize: 100,
+	cacheEnabled: true,
 	ollamaEndpoint: "http://localhost:11434/api/generate",
 	ollamaModel: "deepseek-r1:latest",
 	loggingEnabled: false,

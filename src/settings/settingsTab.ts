@@ -145,6 +145,20 @@ export class RetrospectAISettingTab extends PluginSettingTab {
 	 */
 	private createCacheSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl)
+			.setName('Enable Cache')
+			.setDesc('Enable caching of analysis results (disable for development/testing)')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.cacheEnabled)
+					.onChange(async (value) => {
+						await this.saveSettingsWithFeedback(async () => {
+							this.plugin.settings.cacheEnabled = value;
+							await this.plugin.saveSettings();
+						});
+					})
+			);
+
+		new Setting(containerEl)
 			.setName('Cache Duration')
 			.setDesc('How long to cache analysis results (in minutes)')
 			.addText((text) =>

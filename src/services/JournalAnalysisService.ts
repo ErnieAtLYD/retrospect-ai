@@ -1,5 +1,5 @@
 import { App, Editor, MarkdownView, Notice, TFile } from "obsidian";
-import { AnalysisManager, AnalysisResult } from "./AnalysisManager";
+import { AnalysisManager } from "./AnalysisManager";
 import { LoggingService } from "./LoggingService";
 import { RetrospectAISettings } from "../types";
 import { ReflectionMemoryManager } from "./ReflectionMemoryManager";
@@ -47,32 +47,6 @@ export class JournalAnalysisService {
 			await this.performAnalysis(view.editor, dailyNote);
 		} catch (error) {
 			this.handleAnalysisError(error);
-		}
-	}
-
-	/**
-	 * Analyzes the content.
-	 * @param content
-	 * @param noteId
-	 * @param noteName
-	 * @returns Promise<AnalysisResult>
-	 */
-	async analyzeContent(
-		content: string,
-		noteId?: string,
-		noteName?: string
-	): Promise<AnalysisResult> {
-		try {
-			return await this.analysisManager.analyzeContent(
-				content,
-				this.settings.reflectionTemplate,
-				this.settings.communicationStyle,
-				noteId,
-				noteName
-			);
-		} catch (error) {
-			console.error("Error during content analysis:", error);
-			throw error;
 		}
 	}
 

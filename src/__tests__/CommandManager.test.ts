@@ -31,6 +31,6 @@ describe("CommandManager", () => {
 
 	test("should register commands", () => {
 		commandManager.registerCommands();
-		expect(mockPlugin.addCommand).toHaveBeenCalledTimes(2);
+		expect(mockPlugin.addCommand).toHaveBeenCalledTimes(5);
 	});
 });
