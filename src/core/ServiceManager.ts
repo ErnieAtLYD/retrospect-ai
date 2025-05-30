@@ -176,7 +176,7 @@ export class ServiceManager {
 				this.privacyManager,
 				this.plugin.reflectionMemoryManager, // Pass the ReflectionMemoryManager from the plugin
 				this.plugin.settings.cacheTTLMinutes,
-				100,
+				this.plugin.settings.cacheMaxSize,
 				this.logger
 			);
 
