@@ -144,7 +144,7 @@ export class AnalysisManager {
 		noteName?: string
 	): Promise<AnalysisResult> {
 		try {
-			this.logger?.debug("Starting content analysis");
+
 			const request: AnalysisRequest = { content, template, style };
 			this.validateRequest(request);
 
