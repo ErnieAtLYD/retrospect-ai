@@ -66,7 +66,9 @@ const mockPlugin: Plugin & {
 		activateView: jest.fn().mockResolvedValue(undefined),
 	},
 	logger: {
-		error: jest.fn(),
+		error: jest.fn((message: string, error?: Error | unknown) => {
+			console.error(message, error);
+		}),
 		debug: jest.fn(),
 		info: jest.fn(),
 		warn: jest.fn(),
@@ -115,7 +117,10 @@ describe("Note Analysis Association Integration", () => {
 			mockPlugin as any,
 			mockAIService,
 			mockPrivacyManager,
-			mockPlugin.reflectionMemoryManager
+			mockPlugin.reflectionMemoryManager,
+			60, // cacheTTLMinutes
+			100, // cacheMaxSize
+			mockPlugin.logger // Pass the logger so error logging works
 		);
 		
 		// Create a new instance of CommentaryView
@@ -285,7 +290,10 @@ describe("Note Analysis Association Integration", () => {
 		mockPlugin as any,
 		mockAIService,
 		mockPrivacyManager,
-		mockPlugin.reflectionMemoryManager
+		mockPlugin.reflectionMemoryManager,
+		60, // cacheTTLMinutes
+		100, // cacheMaxSize
+		mockPlugin.logger // Pass the logger so error logging works
 	  );
 	  
 	  // Create a mock reflection memory manager with a properly mocked getAllReflections method
