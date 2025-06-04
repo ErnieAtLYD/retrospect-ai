@@ -24,4 +24,4 @@ export class PrivacyError extends Error {
         super(message);
         this.name = 'PrivacyError';
     }
-} 
+}
