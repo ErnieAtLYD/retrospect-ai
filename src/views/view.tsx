@@ -1,6 +1,5 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import { createRoot, Root } from 'react-dom/client';
 import { AppComponent } from '../components/App';
 

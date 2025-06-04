@@ -22,4 +22,4 @@ const mockWindow = {
   })),
 } as unknown as Window & typeof globalThis;
 
-global.window = mockWindow; 
+global.window = mockWindow;
